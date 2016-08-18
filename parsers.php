@@ -204,7 +204,7 @@ class WXR_Parser_SimpleXML {
 						);
 					}
 				}
-			
+
 				$post['comments'][] = array(
 					'comment_id' => (int) $comment->comment_id,
 					'comment_author' => (string) $comment->comment_author,
