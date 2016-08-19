@@ -3,7 +3,7 @@ Contributors: wordpressdotorg
 Tags: importer, wordpress
 Requires at least: 3.0
 Tested up to: 4.6
-Stable tag: 0.6.2
+Stable tag: 0.6.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -38,12 +38,14 @@ If you would prefer to do things manually then follow these instructions:
 
 == Changelog ==
 
-= 0.6.2 =
+= 0.6.3 =
 * Add support for import term metadata.
-* Add wp_import_existing_post filter. See: https://core.trac.wordpress.org/ticket/33721
 * Fix bug that caused slashes to be stripped from imported content.
 * Fix bug that caused characters to be stripped inside of CDATA in some cases.
 * Fix PHP notices.
+
+= 0.6.2 =
+* Add wp_import_existing_post filter. See: https://core.trac.wordpress.org/ticket/33721
 
 = 0.6 =
 * Support for WXR 1.2 and multiple CDATA sections
