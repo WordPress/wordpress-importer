@@ -351,7 +351,11 @@ class WXR_Parser_XML {
 		if ( ! trim( $cdata ) )
 			return;
 
-		$this->cdata .= trim( $cdata );
+		if ( false !== $this->in_tag || false !== $this->in_sub_tag ) {
+			$this->cdata .= $cdata;
+		} else {
+			$this->cdata .= trim( $cdata );
+		}
 	}
 
 	function tag_close( $parser, $tag ) {
