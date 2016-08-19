@@ -553,10 +553,26 @@ class WP_Import extends WP_Importer {
 			$post_type_object = get_post_type_object( $post['post_type'] );
 
 			$post_exists = post_exists( $post['post_title'], '', $post['post_date'] );
+
+			/**
+			* Filter ID of the existing post corresponding to post currently importing.
+			*
+			* Return 0 to force the post to be imported. Filter the ID to be something else
+			* to override which existing post is mapped to the imported post.
+			*
+			* @see post_exists()
+			* @since 0.6.2
+			*
+			* @param int   $post_exists  Post ID, or 0 if post did not exist.
+			* @param array $post         The post array to be inserted.
+			*/
+			$post_exists = apply_filters( 'wp_import_existing_post', $post_exists, $post );
+
 			if ( $post_exists && get_post_type( $post_exists ) == $post['post_type'] ) {
 				printf( __('%s &#8220;%s&#8221; already exists.', 'wordpress-importer'), $post_type_object->labels->singular_name, esc_html($post['post_title']) );
 				echo '<br />';
 				$comment_post_ID = $post_id = $post_exists;
+				$this->processed_posts[ intval( $post['post_id'] ) ] = intval( $post_exists );
 			} else {
 				$post_parent = (int) $post['post_parent'];
 				if ( $post_parent ) {
