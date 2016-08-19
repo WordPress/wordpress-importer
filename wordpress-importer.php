@@ -426,6 +426,8 @@ class WP_Import extends WP_Importer {
 				echo '<br />';
 				continue;
 			}
+
+			$this->process_termmeta( $cat, $id['term_id'] );
 		}
 
 		unset( $this->categories );
@@ -466,6 +468,8 @@ class WP_Import extends WP_Importer {
 				echo '<br />';
 				continue;
 			}
+
+			$this->process_termmeta( $tag, $id['term_id'] );
 		}
 
 		unset( $this->tags );
@@ -512,9 +516,69 @@ class WP_Import extends WP_Importer {
 				echo '<br />';
 				continue;
 			}
+
+			$this->process_termmeta( $term, $id['term_id'] );
 		}
 
 		unset( $this->terms );
+	}
+
+	/**
+	 * Add metadata to imported term.
+	 *
+	 * @since 0.6.2
+	 *
+	 * @param array $term    Term data from WXR import.
+	 * @param int   $term_id ID of the newly created term.
+	 */
+	protected function process_termmeta( $term, $term_id ) {
+		if ( ! isset( $term['termmeta'] ) ) {
+			$term['termmeta'] = array();
+		}
+
+		/**
+		 * Filters the metadata attached to an imported term.
+		 *
+		 * @since 0.6.2
+		 *
+		 * @param array $termmeta Array of term meta.
+		 * @param int   $term_id  ID of the newly created term.
+		 * @param array $term     Term data from the WXR import.
+		 */
+		$term['termmeta'] = apply_filters( 'wp_import_term_meta', $term['termmeta'], $term_id, $term );
+
+		if ( ! empty( $term['termmeta'] ) ) {
+			foreach ( $term['termmeta'] as $meta ) {
+				/**
+				 * Filters the meta key for an imported piece of term meta.
+				 *
+				 * @since 0.6.2
+				 *
+				 * @param string $meta_key Meta key.
+				 * @param int    $term_id  ID of the newly created term.
+				 * @param array  $term     Term data from the WXR import.
+				 */
+				$key = apply_filters( 'import_term_meta_key', $meta['key'], $term_id, $term );
+
+				if ( $key ) {
+					// Export gets meta straight from the DB so could have a serialized string
+					$value = maybe_unserialize( $meta['value'] );
+
+					add_term_meta( $term_id, $key, $value );
+
+					/**
+					 * Fires after term meta is imported.
+					 *
+					 * @since 0.6.2
+					 *
+					 * @param int    $term_id ID of the newly created term.
+					 * @param string $key     Meta key.
+					 * @param mixed  $value   Meta value.
+					 */
+					do_action( 'import_term_meta', $term_id, $key, $value );
+				}
+			}
+		}
 	}
 
 	/**
