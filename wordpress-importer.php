@@ -414,6 +414,7 @@ class WP_Import extends WP_Importer {
 				'cat_name' => $cat['cat_name'],
 				'category_description' => $category_description
 			);
+			$catarr = array_map( 'addslashes', $catarr );
 
 			$id = wp_insert_category( $catarr );
 			if ( ! is_wp_error( $id ) ) {
@@ -454,6 +455,7 @@ class WP_Import extends WP_Importer {
 				continue;
 			}
 
+			$tag = array_map( 'addslashes', $tag );
 			$tag_desc = isset( $tag['tag_description'] ) ? $tag['tag_description'] : '';
 			$tagarr = array( 'slug' => $tag['tag_slug'], 'description' => $tag_desc );
 
@@ -502,6 +504,7 @@ class WP_Import extends WP_Importer {
 				$parent = term_exists( $term['term_parent'], $term['term_taxonomy'] );
 				if ( is_array( $parent ) ) $parent = $parent['term_id'];
 			}
+			$term = array_map( 'addslashes', $term );
 			$description = isset( $term['term_description'] ) ? $term['term_description'] : '';
 			$termarr = array( 'slug' => $term['slug'], 'description' => $description, 'parent' => intval($parent) );
 
@@ -669,6 +672,8 @@ class WP_Import extends WP_Importer {
 
 				$original_post_ID = $post['post_id'];
 				$postdata = apply_filters( 'wp_import_post_data_processed', $postdata, $post );
+
+				$postdata = array_map( 'addslashes', $postdata );
 
 				if ( 'attachment' == $postdata['post_type'] ) {
 					$remote_url = ! empty($post['attachment_url']) ? $post['attachment_url'] : $post['guid'];
