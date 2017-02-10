@@ -995,7 +995,7 @@ class WP_Import extends WP_Importer {
 
 		$out_fp = fopen( $file_path, 'w' );
 		if ( ! $out_fp ) {
-   	 	return $headers;
+   	 		return $headers;
 		}
 		fwrite( $out_fp,  wp_remote_retrieve_body( $response ) );
 		fclose( $out_fp );
