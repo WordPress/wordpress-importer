@@ -990,7 +990,7 @@ class WP_Import extends WP_Importer {
 		// fetch the remote url and write it to the placeholder file
 		$response = wp_remote_get( $url );
 		$headers = wp_remote_retrieve_headers( $response );
-		if ( is_wp_error() | '200' !=  wp_remote_retrieve_response_code( $response ) ) {
+		if ( is_wp_error( $response ) | '200' !== wp_remote_retrieve_response_code( $response ) ) {
     			return $headers;
 		}
 
