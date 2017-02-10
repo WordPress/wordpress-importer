@@ -988,7 +988,18 @@ class WP_Import extends WP_Importer {
 			return new WP_Error( 'upload_dir_error', $upload['error'] );
 
 		// fetch the remote url and write it to the placeholder file
-		$headers = wp_get_http( $url, $upload['file'] );
+		$response = wp_remote_get( $url, array( 'timeout' => 60) );
+		if ( is_wp_error() | '200' !=  wp_remote_retrieve_response_code( $response ) ) {
+    			return $headers;
+		}
+
+		$out_fp = fopen( $file_path, 'w' );
+		if ( ! $out_fp ) {
+   	 	return $headers;
+		}
+		fwrite( $out_fp,  wp_remote_retrieve_body( $response ) );
+		fclose( $out_fp );
+		clearstatcache();
 
 		// request failed
 		if ( ! $headers ) {
