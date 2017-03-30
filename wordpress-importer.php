@@ -749,10 +749,6 @@ class WP_Import extends WP_Importer {
 				foreach ( $terms_to_set as $tax => $ids ) {
 					$tt_ids = wp_set_post_terms( $post_id, $ids, $tax );
 					do_action( 'wp_import_set_post_terms', $tt_ids, $ids, $tax, $post_id, $post );
-				if ( isset( $post_is_categorized ) && $post_is_categorized ) {
-        				wp_remove_object_terms( $post_id, 'uncategorized', 'category' );
-        				unset( $post_is_categorized );
-					}
 				}
 				unset( $post['terms'], $terms_to_set );
 			}
