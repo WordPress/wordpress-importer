@@ -725,6 +725,8 @@ class WP_Import extends WP_Importer {
 			if ( ! empty( $post['terms'] ) ) {
 				$terms_to_set = array();
 				foreach ( $post['terms'] as $term ) {
+			if ( 'category' == $term['domain'] )
+        			$post_is_categorized = TRUE;
 					// back compat with WXR 1.0 map 'tag' to 'post_tag'
 					$taxonomy = ( 'tag' == $term['domain'] ) ? 'post_tag' : $term['domain'];
 					$term_exists = term_exists( $term['slug'], $taxonomy );
@@ -749,6 +751,10 @@ class WP_Import extends WP_Importer {
 				foreach ( $terms_to_set as $tax => $ids ) {
 					$tt_ids = wp_set_post_terms( $post_id, $ids, $tax );
 					do_action( 'wp_import_set_post_terms', $tt_ids, $ids, $tax, $post_id, $post );
+				if ( isset( $post_is_categorized ) && $post_is_categorized ) {
+        				wp_remove_object_terms( $post_id, 'uncategorized', 'category' );
+        				unset( $post_is_categorized );
+					}
 				}
 				unset( $post['terms'], $terms_to_set );
 			}
