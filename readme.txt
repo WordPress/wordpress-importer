@@ -2,7 +2,7 @@
 Contributors: wordpressdotorg
 Tags: importer, wordpress
 Requires at least: 3.6
-Tested up to: 4.6
+Tested up to: 4.7
 Stable tag: 0.6.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
