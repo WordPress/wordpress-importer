@@ -1,7 +1,7 @@
 === WordPress Importer ===
 Contributors: wordpressdotorg
 Tags: importer, wordpress
-Requires at least: 3.0
+Requires at least: 3.6
 Tested up to: 4.6
 Stable tag: 0.6.3
 License: GPLv2 or later
