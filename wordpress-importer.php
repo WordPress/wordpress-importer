@@ -786,8 +786,8 @@ class WP_Import extends WP_Importer {
 					if ( ! $post_exists || ! comment_exists( $comment['comment_author'], $comment['comment_date'] ) ) {
 						if ( isset( $inserted_comments[$comment['comment_parent']] ) )
 							$comment['comment_parent'] = $inserted_comments[$comment['comment_parent']];
-						$comment = wp_filter_comment( $comment );
 						$comment = wp_slash( $comment );
+						$comment = wp_filter_comment( $comment );
 						$inserted_comments[$key] = wp_insert_comment( $comment );
 						do_action( 'wp_import_insert_comment', $inserted_comments[$key], $comment, $comment_post_ID, $post );
 
