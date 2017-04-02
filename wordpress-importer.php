@@ -727,6 +727,7 @@ class WP_Import extends WP_Importer {
 				foreach ( $post['terms'] as $term ) {
 					// back compat with WXR 1.0 map 'tag' to 'post_tag'
 					$taxonomy = ( 'tag' == $term['domain'] ) ? 'post_tag' : $term['domain'];
+					if ( isset( $post_is_categorized ) && $post_is_categorized ) {
 					$term_exists = term_exists( $term['slug'], $taxonomy );
 					$term_id = is_array( $term_exists ) ? $term_exists['term_id'] : $term_exists;
 					if ( ! $term_id ) {
@@ -751,6 +752,10 @@ class WP_Import extends WP_Importer {
 					do_action( 'wp_import_set_post_terms', $tt_ids, $ids, $tax, $post_id, $post );
 				}
 				unset( $post['terms'], $terms_to_set );
+			}
+				if ( isset( $post_is_categorized ) && $post_is_categorized ) {
+        				wp_remove_object_terms( $post_id, 'uncategorized', 'category' );
+        			unset( $post_is_categorized );
 			}
 
 			if ( ! isset( $post['comments'] ) )
@@ -989,7 +994,19 @@ class WP_Import extends WP_Importer {
 			return new WP_Error( 'upload_dir_error', $upload['error'] );
 
 		// fetch the remote url and write it to the placeholder file
-		$headers = wp_get_http( $url, $upload['file'] );
+		$response = wp_remote_get( $url );
+		$headers = wp_remote_retrieve_headers( $response );
+		if ( is_wp_error( $response ) | '200' !== wp_remote_retrieve_response_code( $response ) ) {
+    			return $headers;
+		}
+
+		$out_fp = fopen( $upload['file'], 'w' );
+		if ( ! $out_fp ) {
+   	 		return $headers;
+		}
+		fwrite( $out_fp,  wp_remote_retrieve_body( $response ) );
+		fclose( $out_fp );
+		clearstatcache();
 
 		// request failed
 		if ( ! $headers ) {
