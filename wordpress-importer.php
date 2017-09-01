@@ -504,7 +504,15 @@ class WP_Import extends WP_Importer {
 				$parent = term_exists( $term['term_parent'], $term['term_taxonomy'] );
 				if ( is_array( $parent ) ) $parent = $parent['term_id'];
 			}
-			$term = wp_slash( $term );
+
+			// Preserve possibly-serialized termmeta if it exists
+			if ( isset( $term['termmeta'] ) ) {
+				$termmeta_pre_slash = $term['termmeta'];
+				$term = wp_slash( $term );
+				$term['termmeta'] = $termmeta_pre_slash;
+			} else {
+				$term = wp_slash( $term );
+			}
 			$description = isset( $term['term_description'] ) ? $term['term_description'] : '';
 			$termarr = array( 'slug' => $term['slug'], 'description' => $description, 'parent' => intval($parent) );
 
