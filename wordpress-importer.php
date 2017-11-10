@@ -989,18 +989,26 @@ class WP_Import extends WP_Importer {
 			return new WP_Error( 'upload_dir_error', $upload['error'] );
 
 		// fetch the remote url and write it to the placeholder file
-		$headers = wp_get_http( $url, $upload['file'] );
+		$remote_response = wp_safe_remote_get( $url, array(
+			'timeout' => 300,
+            		'stream' => true,
+            		'filename' => $upload['file'],
+        	) );
 
+		$headers = wp_remote_retrieve_headers( $remote_response );
+		
 		// request failed
 		if ( ! $headers ) {
 			@unlink( $upload['file'] );
 			return new WP_Error( 'import_file_error', __('Remote server did not respond', 'wordpress-importer') );
 		}
-
+		
+		$remote_response_code = wp_remote_retrieve_response_code( $remote_response );
+		
 		// make sure the fetch was successful
-		if ( $headers['response'] != '200' ) {
+		if ( $remote_response_code != '200' ) {
 			@unlink( $upload['file'] );
-			return new WP_Error( 'import_file_error', sprintf( __('Remote server returned error response %1$d %2$s', 'wordpress-importer'), esc_html($headers['response']), get_status_header_desc($headers['response']) ) );
+			return new WP_Error( 'import_file_error', sprintf( __('Remote server returned error response %1$d %2$s', 'wordpress-importer'), esc_html($remote_response_code), get_status_header_desc($remote_response_code) ) );
 		}
 
 		$filesize = filesize( $upload['file'] );
