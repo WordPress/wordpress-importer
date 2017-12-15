@@ -25,7 +25,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 	}
 
 	function test_malformed_wxr() {
-		$file = DIR_TESTDATA . '/export/malformed.xml';
+		$file = DIR_TESTDATA_WP_IMPORTER . '/malformed.xml';
 
 		// regex based parser cannot detect malformed XML
 		foreach ( array( 'WXR_Parser_SimpleXML', 'WXR_Parser_XML' ) as $p ) {
@@ -37,8 +37,8 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 	}
 
 	function test_invalid_wxr() {
-		$f1 = DIR_TESTDATA . '/export/missing-version-tag.xml';
-		$f2 = DIR_TESTDATA . '/export/invalid-version-tag.xml';
+		$f1 = DIR_TESTDATA_WP_IMPORTER . '/missing-version-tag.xml';
+		$f2 = DIR_TESTDATA_WP_IMPORTER . '/invalid-version-tag.xml';
 
 		foreach ( array( 'WXR_Parser_SimpleXML', 'WXR_Parser_XML', 'WXR_Parser_Regex' ) as $p ) {
 			foreach ( array( $f1, $f2 ) as $file ) {
@@ -51,7 +51,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 	}
 
 	function test_wxr_version_1_1() {
-		$file = DIR_TESTDATA . '/export/valid-wxr-1.1.xml';
+		$file = DIR_TESTDATA_WP_IMPORTER . '/valid-wxr-1.1.xml';
 
 		foreach ( array( 'WXR_Parser_SimpleXML', 'WXR_Parser_XML', 'WXR_Parser_Regex' ) as $p ) {
 			$message = $p . ' failed';
@@ -132,7 +132,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 	}
 
 	function test_wxr_version_1_0() {
-		$file = DIR_TESTDATA . '/export/valid-wxr-1.0.xml';
+		$file = DIR_TESTDATA_WP_IMPORTER . '/valid-wxr-1.0.xml';
 
 		foreach ( array( 'WXR_Parser_SimpleXML', 'WXR_Parser_XML', 'WXR_Parser_Regex' ) as $p ) {
 			$message = $p . ' failed';
@@ -218,7 +218,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 	 * @link https://core.trac.wordpress.org/ticket/15203
 	 */
 	function test_escaped_cdata_closing_sequence() {
-		$file = DIR_TESTDATA . '/export/crazy-cdata-escaped.xml';
+		$file = DIR_TESTDATA_WP_IMPORTER . '/crazy-cdata-escaped.xml';
 
 		foreach ( array( 'WXR_Parser_SimpleXML', 'WXR_Parser_XML', 'WXR_Parser_Regex' ) as $p ) {
 			$message = 'Parser ' . $p;
@@ -251,7 +251,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 	 * with "]]>" unescaped within a CDATA section).
 	 */
 	function test_unescaped_cdata_closing_sequence() {
-		$file = DIR_TESTDATA . '/export/crazy-cdata.xml';
+		$file = DIR_TESTDATA_WP_IMPORTER . '/crazy-cdata.xml';
 
 		$parser = new WXR_Parser_Regex;
 		$result = $parser->parse( $file );

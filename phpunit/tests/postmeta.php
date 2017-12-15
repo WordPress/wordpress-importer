@@ -25,14 +25,14 @@ class Tests_Import_Postmeta extends WP_Import_UnitTestCase {
 	}
 
 	function test_serialized_postmeta_no_cdata() {
-		$this->_import_wp( DIR_TESTDATA . '/export/test-serialized-postmeta-no-cdata.xml', array( 'johncoswell' => 'john' ) );
+		$this->_import_wp( DIR_TESTDATA_WP_IMPORTER . '/test-serialized-postmeta-no-cdata.xml', array( 'johncoswell' => 'john' ) );
 		$expected['special_post_title'] = 'A special title';
 		$expected['is_calendar']        = '';
 		$this->assertEquals( $expected, get_post_meta( 122, 'post-options', true ) );
 	}
 
 	function test_utw_postmeta() {
-		$this->_import_wp( DIR_TESTDATA . '/export/test-utw-post-meta-import.xml', array( 'johncoswell' => 'john' ) );
+		$this->_import_wp( DIR_TESTDATA_WP_IMPORTER . '/test-utw-post-meta-import.xml', array( 'johncoswell' => 'john' ) );
 
 		$classy      = new StdClass();
 		$classy->tag = 'album';
@@ -81,7 +81,7 @@ class Tests_Import_Postmeta extends WP_Import_UnitTestCase {
 	 * @ticket 9633
 	 */
 	function test_serialized_postmeta_with_cdata() {
-		$this->_import_wp( DIR_TESTDATA . '/export/test-serialized-postmeta-with-cdata.xml', array( 'johncoswell' => 'johncoswell' ) );
+		$this->_import_wp( DIR_TESTDATA_WP_IMPORTER . '/test-serialized-postmeta-with-cdata.xml', array( 'johncoswell' => 'johncoswell' ) );
 
 		//HTML in the CDATA should work with old WordPress version
 		$this->assertEquals( '<pre>some html</pre>', get_post_meta( 10, 'contains-html', true ) );
@@ -95,7 +95,7 @@ class Tests_Import_Postmeta extends WP_Import_UnitTestCase {
 	 * @ticket 11574
 	 */
 	function test_serialized_postmeta_with_evil_stuff_in_cdata() {
-		$this->_import_wp( DIR_TESTDATA . '/export/test-serialized-postmeta-with-cdata.xml', array( 'johncoswell' => 'johncoswell' ) );
+		$this->_import_wp( DIR_TESTDATA_WP_IMPORTER . '/test-serialized-postmeta-with-cdata.xml', array( 'johncoswell' => 'johncoswell' ) );
 		// evil content in the CDATA
 		$this->assertEquals( '<wp:meta_value>evil</wp:meta_value>', get_post_meta( 10, 'evil', true ) );
 	}

@@ -46,7 +46,7 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 			'editor' => false,
 			'author' => false,
 		);
-		$this->_import_wp( DIR_TESTDATA . '/export/small-export.xml', $authors );
+		$this->_import_wp( DIR_TESTDATA_WP_IMPORTER . '/small-export.xml', $authors );
 
 		// ensure that authors were imported correctly
 		$user_count = count_users();
@@ -212,8 +212,8 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 			'editor' => false,
 			'author' => false,
 		);
-		$this->_import_wp( DIR_TESTDATA . '/export/small-export.xml', $authors );
-		$this->_import_wp( DIR_TESTDATA . '/export/small-export.xml', $authors );
+		$this->_import_wp( DIR_TESTDATA_WP_IMPORTER . '/small-export.xml', $authors );
+		$this->_import_wp( DIR_TESTDATA_WP_IMPORTER . '/small-export.xml', $authors );
 
 		$user_count = count_users();
 		$this->assertEquals( 3, $user_count['total_users'] );
@@ -276,7 +276,7 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		global $wpdb;
 
 		$authors = array( 'admin' => false );
-		$this->_import_wp( DIR_TESTDATA . '/export/slashes.xml', $authors );
+		$this->_import_wp( DIR_TESTDATA_WP_IMPORTER . '/slashes.xml', $authors );
 
 		$alpha = get_term_by( 'slug', 'alpha', 'category' );
 		$this->assertSame( 'a \"great\" category', $alpha->name );
