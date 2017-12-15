@@ -206,6 +206,29 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 		}
 	}
 
+	// Tests that each parser detects the same number of terms.
+	function test_varied_taxonomy_term_spacing() {
+		$file = DIR_TESTDATA_WP_IMPORTER . '/term-formats.xml';
+
+		foreach ( array( 'WXR_Parser_SimpleXML', 'WXR_Parser_XML', 'WXR_Parser_Regex' ) as $p ) {
+			$message = $p . ' failed';
+			$parser  = new $p;
+			$result  = $parser->parse( $file );
+
+			$this->assertTrue( is_array( $result ), $message );
+			$this->assertEquals( 'http://localhost/', $result['base_url'], $message );
+
+			$this->assertEmpty( $result['authors'], $message );
+			$this->assertEmpty( $result['posts'], $message );
+
+			$this->assertEquals( 2, count( $result['categories'] ), $message );
+			$this->assertEquals( 3, count( $result['tags'] ), $message );
+			$this->assertEquals( 2, count( $result['terms'] ), $message );
+
+			// TODO: Verify the content of the terms extracted and verify each has the expected fields & field types.
+		}
+	}
+
 	/**
 	 * Test the WXR parser's ability to correctly retrieve content from CDATA
 	 * sections that contain escaped closing tags ("]]>" -> "]]]]><![CDATA[>").
