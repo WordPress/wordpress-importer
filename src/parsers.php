@@ -470,23 +470,27 @@ class WXR_Parser_Regex {
 				}
 
 				foreach ( $multiline_tags as $tag => $handler ) {
-					if ( false !== strpos( $importline, "<$tag>" ) ) {
-						$multiline_content = '';
-						$in_multiline      = true;
+					// Handle multi-line tags on a singular line
+					if ( preg_match( '|<' . $tag . '>(.*?)</' . $tag . '>|is', $importline, $matches ) ) {
+						$this->{$handler[0]}[] = call_user_func( $handler[1], $matches[1] );
 
-						break;
-					}
+					} elseif ( false !== ( $pos = strpos( $importline, "<$tag>" ) ) ) {
+						// Take note of any content after the opening tag
+						$multiline_content = trim( substr( $importline, $pos + strlen( $tag ) + 2 ) );
 
-					if ( false !== strpos( $importline, "</$tag>" ) ) {
-						$in_multiline = false;
+						// We don't want to have this line added to `$is_multiline` below.
+						$importline        = '';
+						$in_multiline      = $tag;
+
+					} elseif ( false !== ( $pos = strpos( $importline, "</$tag>" ) ) ) {
+						$in_multiline          = false;
+						$multiline_content    .= trim( substr( $importline, 0, $pos ) );
 
 						$this->{$handler[0]}[] = call_user_func( $handler[1], $multiline_content );
-
-						break;
 					}
 				}
 
-				if ( $in_multiline ) {
+				if ( $in_multiline && $importline ) {
 					$multiline_content .= $importline . "\n";
 				}
 			}
