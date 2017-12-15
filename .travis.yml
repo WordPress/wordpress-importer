@@ -1,0 +1,52 @@
+sudo: false
+dist: trusty
+language: php
+
+cache:
+  directories:
+    - vendor
+    - $HOME/.composer/cache
+
+env:
+  global:
+    - WP_VERSION=trunk
+
+matrix:
+  include:
+    - php: 7.2
+      env: WP_VERSION=trunk
+    - php: 7.2
+      env: WP_VERSION=latest
+    - php: 7.1
+    - php: 7.0
+    - php: 5.6
+    - php: 5.5
+    - php: 5.4
+    - php: 5.3
+      dist: precise
+    - php: 5.2
+      dist: precise
+    - php: nightly
+  allow_failures:
+    - php: nightly
+
+before_script:
+  - export PATH="$HOME/.composer/vendor/bin:$PATH"
+  - |
+    if [ -f ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini ]; then
+      phpenv config-rm xdebug.ini
+    else
+      echo "xdebug.ini does not exist"
+    fi
+  - |
+    bash phpunit/install.sh wordpress_test root '' localhost $WP_VERSION
+    if [[ "$TRAVIS_PHP_VERSION" != "5.2" ]]; then
+      composer global require "phpunit/phpunit=4.8.*|5.7.*"
+    else
+      echo "PHP 5.2: Skipping composer for PHPUnit, relying upon builtin PHPUnit."
+    fi
+
+script:
+  - |
+    phpunit
+    WP_MULTISITE=1 phpunit
