@@ -284,7 +284,16 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 				'post_status' => 'any',
 			)
 		);
+		$this->assertNotEmpty( $posts );
 		$this->assertSame( 'Slashes aren\\\'t \"cool\"', $posts[0]->post_content );
+
+		$comments = get_comments(
+			array(
+				'post_id' => $posts[0]->post_ID
+			)
+		);
+		$this->assertNotEmpty( $comments );
+		$this->assertSame( '\o/ ¯\_(ツ)_/¯', $comments[0]->comment_content );
 	}
 
 	// function test_menu_import
