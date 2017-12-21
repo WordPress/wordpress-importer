@@ -106,7 +106,9 @@ class WP_Import extends WP_Importer {
 		$this->import_start( $file );
 
 		$this->get_author_mapping();
-
+		
+		do_action( 'before_process_import' );
+		
 		wp_suspend_cache_invalidation( true );
 		$this->process_categories();
 		$this->process_tags();
@@ -118,6 +120,8 @@ class WP_Import extends WP_Importer {
 		$this->backfill_parents();
 		$this->backfill_attachment_urls();
 		$this->remap_featured_images();
+		
+		do_action( 'after_process_import' );
 
 		$this->import_end();
 	}
