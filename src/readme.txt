@@ -1,5 +1,6 @@
 === WordPress Importer ===
 Contributors: wordpressdotorg
+Donate link: https://wordpressfoundation.org/donate/
 Tags: importer, wordpress
 Requires at least: 3.6
 Tested up to: 4.9
