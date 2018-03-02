@@ -1057,8 +1057,10 @@ class WP_Import extends WP_Importer {
 			if ( isset( $this->processed_posts[$parent_id] ) )
 				$local_parent_id = $this->processed_posts[$parent_id];
 
-			if ( $local_child_id && $local_parent_id )
+			if ( $local_child_id && $local_parent_id ) {
 				$wpdb->update( $wpdb->posts, array( 'post_parent' => $local_parent_id ), array( 'ID' => $local_child_id ), '%d', '%d' );
+				clean_post_cache( $local_child_id );
+			}
 		}
 
 		// all other posts/terms are imported, retry menu items with missing associated object
