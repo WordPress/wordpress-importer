@@ -5,7 +5,7 @@ Plugin URI: https://wordpress.org/plugins/wordpress-importer/
 Description: Import posts, pages, comments, custom fields, categories, tags and more from a WordPress export file.
 Author: wordpressdotorg
 Author URI: https://wordpress.org/
-Version: 0.6.3
+Version: 0.6.4
 Text Domain: wordpress-importer
 License: GPL version 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 */
@@ -996,15 +996,15 @@ class WP_Import extends WP_Importer {
         	) );
 
 		$headers = wp_remote_retrieve_headers( $remote_response );
-		
+
 		// request failed
 		if ( ! $headers ) {
 			@unlink( $upload['file'] );
 			return new WP_Error( 'import_file_error', __('Remote server did not respond', 'wordpress-importer') );
 		}
-		
+
 		$remote_response_code = wp_remote_retrieve_response_code( $remote_response );
-		
+
 		// make sure the fetch was successful
 		if ( $remote_response_code != '200' ) {
 			@unlink( $upload['file'] );
