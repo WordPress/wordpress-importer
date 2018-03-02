@@ -315,11 +315,19 @@ class WP_Import extends WP_Importer {
 			echo ' <input type="text" name="user_new['.$n.']" value="'. $value .'" /><br />';
 		}
 
-		if ( ! $create_users && $this->version == '1.0' )
+		if ( ! $create_users && $this->version == '1.0' ) {
 			_e( 'assign posts to an existing user:', 'wordpress-importer' );
-		else
+		} else {
 			_e( 'or assign posts to an existing user:', 'wordpress-importer' );
-		wp_dropdown_users( array( 'name' => "user_map[$n]", 'multi' => true, 'show_option_all' => __( '- Select -', 'wordpress-importer' ) ) );
+		}
+
+		wp_dropdown_users( array(
+			'name'            => "user_map[$n]",
+			'multi'           => true,
+			'show_option_all' => __( '- Select -', 'wordpress-importer' ),
+			'show'            => 'display_name_with_login',
+		) );
+
 		echo '<input type="hidden" name="imported_authors['.$n.']" value="' . esc_attr( $author['author_login'] ) . '" />';
 
 		if ( $this->version != '1.0' )
