@@ -39,6 +39,12 @@ If you would prefer to do things manually then follow these instructions:
 
 == Changelog ==
 
+= 0.6.4 =
+* Improve PHP7 compatibility.
+* Fix bug that caused slashes to be stripped from imported comments.
+* Fix for various deprecation notices including `wp_get_http()` and `screen_icon()`.
+* Fix for importing export files with multiline term meta data.
+
 = 0.6.3 =
 * Add support for import term metadata.
 * Fix bug that caused slashes to be stripped from imported content.
