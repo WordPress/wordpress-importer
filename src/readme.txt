@@ -6,7 +6,7 @@ Requires at least: 3.6
 Tested up to: 4.9
 Stable tag: 0.6.3
 License: GPLv2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 Import posts, pages, comments, custom fields, categories, tags and more from a WordPress export file.
 
@@ -20,7 +20,7 @@ The WordPress Importer will import the following content from a WordPress export
 * Categories, tags and terms from custom taxonomies
 * Authors
 
-For further information and instructions please see the [Codex page on Importing Content](http://codex.wordpress.org/Importing_Content#WordPress)
+For further information and instructions please see the [Codex page on Importing Content](https://codex.wordpress.org/Importing_Content#WordPress)
 
 == Installation ==
 
@@ -52,7 +52,7 @@ If you would prefer to do things manually then follow these instructions:
 * Fix PHP notices.
 
 = 0.6.2 =
-* Add wp_import_existing_post filter. See: https://core.trac.wordpress.org/ticket/33721
+* Add `wp_import_existing_post` filter, see [Trac ticket #33721](https://core.trac.wordpress.org/ticket/33721).
 
 = 0.6 =
 * Support for WXR 1.2 and multiple CDATA sections
@@ -75,7 +75,7 @@ an export file is uploaded to a server with bad permissions and WordPress 3.3 or
 = 0.3 =
 * Use an XML Parser if possible
 * Proper import support for nav menus
-* ... and much more, see [Trac ticket #15197](http://core.trac.wordpress.org/ticket/15197)
+* ... and much more, see [Trac ticket #15197](https://core.trac.wordpress.org/ticket/15197)
 
 = 0.1 =
 * Initial release
@@ -106,7 +106,7 @@ A message like "Fatal error: Allowed memory size of 8388608 bytes exhausted" ind
 
 For those with shared hosting, the best alternative may be to consult hosting support to determine the safest approach for running the import. A host may be willing to temporarily lift the memory limit and/or run the process directly from their end.
 
--- [WordPress Codex: Importing Content](http://codex.wordpress.org/Importing_Content#Before_Importing)
+-- [WordPress Codex: Importing Content](https://codex.wordpress.org/Importing_Content#Before_Importing)
 
 == Filters ==
 
