@@ -1,5 +1,17 @@
 <?php
+/**
+ * WordPress Importer plugin testcase.
+ *
+ * @package WordPress
+ * @subpackage Importer
+ */
 
+/**
+ * Testcase for WordPress importer plugin.
+ *
+ * @package WordPress
+ * @subpackage Importer
+ */
 abstract class WP_Import_UnitTestCase extends WP_UnitTestCase {
 	/**
 	 * Import a WXR file.
@@ -16,22 +28,24 @@ abstract class WP_Import_UnitTestCase extends WP_UnitTestCase {
 	 *   'eve' => false // eve will be imported as is
 	 * );</code>
 	 *
-	 * @param string $filename Full path of the file to import
-	 * @param array $users User import settings
-	 * @param bool $fetch_files Whether or not do download remote attachments
+	 * @param string $filename    Full path of the file to import.
+	 * @param array  $users       User import settings.
+	 * @param bool   $fetch_files Whether or not do download remote attachments.
 	 */
-	protected function _import_wp( $filename, $users = array(), $fetch_files = true ) {
+	protected function import_wp( $filename, $users = array(), $fetch_files = true ) {
 		$importer = new WP_Import();
 		$file     = realpath( $filename );
 
 		$this->assertTrue( ! empty( $file ), 'Path to import file is empty.' );
 		$this->assertTrue( is_file( $file ), 'Import file is not a file.' );
 
-		$authors = $mapping = $new = array();
+		$authors = array();
+		$mapping = array();
+		$new     = array();
 		$i       = 0;
 
-		// each user is either mapped to a given ID, mapped to a new user
-		// with given login or imported using details in WXR file
+		// Each user is either mapped to a given ID, mapped to a new user
+		// with given login or imported using details in WXR file.
 		foreach ( $users as $user => $map ) {
 			$authors[ $i ] = $user;
 			if ( is_int( $map ) ) {

@@ -5,10 +5,12 @@
  * @package Sample_Plugin
  */
 
+// phpcs:disable
+
 $_tests_dir = getenv( 'WP_TESTS_DIR' );
 
 // Check if we're installed in a src checkout.
-if ( ! $_tests_dir &&  false !== ( $pos = stripos( __FILE__, '/src/wp-content/plugins/' ) ) ) {
+if ( ! $_tests_dir && false !== ( $pos = stripos( __FILE__, '/src/wp-content/plugins/' ) ) ) {
 	$_tests_dir = substr( __FILE__, 0, $pos ) . '/tests/phpunit/';
 }
 
@@ -40,3 +42,5 @@ tests_add_filter( 'plugins_loaded', '_manually_load_importer' );
 
 // Start up the WP testing environment.
 require $_tests_dir . '/includes/bootstrap.php';
+
+// phpcs:enable

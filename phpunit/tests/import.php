@@ -1,12 +1,26 @@
 <?php
+/**
+ * WordPress Importer import tests.
+ *
+ * @package WordPress
+ * @subpackage Importer
+ */
 
+// Include base testcase.
 require_once dirname( __FILE__ ) . '/base.php';
 
 /**
+ * Test importer.
+ *
  * @group import
  */
 class Tests_Import_Import extends WP_Import_UnitTestCase {
-	function setUp() {
+	/**
+	 * Sets up the fixture, for example, open a network connection.
+	 *
+	 * This method is called before a test is executed.
+	 */
+	public function setUp() {
 		parent::setUp();
 
 		if ( ! defined( 'WP_IMPORTING' ) ) {
@@ -20,19 +34,27 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		add_filter( 'import_allow_create_users', '__return_true' );
 
 		global $wpdb;
-		// crude but effective: make sure there's no residual data in the main tables
+		// Crude but effective: make sure there's no residual data in the main tables.
 		foreach ( array( 'posts', 'postmeta', 'comments', 'terms', 'term_taxonomy', 'term_relationships', 'users', 'usermeta' ) as $table ) {
-			$wpdb->query( "DELETE FROM {$wpdb->$table}" );
+			$wpdb->query( "DELETE FROM {$wpdb->$table}" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- This is a test file.
 		}
 	}
 
-	function tearDown() {
+	/**
+	 * Tears down the fixture, for example, close a network connection.
+	 *
+	 * This method is called after a test is executed.
+	 */
+	public function tearDown() {
 		remove_filter( 'import_allow_create_users', '__return_true' );
 
 		parent::tearDown();
 	}
 
-	function test_small_import() {
+	/**
+	 * Test a small import imports correctly.
+	 */
+	public function test_small_import() {
 		global $wpdb;
 
 		$authors = array(
@@ -40,9 +62,9 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 			'editor' => false,
 			'author' => false,
 		);
-		$this->_import_wp( DIR_TESTDATA_WP_IMPORTER . '/small-export.xml', $authors );
+		$this->import_wp( DIR_TESTDATA_WP_IMPORTER . '/small-export.xml', $authors );
 
-		// ensure that authors were imported correctly
+		// Ensure that authors were imported correctly.
 		$user_count = count_users();
 		$this->assertEquals( 3, $user_count['total_users'] );
 		$admin = get_user_by( 'login', 'admin' );
@@ -57,7 +79,7 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		$this->assertEquals( 'author', $author->user_login );
 		$this->assertEquals( 'author@example.org', $author->user_email );
 
-		// check that terms were imported correctly
+		// Check that terms were imported correctly.
 		$this->assertEquals( 30, wp_count_terms( 'category' ) );
 		$this->assertEquals( 3, wp_count_terms( 'post_tag' ) );
 		$foo = get_term_by( 'slug', 'foo', 'category' );
@@ -66,7 +88,7 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		$foo_bar = get_term_by( 'slug', 'foo-bar', 'category' );
 		$this->assertEquals( $bar->term_id, $foo_bar->parent );
 
-		// check that posts/pages were imported correctly
+		// Check that posts/pages were imported correctly.
 		$post_count = wp_count_posts( 'post' );
 		$this->assertEquals( 5, $post_count->publish );
 		$this->assertEquals( 1, $post_count->private );
@@ -200,14 +222,17 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		$this->assertEquals( 1, count( $cats ) );
 	}
 
-	function test_double_import() {
+	/**
+	 * Test result after importing the same file twice.
+	 */
+	public function test_double_import() {
 		$authors = array(
 			'admin'  => false,
 			'editor' => false,
 			'author' => false,
 		);
-		$this->_import_wp( DIR_TESTDATA_WP_IMPORTER . '/small-export.xml', $authors );
-		$this->_import_wp( DIR_TESTDATA_WP_IMPORTER . '/small-export.xml', $authors );
+		$this->import_wp( DIR_TESTDATA_WP_IMPORTER . '/small-export.xml', $authors );
+		$this->import_wp( DIR_TESTDATA_WP_IMPORTER . '/small-export.xml', $authors );
 
 		$user_count = count_users();
 		$this->assertEquals( 3, $user_count['total_users'] );
@@ -241,9 +266,12 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		$this->assertEquals( 1, $comment_count->total_comments );
 	}
 
-	function test_ordering_of_importers() {
+	/**
+	 * Test ordering of importers.
+	 */
+	public function test_ordering_of_importers() {
 		global $wp_importers;
-		$_wp_importers = $wp_importers; // Preserve global state
+		$_wp_importers = $wp_importers; // Preserve global state.
 		$wp_importers  = array(
 			'xyz1' => array( 'xyz1' ),
 			'XYZ2' => array( 'XYZ2' ),
@@ -260,17 +288,19 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 				'XYZ2' => array( 'XYZ2' ),
 			), get_importers()
 		);
-		$wp_importers = $_wp_importers; // Restore global state
+		$wp_importers = $_wp_importers; // Restore global state.
 	}
 
 	/**
+	 * Test slashes should not be stripped.
+	 *
 	 * @ticket 21007
 	 */
 	public function test_slashes_should_not_be_stripped() {
 		global $wpdb;
 
 		$authors = array( 'admin' => false );
-		$this->_import_wp( DIR_TESTDATA_WP_IMPORTER . '/slashes.xml', $authors );
+		$this->import_wp( DIR_TESTDATA_WP_IMPORTER . '/slashes.xml', $authors );
 
 		$alpha = get_term_by( 'slug', 'alpha', 'category' );
 		$this->assertSame( 'a \"great\" category', $alpha->name );
@@ -289,12 +319,11 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 
 		$comments = get_comments(
 			array(
-				'post_id' => $posts[0]->post_ID
+				'post_id' => $posts[0]->post_ID,
 			)
 		);
 		$this->assertNotEmpty( $comments );
 		$this->assertSame( '\o/ ¯\_(ツ)_/¯', $comments[0]->comment_content );
 	}
 
-	// function test_menu_import
 }

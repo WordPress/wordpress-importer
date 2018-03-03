@@ -1,12 +1,26 @@
 <?php
+/**
+ * WordPress Importer parser tests.
+ *
+ * @package WordPress
+ * @subpackage Importer
+ */
 
+// Include base testcase.
 require_once dirname( __FILE__ ) . '/base.php';
 
 /**
+ * WordPress Importer parser tests.
+ *
  * @group import
  */
 class Tests_Import_Parser extends WP_Import_UnitTestCase {
-	function setUp() {
+	/**
+	 * Sets up the fixture, for example, open a network connection.
+	 *
+	 * This method is called before a test is executed.
+	 */
+	public function setUp() {
 		parent::setUp();
 
 		if ( ! defined( 'WP_IMPORTING' ) ) {
@@ -16,28 +30,33 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 		if ( ! defined( 'WP_LOAD_IMPORTERS' ) ) {
 			define( 'WP_LOAD_IMPORTERS', true );
 		}
-
 	}
 
-	function test_malformed_wxr() {
+	/**
+	 * Test malformed WXR file.
+	 */
+	public function test_malformed_wxr() {
 		$file = DIR_TESTDATA_WP_IMPORTER . '/malformed.xml';
 
-		// regex based parser cannot detect malformed XML
+		// Regex based parser cannot detect malformed XML.
 		foreach ( array( 'WXR_Parser_SimpleXML', 'WXR_Parser_XML' ) as $p ) {
-			$parser = new $p;
+			$parser = new $p();
 			$result = $parser->parse( $file );
 			$this->assertWPError( $result );
 			$this->assertEquals( 'There was an error when reading this WXR file', $result->get_error_message() );
 		}
 	}
 
-	function test_invalid_wxr() {
+	/**
+	 * Test invalid WXR file.
+	 */
+	public function test_invalid_wxr() {
 		$f1 = DIR_TESTDATA_WP_IMPORTER . '/missing-version-tag.xml';
 		$f2 = DIR_TESTDATA_WP_IMPORTER . '/invalid-version-tag.xml';
 
 		foreach ( array( 'WXR_Parser_SimpleXML', 'WXR_Parser_XML', 'WXR_Parser_Regex' ) as $p ) {
 			foreach ( array( $f1, $f2 ) as $file ) {
-				$parser = new $p;
+				$parser = new $p();
 				$result = $parser->parse( $file );
 				$this->assertWPError( $result );
 				$this->assertEquals( 'This does not appear to be a WXR file, missing/invalid WXR version number', $result->get_error_message() );
@@ -45,12 +64,15 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 		}
 	}
 
-	function test_wxr_version_1_1() {
+	/**
+	 * Test valid WXR v1.1.
+	 */
+	public function test_wxr_version_1_1() {
 		$file = DIR_TESTDATA_WP_IMPORTER . '/valid-wxr-1.1.xml';
 
 		foreach ( array( 'WXR_Parser_SimpleXML', 'WXR_Parser_XML', 'WXR_Parser_Regex' ) as $p ) {
 			$message = $p . ' failed';
-			$parser  = new $p;
+			$parser  = new $p();
 			$result  = $parser->parse( $file );
 
 			$this->assertTrue( is_array( $result ), $message );
@@ -126,12 +148,15 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 		}
 	}
 
-	function test_wxr_version_1_0() {
+	/**
+	 * Test valid WXR v1.0.
+	 */
+	public function test_wxr_version_1_0() {
 		$file = DIR_TESTDATA_WP_IMPORTER . '/valid-wxr-1.0.xml';
 
 		foreach ( array( 'WXR_Parser_SimpleXML', 'WXR_Parser_XML', 'WXR_Parser_Regex' ) as $p ) {
 			$message = $p . ' failed';
-			$parser  = new $p;
+			$parser  = new $p();
 			$result  = $parser->parse( $file );
 
 			$this->assertTrue( is_array( $result ), $message );
@@ -206,13 +231,15 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 		}
 	}
 
-	// Tests that each parser detects the same number of terms.
-	function test_varied_taxonomy_term_spacing() {
+	/**
+	 * Tests that each parser detects the same number of terms.
+	 */
+	public function test_varied_taxonomy_term_spacing() {
 		$file = DIR_TESTDATA_WP_IMPORTER . '/term-formats.xml';
 
 		foreach ( array( 'WXR_Parser_SimpleXML', 'WXR_Parser_XML', 'WXR_Parser_Regex' ) as $p ) {
 			$message = $p . ' failed';
-			$parser  = new $p;
+			$parser  = new $p();
 			$result  = $parser->parse( $file );
 
 			$this->assertTrue( is_array( $result ), $message );
@@ -233,14 +260,14 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 	 * Test the WXR parser's ability to correctly retrieve content from CDATA
 	 * sections that contain escaped closing tags ("]]>" -> "]]]]><![CDATA[>").
 	 *
-	 * @link https://core.trac.wordpress.org/ticket/15203
+	 * @ticket 15203
 	 */
-	function test_escaped_cdata_closing_sequence() {
+	public function test_escaped_cdata_closing_sequence() {
 		$file = DIR_TESTDATA_WP_IMPORTER . '/crazy-cdata-escaped.xml';
 
 		foreach ( array( 'WXR_Parser_SimpleXML', 'WXR_Parser_XML', 'WXR_Parser_Regex' ) as $p ) {
 			$message = 'Parser ' . $p;
-			$parser  = new $p;
+			$parser  = new $p();
 			$result  = $parser->parse( $file );
 
 			$post = $result['posts'][0];
@@ -268,10 +295,10 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 	 * Ensure that the regex parser can still parse invalid CDATA blocks (i.e. those
 	 * with "]]>" unescaped within a CDATA section).
 	 */
-	function test_unescaped_cdata_closing_sequence() {
+	public function test_unescaped_cdata_closing_sequence() {
 		$file = DIR_TESTDATA_WP_IMPORTER . '/crazy-cdata.xml';
 
-		$parser = new WXR_Parser_Regex;
+		$parser = new WXR_Parser_Regex();
 		$result = $parser->parse( $file );
 
 		$post = $result['posts'][0];
@@ -293,6 +320,4 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 			$this->assertEquals( $value, $meta['value'] );
 		}
 	}
-
-	// tags in CDATA #11574
 }
