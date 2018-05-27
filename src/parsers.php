@@ -92,7 +92,11 @@ class WXR_Parser_SimpleXML {
 		$base_url = (string) trim( $base_url[0] );
 		
 		$base_blog_url = $xml->xpath('/rss/channel/wp:base_blog_url');
-		$base_blog_url = (string) trim( $base_blog_url[0] );
+		if( $base_blog_url ) {
+			$base_blog_url = (string) trim( $base_blog_url[0] );
+		} else {
+			$base_blog_url = $base_url;
+		}
 
 		$namespaces = $xml->getDocNamespaces();
 		if ( ! isset( $namespaces['wp'] ) )
@@ -410,6 +414,9 @@ class WXR_Parser_XML {
 				break;
 			case 'wp:base_blog_url':
 				$this->base_blog_url = $this->cdata;
+				if ( !$this->base_blog_url ) {
+					$this->base_blog_url = $this->base_url;
+				}
 				break;
 			case 'wp:wxr_version':
 				$this->wxr_version = $this->cdata;
@@ -475,6 +482,8 @@ class WXR_Parser_Regex {
 					preg_match( '|<wp:base_blog_url>(.*?)</wp:base_blog_url>|is', $importline, $blog_url );
 					$this->base_blog_url = $blog_url[1];
 					continue;
+				} else {
+					$this->base_blog_url = $this->base_url;	
 				}
 
 				if ( false !== strpos( $importline, '<wp:author>' ) ) {
