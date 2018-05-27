@@ -411,7 +411,7 @@ class WXR_Parser_XML {
 				break;
 			case 'wp:base_site_url':
 				$this->base_url = $this->cdata;
-				if( !isset( $this->base_blog_url ) {
+				if( !isset( $this->base_blog_url ) ) {
 					$this->base_blog_url = $this->cdata;
 				}
 				break;
