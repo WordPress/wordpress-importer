@@ -994,7 +994,7 @@ class WP_Import extends WP_Importer {
 		// don't fetch files, if requested
 		$prevent = defined( 'IMPORT_PREVENT_REMOTE_FETCH' ) && IMPORT_PREVENT_REMOTE_FETCH;
 		if ( apply_filters( 'import_prevent_remote_fetch', $prevent, $url, $post )) {
-			printf( __( "Skipping fetch of '%s'\n", 'wordpress-importer' ), $url );
+			printf( __( "Skipping fetch of '%s'<br />\n", 'wordpress-importer' ), $url );
 			$upload_dir = wp_upload_dir( $post['upload_date'] );
 			$attachment_url = sprintf( '%s/%s', $upload_dir['url'], $file_name );
 			$attachment_filename = sprintf( '%s/%s', $upload_dir['path'], $file_name );
