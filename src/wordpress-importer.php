@@ -991,6 +991,28 @@ class WP_Import extends WP_Importer {
 		// extract the file name and extension from the url
 		$file_name = basename( $url );
 
+		// don't fetch files, if requested
+		$prevent = defined( 'IMPORT_PREVENT_REMOTE_FETCH' ) && IMPORT_PREVENT_REMOTE_FETCH;
+		if ( apply_filters( 'import_prevent_remote_fetch', $prevent, $url, $post )) {
+			printf( __( "Skipping fetch of '%s'\n", 'wordpress-importer' ), $url );
+			$upload_dir = wp_upload_dir( $post['upload_date'] );
+			$attachment_url = sprintf( '%s/%s', $upload_dir['url'], $file_name );
+			$attachment_filename = sprintf( '%s/%s', $upload_dir['path'], $file_name );
+			$attachment_type = wp_check_filetype( $attachment_filename );
+			$upload = array(
+				'url' => $attachment_url,
+				'file' => $attachment_filename,
+				'type' => $attachment_type['type'],
+				'error' => false,
+			);
+
+			// keep track of the old and new urls so we can substitute them later
+			$this->url_remap[$url] = $upload['url'];
+			$this->url_remap[$post['guid']] = $upload['url']; // r13735, really needed?
+
+			return $upload;
+		}
+
 		// get placeholder file in the upload dir with a unique, sanitized filename
 		$upload = wp_upload_bits( $file_name, 0, '', $post['upload_date'] );
 		if ( $upload['error'] )
