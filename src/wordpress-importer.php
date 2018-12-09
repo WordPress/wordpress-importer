@@ -10,9 +10,6 @@ Text Domain: wordpress-importer
 License: GPL version 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 */
 
-if ( ! defined( 'WP_LOAD_IMPORTERS' ) )
-	return;
-
 /** Display verbose errors */
 define( 'IMPORT_DEBUG', false );
 
@@ -1224,6 +1221,10 @@ class WP_Import extends WP_Importer {
 } // class_exists( 'WP_Importer' )
 
 function wordpress_importer_init() {
+	if ( ! defined( 'WP_LOAD_IMPORTERS' ) ) {
+		return;
+	}
+
 	load_plugin_textdomain( 'wordpress-importer' );
 
 	/**
