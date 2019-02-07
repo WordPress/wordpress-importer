@@ -1,0 +1,27 @@
+{
+  "name": "wordpress-importer",
+  "version": "1.0.0",
+  "description": "https://github.com/Automattic/wordpress-importer",
+  "main": "index.js",
+  "dependencies": {
+    "@jonathansadowski/wpc-test": "0.17.0",
+    "@wordpress/components": "^7.0.8",
+    "@wordpress/compose": "^3.0.1",
+    "react": "16.6.3",
+    "react-dom": "16.6.3"
+  },
+  "scripts": {
+    "build": "node ./node_modules/@jonathansadowski/wpc-test/bin/sdk-cli.js generic --global-wp src/index.js src/build.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Automattic/wordpress-importer.git"
+  },
+  "author": "",
+  "license": "GPL-2.0-or-later",
+  "bugs": {
+    "url": "https://github.com/Automattic/wordpress-importer/issues"
+  },
+  "homepage": "https://github.com/Automattic/wordpress-importer#readme"
+}
