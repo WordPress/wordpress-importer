@@ -5,8 +5,10 @@
   "main": "index.js",
   "dependencies": {
     "@jonathansadowski/wpc-test": "0.17.0",
+    "@wordpress/api-fetch": "^2.2.8",
     "@wordpress/components": "^7.0.8",
     "@wordpress/compose": "^3.0.1",
+    "@wordpress/core-data": "^2.0.17",
     "react": "16.6.3",
     "react-dom": "16.6.3",
     "react-router-dom": "^4.3.1"

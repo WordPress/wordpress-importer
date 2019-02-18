@@ -10,6 +10,12 @@ Text Domain: wordpress-importer
 License: GPL version 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 */
 
+function wordpress_importer_rest_api_init() {
+	require_once plugin_dir_path( __FILE__ ) . 'rest-api/class-wp-rest-import-attachments.php';
+	new WP_REST_Import_Attachments();
+}
+add_action( 'rest_api_init', 'wordpress_importer_rest_api_init' );
+
 if ( ! defined( 'WP_LOAD_IMPORTERS' ) )
 	return;
 
@@ -97,6 +103,7 @@ class WP_Import extends WP_Importer {
 	function dispatch() {
 		wp_enqueue_style( 'wp-components' );
 		wp_enqueue_script( 'wp-components' );
+		wp_enqueue_script( 'wp-core-data' );
 		wp_enqueue_script( 'wordpress-importer', '/wp-content/plugins/wordpress-importer/src/build.js' );
 		echo '<div id="wordpress-importer-root"></div>';
 	}

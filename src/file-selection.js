@@ -1,17 +1,51 @@
 /**
  * External dependencies
  */
+import head from 'lodash/head';
 import React, { Fragment, PureComponent } from 'react';
 import { withRouter } from 'react-router'
 import { Button, DropZoneProvider, DropZone } from '@wordpress/components';
+import apiFetch from '@wordpress/api-fetch';
+import { dispatch } from '@wordpress/data';
+
+const validFileTypes = Object.freeze( [ 'text/xml' ] );
+const isValidFileType = type => validFileTypes.includes( type );
 
 class FileSelection extends PureComponent {
 	state = {
 		hasDropped: false,
 	};
 
-	setDropped = () => {
+	doIt = async ( files = [] ) => {
+		const file = head( files );
+		const { type, size } = file;
+
+		if ( ! size ) {
+			console.error( 'Cannot upload an empty file' );
+			return;
+		}
+
+		if ( ! isValidFileType( type ) ) {
+			console.error( `File type ${ type } is not supported` );
+			return;
+		}
+
 		this.setState( { hasDropped: true } );
+
+		const body = new FormData();
+		body.append( 'import', file );
+		body.append( 'status', 'private' );
+
+		apiFetch( {
+			method: 'POST',
+			path: '/wordpress-importer/v1/attachment',
+			body,
+		} )
+			.then( r => {
+				console.log( r );
+				dispatch( 'wordpress-importer' ).setAttachmentId( r.id );
+			} )
+			.catch( e => console.error( e ) );
 	};
 
 	nextStep = () => {
@@ -28,10 +62,10 @@ class FileSelection extends PureComponent {
 					<div>
 						{ hasDropped ? 'Dropped!' : 'Drop something here' }
 						<DropZone 
-							onFilesDrop={ this.setDropped }
-							onHTMLDrop={ this.setDropped }
-							onDrop={ this.setDropped }
-						/>
+							onFilesDrop={ this.doIt }
+							onHTMLDrop={ this.doIt }
+							onDrop={ this.doIt }
+						><div>Hello, world!</div></DropZone>
 					</div>
 				</DropZoneProvider>
 				<Button onClick={ this.nextStep }>Continue</Button>
