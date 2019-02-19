@@ -21,7 +21,7 @@ class FileSelection extends PureComponent {
 		hasDropped: false,
 	};
 
-	doIt = async ( files = [] ) => {
+	handleFileSelection = async ( files = [] ) => {
 		const { setUploadResult } = this.props;
 		const file = head( files );
 		const { type, size } = file;
@@ -65,12 +65,12 @@ class FileSelection extends PureComponent {
 					<h2>Import WordPress</h2>
 					<div>Howdy! Upload your WordPress eXtended RSS (WXT) file and we'll import the posts, pages, comments, custom fields, categories, and tags into this site.</div>
 					<div>Choose a WXR (.xml) file to upload, or drop a file here, and your import will begin</div>
-					<FileInput onFileSelected={ this.doIt }>Choose file</FileInput>
+					<FileInput onFileSelected={ this.handleFileSelection }>Choose file</FileInput>
 					<div>
 						<DropZone 
-							onFilesDrop={ this.doIt }
-							onHTMLDrop={ this.doIt }
-							onDrop={ this.doIt }
+							onFilesDrop={ this.handleFileSelection }
+							onHTMLDrop={ this.handleFileSelection }
+							onDrop={ this.handleFileSelection }
 						/>
 					</div>
 				</DropZoneProvider>
