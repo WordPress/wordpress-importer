@@ -2,6 +2,8 @@
 
 class WP_REST_Import_Attachments {
 	const NAMESPACE = 'wordpress-importer/v1';
+	const ATTACHMENT_OPTION_NAME = 'wordpress_importer_attachment_id';
+	const NONCE_NAME = 'wordpress-importer-rest-api';
 
 	function __construct() {
 		$this->register_routes();
@@ -86,6 +88,46 @@ class WP_REST_Import_Attachments {
 		require_once ABSPATH . 'wp-admin/includes/import.php';
 
 		// Pass off to WP to handle the actual upload.
-		return wp_import_handle_upload();
+		$attachment = wp_import_handle_upload();
+
+		if ( is_wp_error( $attachment ) ) {
+			return $attachment;
+		}
+
+		if ( ! is_array( $attachment ) || ! isset( $attachment['id'] ) ) {
+			return new WP_Error( 'rest_upload_attachment_failed', __( 'Attachment was not completed successfully.' ), array( 'status' => 400 ) );
+		}
+
+		return self::process_attachment( $attachment );
+	}
+
+	private function process_attachment( $attachment ) {
+		// Persist attachment ID
+		update_option( self::ATTACHMENT_OPTION_NAME, $attachment['id'] );
+
+		// Include WXR file parsers
+		if ( ! class_exists( 'WXR_Parser' ) ) {
+			require dirname( __FILE__ ) . '/../parsers.php';
+		}
+
+		// Parse WXR to get authors
+		$parser = new WXR_Parser();
+		$import_data = $parser->parse( $attachment['file'] );
+
+		if ( is_wp_error( $import_data ) ) {
+			return $import_data;
+		}
+
+		//@TODO: we probably just wanna map all posts to a single author as opposed to erroring if the WXR lacks author data
+		if ( ! is_array( $import_data ) || ! isset( $import_data['authors'] ) || ! is_array( $import_data['authors'] ) ) {
+			return new WP_Error( 'rest_upload_parsing_failed', __( 'Could not process authors from import file.' ), array( 'status' => 400 ) );
+		}
+
+		$authors = array_values( $import_data['authors'] );
+
+		return array(
+			'nonce'   => wp_create_nonce( NONCE_NAME ),
+			'authors' => $authors,
+		);
 	}
 }
