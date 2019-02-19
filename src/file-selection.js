@@ -6,7 +6,7 @@ import React, { Fragment, PureComponent } from 'react';
 import { withRouter } from 'react-router'
 import { Button, DropZoneProvider, DropZone } from '@wordpress/components';
 import apiFetch from '@wordpress/api-fetch';
-import { dispatch } from '@wordpress/data';
+import { withDispatch } from '@wordpress/data';
 
 const validFileTypes = Object.freeze( [ 'text/xml' ] );
 const isValidFileType = type => validFileTypes.includes( type );
@@ -17,6 +17,7 @@ class FileSelection extends PureComponent {
 	};
 
 	doIt = async ( files = [] ) => {
+		const { setUploadResult } = this.props;
 		const file = head( files );
 		const { type, size } = file;
 
@@ -43,7 +44,7 @@ class FileSelection extends PureComponent {
 		} )
 			.then( r => {
 				console.log( r );
-				dispatch( 'wordpress-importer' ).setAttachmentId( r.id );
+				setUploadResult( r );
 			} )
 			.catch( e => console.error( e ) );
 	};
@@ -74,4 +75,8 @@ class FileSelection extends PureComponent {
 	}
 }
 
-export default withRouter( FileSelection );
+export default withDispatch( ( dispatch ) => {
+	return {
+		setUploadResult: dispatch( 'wordpress-importer' ).setUploadResult,
+	};
+} )( withRouter( FileSelection ) );

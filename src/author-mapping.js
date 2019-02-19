@@ -2,40 +2,33 @@
  * External dependencies
  */
 import React, { PureComponent } from 'react';
-import { withState } from '@wordpress/compose';
-import { select, withSelect } from '@wordpress/data';
+import { withSelect } from '@wordpress/data';
 import { SelectControl } from '@wordpress/components';
 import { Link } from 'react-router-dom';
 
-function MyAuthorsListBase( { authors } ) {
-	return (
-		<SelectControl label="Author" options={
-			authors.map( author => {
-				return {
-					label: author.name,
-					value: author.id,
-				};
-			} )
-		} />
-	);
-}
-
-const MyAuthorsList = withSelect( ( select ) => ( {
-	authors: select( 'core' ).getAuthors(),
-} ) )( MyAuthorsListBase );
-
 class AuthorMapping extends PureComponent {
 	render() {
-		const attachmentId = select( 'wordpress-importer' ).getAttachmentId();
-
+		const { importAuthors, siteAuthors } = this.props;
+		console.log( importAuthors, siteAuthors );
 		return (
 			<div>
-				<MyAuthorsList />
-				{ attachmentId }
+				<SelectControl label="Author" options={
+					siteAuthors.map( author => {
+						return {
+							label: author.name,
+							value: author.id,
+						};
+					} )
+				} />
 				<Link to='/complete'>FINISH!!!</Link>
 			</div>
 		);
 	}
 }
 
-export default AuthorMapping;
+export default withSelect( ( select ) => {
+	return {
+		siteAuthors: select( 'core' ).getAuthors(),
+		importAuthors: select( 'wordpress-importer' ).getImportAuthors(),
+	};
+} )( AuthorMapping );
