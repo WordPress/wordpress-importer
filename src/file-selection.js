@@ -50,12 +50,9 @@ class FileSelection extends PureComponent {
 			.then( r => {
 				console.log( r );
 				setUploadResult( r );
+				this.props.history.push( '/map' );
 			} )
 			.catch( e => console.error( e ) );
-	};
-
-	nextStep = () => {
-		this.props.history.push( '/map' );
 	};
 
 	render() {
@@ -77,7 +74,6 @@ class FileSelection extends PureComponent {
 						/>
 					</div>
 				</DropZoneProvider>
-				<Button onClick={ this.nextStep }>Upload file and import</Button>
 			</Fragment>
 		);
 	}

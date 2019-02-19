@@ -12,6 +12,16 @@ class AuthorMapping extends PureComponent {
 		console.log( importAuthors, siteAuthors );
 		return (
 			<div>
+				<h2>Import WordPress</h2>
+				<div>To make it easier for you to edit and save the imported content, you may want to reassign the author of the imported item to an existing user of this site. For example, you may want to import all the entries as admins entries.</div>
+				<div>If a new user is created by WordPress, a new password will be randomly generated and the new user’s role will be set as subscriber. Manually changing the new user’s details will be necessary.</div>
+
+				<h3>Assign Authors</h3>
+
+				...
+
+				<h3>Import Attachments</h3>
+
 				<SelectControl label="Author" options={
 					siteAuthors.map( author => {
 						return {
