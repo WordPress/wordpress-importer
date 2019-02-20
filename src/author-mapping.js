@@ -14,10 +14,39 @@ import './style.scss';
 import AuthorSelector from './author-selector';
 
 class AuthorMapping extends PureComponent {
+	state = {
+		authors: {}
+	};
+
+	authorChangeHandler = ( key, value ) => {
+		this.setState( ( { authors } ) => ( {
+			authors: {
+				...authors,
+				[ key ]: value,
+			}
+		} ) );
+	};
+
+	// @TODO: this feels... hacky :/
+	static getDerivedStateFromProps( props, state ) {
+		const { importAuthors } = props;
+		const importAuthorDefaults = props.importAuthors.map( author => author.author_login ).reduce( ( obj, author ) => {
+			return { ...obj, [ author ]: author };
+		}, {} );
+
+		return { authors: { ...importAuthorDefaults, ...state.authors } } ;
+	}
+
 	render() {
 		window.apiFetch = apiFetch;
 
 		const { importAuthors, siteAuthors } = this.props;
+
+		if ( ! siteAuthors.length ) {
+			return (
+				<div>Loading...</div>
+			);
+		}
 
 		return (
 			<div>
@@ -34,8 +63,8 @@ class AuthorMapping extends PureComponent {
 							<AuthorSelector
 								importAuthor={ importAuthor }
 								siteAuthors={ siteAuthors }
-								onChange={ value => console.log( value ) }
-								value={ "123" }
+								onChange={ this.authorChangeHandler }
+								value={ '' }
 							/>
 						</li>
 					); } ) }

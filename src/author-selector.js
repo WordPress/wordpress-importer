@@ -21,10 +21,10 @@ class AuthorSelector extends PureComponent {
 			if ( isNew ) {
 				if ( this.usernameInput.current ) {
 					this.usernameInput.current.focus()
-					this.props.onChange( this.usernameInput.current.value );
+					this.props.onChange( this.props.importAuthor.author_login, this.usernameInput.current.value );
 				}
 			} else {
-				this.props.onChange( value );
+				this.props.onChange( this.props.importAuthor.author_login, value );
 			}
 		} );
 	};
@@ -32,7 +32,7 @@ class AuthorSelector extends PureComponent {
 	handleTextChange = ( event ) => {
 		const newUsernameText = event.target.value;
 		this.setState( { newUsernameText } );
-		this.props.onChange( newUsernameText );
+		this.props.onChange( this.props.importAuthor.author_login, newUsernameText );
 	};
 
 	render() {
