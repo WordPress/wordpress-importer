@@ -34,7 +34,7 @@ class AuthorMapping extends PureComponent {
 							<AuthorSelector
 								importAuthor={ importAuthor }
 								siteAuthors={ siteAuthors }
-								onChange={ () => {} }
+								onChange={ value => console.log( value ) }
 								value={ "123" }
 							/>
 						</li>
