@@ -19,6 +19,7 @@ const isValidFileType = type => validFileTypes.includes( type );
 class FileSelection extends PureComponent {
 	state = {
 		hasDropped: false,
+		isFetching: false,
 	};
 
 	handleFileSelection = async ( files = [] ) => {
@@ -36,7 +37,10 @@ class FileSelection extends PureComponent {
 			return;
 		}
 
-		this.setState( { hasDropped: true } );
+		this.setState( {
+			hasDropped: true,
+			isFetching: true,
+		} );
 
 		const body = new FormData();
 		body.append( 'import', file );
@@ -47,17 +51,22 @@ class FileSelection extends PureComponent {
 			path: '/wordpress-importer/v1/attachment',
 			body,
 		} )
-			.then( r => {
-				console.log( r );
-				setUploadResult( r );
+			.then( response => {
+				console.log( { response } );
+
+				this.setState( { isFetching: false } );
+				setUploadResult( response );
 				this.props.history.push( '/map' );
 			} )
-			.catch( e => console.error( e ) );
+			.catch( error => {
+				this.setState( { isFetching: false } );
+				console.error( { error } )
+			} );
 	};
 
 	render() {
 		const { setState, state } = this;
-		const { hasDropped } = state;
+		const { hasDropped, isFetching } = state;
 
 		return (
 			<Fragment>
@@ -65,9 +74,12 @@ class FileSelection extends PureComponent {
 					<h2>Import WordPress</h2>
 					<div>Howdy! Upload your WordPress eXtended RSS (WXT) file and we'll import the posts, pages, comments, custom fields, categories, and tags into this site.</div>
 					<div>Choose a WXR (.xml) file to upload, or drop a file here, and your import will begin</div>
-					<FileInput onFileSelected={ this.handleFileSelection }>Choose file</FileInput>
+					{ isFetching
+						? ( <span>Loading…</span> )
+						: ( <FileInput onFileSelected={ this.handleFileSelection }>Choose file</FileInput> )
+					}
 					<div>
-						<DropZone 
+						<DropZone
 							onFilesDrop={ this.handleFileSelection }
 							onHTMLDrop={ this.handleFileSelection }
 							onDrop={ this.handleFileSelection }
