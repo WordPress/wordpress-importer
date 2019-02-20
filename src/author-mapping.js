@@ -3,37 +3,21 @@
  */
 import React, { PureComponent } from 'react';
 import { withSelect } from '@wordpress/data';
-import { SelectControl } from '@wordpress/components';
 import { Link } from 'react-router-dom';
 import apiFetch from '@wordpress/api-fetch';
 
+/**
+ * Internal dependencies
+ */
+// @TODO: is this the correct way to handle styles?
+import './style.scss';
+import AuthorSelector from './author-selector';
+
 class AuthorMapping extends PureComponent {
-
-	renderImportAuthor( importAuthor ) {
-		const { siteAuthors } = this.props;
-
-		const selectOptions = [
-			{ label: `Create a new user: ${importAuthor.author_login}`, value: importAuthor.author_login },
-			...siteAuthors.map( author => {
-				return {
-					label: `Existing user: ${author.name}`,
-					value: author.id,
-				};
-			} )
-		]
-
-		return (
-			<li key={ `author_${importAuthor.author_login}` }>
-				Import author: { importAuthor.author_display_name } ({ importAuthor.author_login })
-				<SelectControl label="Map this author's posts to:" options={ selectOptions } />
-			</li>
-		);
-	}
-
 	render() {
 		window.apiFetch = apiFetch;
 
-		const { importAuthors } = this.props;
+		const { importAuthors, siteAuthors } = this.props;
 
 		return (
 			<div>
@@ -44,7 +28,17 @@ class AuthorMapping extends PureComponent {
 				<h3>Assign Authors</h3>
 
 				<ol>
-					{ importAuthors.map( importAuthor => this.renderImportAuthor( importAuthor ) ) }
+					{ importAuthors.map( importAuthor => { return (
+						<li key={ `author_${importAuthor.author_login}` } className="wordpress-importer__author-selector">
+							Import author: { importAuthor.author_display_name } ({ importAuthor.author_login })
+							<AuthorSelector
+								importAuthor={ importAuthor }
+								siteAuthors={ siteAuthors }
+								onChange={ () => {} }
+								value={ "123" }
+							/>
+						</li>
+					); } ) }
 				</ol>
 				
 
@@ -52,7 +46,7 @@ class AuthorMapping extends PureComponent {
 
 				<label><input type="checkbox" /> Download and import file attachments</label>
 				
-				<Link to='/complete'>FINISH!!!</Link>
+				<div><Link to='/complete'>FINISH!!!</Link></div>
 			</div>
 		);
 	}
