@@ -17,6 +17,65 @@ class WP_REST_Import_Attachments {
 			'permission_callback' => array( $this, 'upload_and_import_permissions_check' ),
 			'args' => array(),
 		) );
+
+		// @TODO: move to its own class
+		register_rest_route( self::NAMESPACE, '/start', array(
+			'methods' => WP_REST_Server::CREATABLE,
+			'callback' => array( $this, 'start_import' ),
+			// @TODO: check correct permissions
+			'permission_callback' => array( $this, 'upload_and_import_permissions_check' ),
+			'args' => array(),
+		) );
+	}
+
+	// @TODO: move to its own class
+	function start_import( $request ) {
+		if ( ! defined( 'WP_LOAD_IMPORTERS' ) ) {
+			define( 'WP_LOAD_IMPORTERS', 1 );
+		}
+
+		if ( ! class_exists( 'WP_Import' ) ) {
+			return new WP_Error( 'missing_wp_import', 'The WP_Import class does not exist' );
+		}
+		if ( ! function_exists( 'wordpress_importer_init' ) ) {
+			return new WP_Error( 'missing_wp_import_init', 'The wordpress_importer_init function does not exist' );
+		}
+		// The REST API does not do `admin_init`, so we need to source a bunch of stuff
+		require_once ABSPATH . 'wp-admin/includes/admin.php';
+		wordpress_importer_init();
+		if ( empty( $GLOBALS['wp_import'] ) ) {
+			return new WP_Error( 'empty_wp_import', 'The wp_import global is empty' );
+		}
+
+		// Generate authors map expected by WP_Import
+		$authors = $request['authors'];
+
+		foreach( $authors as $import_author => $site_author ) {
+			$existing_user = get_user_by( 'login', $site_author );
+
+			if ( $existing_user ) {
+				$user_id = $existing_user->ID;
+			} else {
+				// @TODO: Allow for specifying name?
+				$user_id = wp_create_user( $site_author, wp_generate_password() );
+			}
+
+			$sanitized_import_author = sanitize_user( $import_author, true );
+			$GLOBALS['wp_import']->author_mapping[ $sanitized_import_author ] = $user_id;
+		}
+
+		// Get attachment
+		$attachment_id = get_option( self::ATTACHMENT_OPTION_NAME );
+
+		if ( ! $attachment_id ) {
+			return new WP_Error( 'missing_attachment', 'Attachment did not exist' );
+		}
+
+		$file = get_attached_file( $attachment_id );
+		set_time_limit(0);
+		$GLOBALS['wp_import']->import( $file );
+
+		return true;
 	}
 
 	function upload_and_import_permissions_check( $request ) {
@@ -126,7 +185,7 @@ class WP_REST_Import_Attachments {
 		$authors = array_values( $import_data['authors'] );
 
 		return array(
-			'nonce'   => wp_create_nonce( NONCE_NAME ),
+			'nonce'   => wp_create_nonce( self::NONCE_NAME ),
 			'authors' => $authors,
 		);
 	}

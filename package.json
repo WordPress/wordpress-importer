@@ -26,5 +26,17 @@
   "bugs": {
     "url": "https://github.com/Automattic/wordpress-importer/issues"
   },
-  "homepage": "https://github.com/Automattic/wordpress-importer#readme"
+  "homepage": "https://github.com/Automattic/wordpress-importer#readme",
+  "eslintconfig": {
+    "parser": "babel-eslint",
+    "env": {
+      "browser": true,
+      "node": true,
+      "es6": true
+    },
+    "ecmaFeatures": {
+      "modules": true,
+      "jsx": true
+    }
+  }
 }

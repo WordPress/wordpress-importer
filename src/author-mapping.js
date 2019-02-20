@@ -5,11 +5,36 @@ import React, { PureComponent } from 'react';
 import { withSelect } from '@wordpress/data';
 import { SelectControl } from '@wordpress/components';
 import { Link } from 'react-router-dom';
+import apiFetch from '@wordpress/api-fetch';
 
 class AuthorMapping extends PureComponent {
+
+	renderImportAuthor( importAuthor ) {
+		const { siteAuthors } = this.props;
+
+		const selectOptions = [
+			{ label: `Create a new user: ${importAuthor.author_login}`, value: importAuthor.author_login },
+			...siteAuthors.map( author => {
+				return {
+					label: `Existing user: ${author.name}`,
+					value: author.id,
+				};
+			} )
+		]
+
+		return (
+			<li key={ `author_${importAuthor.author_login}` }>
+				Import author: { importAuthor.author_display_name } ({ importAuthor.author_login })
+				<SelectControl label="Map this author's posts to:" options={ selectOptions } />
+			</li>
+		);
+	}
+
 	render() {
-		const { importAuthors, siteAuthors } = this.props;
-		console.log( importAuthors, siteAuthors );
+		window.apiFetch = apiFetch;
+
+		const { importAuthors } = this.props;
+
 		return (
 			<div>
 				<h2>Import WordPress</h2>
@@ -18,18 +43,15 @@ class AuthorMapping extends PureComponent {
 
 				<h3>Assign Authors</h3>
 
-				...
+				<ol>
+					{ importAuthors.map( importAuthor => this.renderImportAuthor( importAuthor ) ) }
+				</ol>
+				
 
 				<h3>Import Attachments</h3>
 
-				<SelectControl label="Author" options={
-					siteAuthors.map( author => {
-						return {
-							label: author.name,
-							value: author.id,
-						};
-					} )
-				} />
+				<label><input type="checkbox" /> Download and import file attachments</label>
+				
 				<Link to='/complete'>FINISH!!!</Link>
 			</div>
 		);

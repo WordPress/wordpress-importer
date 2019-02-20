@@ -16,9 +16,6 @@ function wordpress_importer_rest_api_init() {
 }
 add_action( 'rest_api_init', 'wordpress_importer_rest_api_init' );
 
-if ( ! defined( 'WP_LOAD_IMPORTERS' ) )
-	return;
-
 /** Display verbose errors */
 define( 'IMPORT_DEBUG', false );
 
@@ -1238,6 +1235,10 @@ class WP_Import extends WP_Importer {
 } // class_exists( 'WP_Importer' )
 
 function wordpress_importer_init() {
+	if ( ! defined( 'WP_LOAD_IMPORTERS' ) ) {
+		return;
+	}
+
 	load_plugin_textdomain( 'wordpress-importer' );
 
 	/**
