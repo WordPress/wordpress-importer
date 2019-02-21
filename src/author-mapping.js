@@ -2,9 +2,11 @@
  * External dependencies
  */
 import React, { PureComponent } from 'react';
+import { withRouter } from 'react-router'
 import { withSelect } from '@wordpress/data';
 import { Link } from 'react-router-dom';
 import apiFetch from '@wordpress/api-fetch';
+import { Button, CheckboxControl } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -15,7 +17,33 @@ import AuthorSelector from './author-selector';
 
 class AuthorMapping extends PureComponent {
 	state = {
-		authors: {}
+		isImporting: false,
+		authors: {},
+		fetchAttachments: false,
+	};
+
+	doImport = () => {
+		const { authors, fetchAttachments } = this.state;
+
+		this.setState( { isImporting: true }, () => {
+			apiFetch( {
+				method: 'POST',
+				path: '/wordpress-importer/v1/start',
+				data: {
+					authors,
+					fetch_attachments: fetchAttachments,
+				},
+			} )
+				.then( response => {
+					this.setState( { isImporting: false } );
+					console.log( response );
+					this.props.history.push( '/complete' );
+				} )
+				.catch( error => {
+					this.setState( { isImporting: false } );
+					console.log( error );
+				} );
+		} )
 	};
 
 	authorChangeHandler = ( key, value ) => {
@@ -38,8 +66,6 @@ class AuthorMapping extends PureComponent {
 	}
 
 	render() {
-		window.apiFetch = apiFetch;
-
 		const { importAuthors, siteAuthors } = this.props;
 
 		if ( ! siteAuthors.length ) {
@@ -73,9 +99,15 @@ class AuthorMapping extends PureComponent {
 
 				<h3>Import Attachments</h3>
 
-				<label><input type="checkbox" /> Download and import file attachments</label>
+				<CheckboxControl
+					label="Download and import file attachments"
+					checked={ this.state.fetchAttachments }
+					onChange={ fetchAttachments => this.setState( { fetchAttachments } ) } 
+				/>
 				
-				<div><Link to='/complete'>FINISH!!!</Link></div>
+				<div>
+					{ this.state.isImporting ? <div>Importing...</div> : <Button onClick={ this.doImport } >Start Import</Button> }
+				</div>
 			</div>
 		);
 	}
@@ -86,4 +118,4 @@ export default withSelect( ( select ) => {
 		siteAuthors: select( 'core' ).getAuthors(),
 		importAuthors: select( 'wordpress-importer' ).getImportAuthors(),
 	};
-} )( AuthorMapping );
+} )( withRouter( AuthorMapping ) );

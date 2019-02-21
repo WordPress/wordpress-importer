@@ -64,6 +64,9 @@ class WP_REST_Import_Attachments {
 			$GLOBALS['wp_import']->author_mapping[ $sanitized_import_author ] = $user_id;
 		}
 
+		// Map fetch_attachments setting
+		$GLOBALS['wp_import']->fetch_attachments = ! empty( $request['fetch_attachments'] );
+
 		// Get attachment
 		$attachment_id = get_option( self::ATTACHMENT_OPTION_NAME );
 
@@ -73,7 +76,14 @@ class WP_REST_Import_Attachments {
 
 		$file = get_attached_file( $attachment_id );
 		set_time_limit(0);
+		/**
+		 *  WP_Import::import currently outputs html to the page. This breaks
+		 *  apiFetch, which expects only JSON. For now, buffer that output
+		 *  @TODO: make this better in a better way
+		 **/
+		ob_start();
 		$GLOBALS['wp_import']->import( $file );
+		ob_end_clean();
 
 		return true;
 	}
