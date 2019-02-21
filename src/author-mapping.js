@@ -105,8 +105,8 @@ class AuthorMapping extends PureComponent {
 					onChange={ fetchAttachments => this.setState( { fetchAttachments } ) } 
 				/>
 				
-				<div>
-					{ this.state.isImporting ? <div>Importing...</div> : <Button onClick={ this.doImport } >Start Import</Button> }
+				<div className="wordpress-importer__div-actions">
+					{ this.state.isImporting ? <div>Importing...</div> : <Button isPrimary onClick={ this.doImport } >Start Import</Button> }
 				</div>
 			</div>
 		);

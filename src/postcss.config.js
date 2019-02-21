@@ -1,1 +1,6 @@
-module.exports = {};
+module.exports = {
+  map: false,
+  plugins: {
+    'postcss-plugin': {}
+  }
+}

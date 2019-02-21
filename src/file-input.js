@@ -4,6 +4,8 @@
 import React, { Fragment, PureComponent } from 'react';
 import { Button } from '@wordpress/components';
 
+import './style.scss';
+
 class FileInput extends PureComponent {
 	constructor( props ) {
 		super( props );
@@ -27,7 +29,7 @@ class FileInput extends PureComponent {
 					style={ { display: 'none' } } 
 					type="file"
 				/>
-				<Button onClick={ this.onClick }>{ this.props.children }</Button>
+				<Button isPrimary onClick={ this.onClick }>{ this.props.children }</Button>
 			</Fragment>
 		);
 	}

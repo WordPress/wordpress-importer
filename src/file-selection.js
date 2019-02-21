@@ -74,10 +74,12 @@ class FileSelection extends PureComponent {
 					<h2>Import WordPress</h2>
 					<div>Howdy! Upload your WordPress eXtended RSS (WXT) file and we'll import the posts, pages, comments, custom fields, categories, and tags into this site.</div>
 					<div>Choose a WXR (.xml) file to upload, or drop a file here, and your import will begin</div>
-					{ isFetching
-						? ( <span>Loading…</span> )
-						: ( <FileInput onFileSelected={ this.handleFileSelection }>Choose file</FileInput> )
-					}
+					<div className="wordpress-importer__div-actions">
+						{ isFetching
+							? ( <span>Loading…</span> )
+							: ( <FileInput onFileSelected={ this.handleFileSelection }>Choose file</FileInput> )
+						}
+					</div>
 					<div>
 						<DropZone
 							onFilesDrop={ this.handleFileSelection }

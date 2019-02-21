@@ -9,6 +9,7 @@
     "@wordpress/components": "^7.0.8",
     "@wordpress/compose": "^3.0.1",
     "@wordpress/core-data": "^2.0.17",
+    "postcss-plugin": "^1.0.0",
     "react": "16.6.3",
     "react-dom": "16.6.3",
     "react-router-dom": "^4.3.1"

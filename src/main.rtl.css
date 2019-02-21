@@ -1,3 +1,7 @@
-.wordpress-importer__author-selector {
-  width: 50%; }
+.components-select-control__input {
+  width: auto;
+  min-width: 360px; }
+
+.wordpress-importer__div-actions {
+  margin-top: 20px; }
 
