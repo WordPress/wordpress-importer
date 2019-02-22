@@ -29,7 +29,7 @@ class FileInput extends PureComponent {
 					style={ { display: 'none' } } 
 					type="file"
 				/>
-				<Button isPrimary onClick={ this.onClick }>{ this.props.children }</Button>
+				<Button isDefault onClick={ this.onClick }>{ this.props.children }</Button>
 			</Fragment>
 		);
 	}
