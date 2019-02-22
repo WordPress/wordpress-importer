@@ -6,7 +6,7 @@ import React, { Fragment, PureComponent } from 'react';
 import { withRouter } from 'react-router'
 import { Button, DropZoneProvider, DropZone } from '@wordpress/components';
 import apiFetch from '@wordpress/api-fetch';
-import { withDispatch } from '@wordpress/data';
+import { withDispatch, withSelect } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -68,6 +68,8 @@ class FileSelection extends PureComponent {
 		const { setState, state } = this;
 		const { hasDropped, isFetching } = state;
 
+
+
 		return (
 			<Fragment>
 				<DropZoneProvider>
@@ -93,8 +95,13 @@ class FileSelection extends PureComponent {
 	}
 }
 
-export default withDispatch( ( dispatch ) => {
+export default withSelect( ( select ) => {
+	return {
+		// Prefetch siteAuthors so they're ready for the next step
+		siteAuthors: select( 'core' ).getAuthors(),
+	};
+} )( withDispatch( ( dispatch ) => {
 	return {
 		setUploadResult: dispatch( 'wordpress-importer' ).setUploadResult,
 	};
-} )( withRouter( FileSelection ) );
+} )( withRouter( FileSelection ) ) );
