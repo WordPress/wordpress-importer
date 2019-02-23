@@ -99,10 +99,10 @@ class WP_Import extends WP_Importer {
 
 	function dispatch() {
 		wp_enqueue_style( 'wp-components' );
-		wp_enqueue_style( 'wordpress-importer', '/wp-content/plugins/wordpress-importer/src/main.css' );
+		wp_enqueue_style( 'wordpress-importer', '/wp-content/plugins/wordpress-importer/build/main.css' );
 		wp_enqueue_script( 'wp-components' );
 		wp_enqueue_script( 'wp-core-data' );
-		wp_enqueue_script( 'wordpress-importer', '/wp-content/plugins/wordpress-importer/src/build.js' );
+		wp_enqueue_script( 'wordpress-importer', '/wp-content/plugins/wordpress-importer/build/index.js' );
 		echo '<div id="wordpress-importer-root"></div>';
 	}
 
