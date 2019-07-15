@@ -2,7 +2,7 @@
 Contributors: wordpressdotorg
 Donate link: https://wordpressfoundation.org/donate/
 Tags: importer, wordpress
-Requires at least: 3.6
+Requires at least: 3.7
 Tested up to: 4.9
 Stable tag: 0.6.4
 License: GPLv2 or later
