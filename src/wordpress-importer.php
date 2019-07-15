@@ -425,7 +425,7 @@ class WP_Import extends WP_Importer {
 			$catarr = wp_slash( $catarr );
 
 			$id = wp_insert_category( $catarr );
-			if ( ! is_wp_error( $id ) ) {
+			if ( ! is_wp_error( $id ) && $id > 0 ) {
 				if ( isset($cat['term_id']) )
 					$this->processed_terms[intval($cat['term_id'])] = $id;
 			} else {
@@ -436,7 +436,7 @@ class WP_Import extends WP_Importer {
 				continue;
 			}
 
-			$this->process_termmeta( $cat, $id['term_id'] );
+			$this->process_termmeta( $cat, $id );
 		}
 
 		unset( $this->categories );
