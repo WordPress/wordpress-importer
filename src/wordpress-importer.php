@@ -314,7 +314,7 @@ class WP_Import extends WP_Importer {
 			}
 			echo '</label>';
 
-			echo ' <input type="text" name="user_new['.$n.']" value="'. $value .'" /><br />';
+			echo ' <input type="text" id="user_new_'. $n . '" name="user_new['.$n.']" value="'. $value .'" /><br />';
 		}
 
 		echo '<label for="imported_authors_'. $n . '">';
