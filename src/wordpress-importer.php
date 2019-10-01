@@ -327,7 +327,7 @@ class WP_Import extends WP_Importer {
 
 		wp_dropdown_users( array(
 			'name'            => "user_map[$n]",
-			'id'              => 'imported_authors_' . $n
+			'id'              => 'imported_authors_' . $n,
 			'multi'           => true,
 			'show_option_all' => __( '- Select -', 'wordpress-importer' ),
 			'show'            => 'display_name_with_login',
