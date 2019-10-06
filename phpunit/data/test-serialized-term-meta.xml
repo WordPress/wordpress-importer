@@ -45,7 +45,7 @@
 			</wp:termmeta>
 			<wp:termmeta>
 				<wp:meta_key><![CDATA[array]]></wp:meta_key>
-				<wp:meta_value><![CDATA[a:1:{s:3:"key";s:5:"value";}]]></wp:meta_value>
+				<wp:meta_value><![CDATA[a:1:{s:3:"key";s:13:"¯\_(ツ)_/¯";}]]></wp:meta_value>
 			</wp:termmeta>
 		</wp:category>
 		<wp:tag>
@@ -59,7 +59,7 @@
 			</wp:termmeta>
 			<wp:termmeta>
 				<wp:meta_key><![CDATA[array]]></wp:meta_key>
-				<wp:meta_value><![CDATA[a:1:{s:3:"key";s:5:"value";}]]></wp:meta_value>
+				<wp:meta_value><![CDATA[a:1:{s:3:"key";s:13:"¯\_(ツ)_/¯";}]]></wp:meta_value>
 			</wp:termmeta>
 		</wp:tag>
 		<wp:term>
@@ -74,18 +74,18 @@
 			</wp:termmeta>
 			<wp:termmeta>
 				<wp:meta_key><![CDATA[array]]></wp:meta_key>
-				<wp:meta_value><![CDATA[a:1:{s:3:"key";s:5:"value";}]]></wp:meta_value>
+				<wp:meta_value><![CDATA[a:1:{s:3:"key";s:13:"¯\_(ツ)_/¯";}]]></wp:meta_value>
 			</wp:termmeta>
 		</wp:term>
 		<item>
-			<title>My Entry with termeta</title>
-			<link>http://test.wordpress.org/postemta</link>
+			<title>My Entry with term meta</title>
+			<link>http://test.wordpress.org/term-meta</link>
 			<pubDate>Tue, 30 Nov 1999 00:00:00 +0000</pubDate>
 			<dc:creator><![CDATA[admin]]></dc:creator>
 			<category domain="post_tag" nicename="post_tag"><![CDATA[post_tag]]></category>
 			<category domain="category" nicename="category"><![CDATA[category]]></category>
 			<category domain="custom_taxonomy" nicename="custom_taxonomy"><![CDATA[custom_taxonomy]]></category>
-			<guid isPermaLink="false">http://test.wordpress.org/termmeta</guid>
+			<guid isPermaLink="false">http://test.wordpress.org/term-meta</guid>
 			<description />
 			<content:encoded><![CDATA[This is my content]]></content:encoded>
 			<excerpt:encoded />

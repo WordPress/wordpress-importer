@@ -29,7 +29,7 @@ class Tests_Import_Term_Meta extends WP_Import_UnitTestCase {
 		$this->_import_wp( DIR_TESTDATA_WP_IMPORTER . '/test-serialized-term-meta.xml', array( 'admin' => 'admin' ) );
 
 		$expected_string = '¯\_(ツ)_/¯';
-		$expected_array  = array( 'key' => 'value' );
+		$expected_array  = array( 'key' => '¯\_(ツ)_/¯' );
 
 		$term = get_term_by( 'slug', 'post_tag', 'post_tag' );
 		$this->assertInstanceOf( 'WP_Term', $term );
