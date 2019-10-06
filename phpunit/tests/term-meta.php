@@ -20,6 +20,10 @@ class Tests_Import_Term_Meta extends WP_Import_UnitTestCase {
 	}
 
 	function test_serialized_term_meta() {
+		if ( ! function_exists( 'get_term_meta' ) ) {
+			$this->markTestSkipped( 'Test only runs on WordPress 4.4.0.' );
+		}
+
 		register_taxonomy( 'custom_taxonomy', array( 'post' ) );
 
 		$this->_import_wp( DIR_TESTDATA_WP_IMPORTER . '/test-serialized-term-meta.xml', array( 'admin' => 'admin' ) );

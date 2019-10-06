@@ -557,6 +557,10 @@ class WP_Import extends WP_Importer {
 	 * @param int   $term_id ID of the newly created term.
 	 */
 	protected function process_termmeta( $term, $term_id ) {
+		if ( ! function_exists( 'add_term_meta' ) ) {
+			return;
+		}
+
 		if ( ! isset( $term['termmeta'] ) ) {
 			$term['termmeta'] = array();
 		}
