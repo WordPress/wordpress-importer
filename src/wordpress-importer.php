@@ -771,12 +771,16 @@ class WP_Import extends WP_Importer {
 				$num_comments = 0;
 				$inserted_comments = array();
 				foreach ( $post['comments'] as $comment ) {
-					$comment_id	= $comment['comment_id'];
+					$comment_id										  = $comment['comment_id'];
+					$comment_user	 								  = get_user_by('login', $comment['comment_author']);
 					$newcomments[$comment_id]['comment_post_ID']      = $comment_post_ID;
 					$newcomments[$comment_id]['comment_author']       = $comment['comment_author'];
 					$newcomments[$comment_id]['comment_author_email'] = $comment['comment_author_email'];
 					$newcomments[$comment_id]['comment_author_IP']    = $comment['comment_author_IP'];
 					$newcomments[$comment_id]['comment_author_url']   = $comment['comment_author_url'];
+					if ($comment_user) {
+						$newcomments[$comment_id]['user_id']			  = $comment_user->ID;
+					}
 					$newcomments[$comment_id]['comment_date']         = $comment['comment_date'];
 					$newcomments[$comment_id]['comment_date_gmt']     = $comment['comment_date_gmt'];
 					$newcomments[$comment_id]['comment_content']      = $comment['comment_content'];
