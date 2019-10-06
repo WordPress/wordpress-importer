@@ -92,7 +92,7 @@ class WXR_Parser_SimpleXML {
 		$base_url = (string) trim( $base_url[0] );
 		
 		$base_blog_url = $xml->xpath('/rss/channel/wp:base_blog_url');
-		if( $base_blog_url ) {
+		if ( $base_blog_url ) {
 			$base_blog_url = (string) trim( $base_blog_url[0] );
 		} else {
 			$base_blog_url = $base_url;
@@ -411,7 +411,7 @@ class WXR_Parser_XML {
 				break;
 			case 'wp:base_site_url':
 				$this->base_url = $this->cdata;
-				if( !isset( $this->base_blog_url ) ) {
+				if ( ! isset( $this->base_blog_url ) ) {
 					$this->base_blog_url = $this->cdata;
 				}
 				break;
