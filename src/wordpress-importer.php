@@ -1111,12 +1111,12 @@ class WP_Import extends WP_Importer {
 		$perms = $stat['mode'] & 0000666;
 		chmod( $new_file, $perms );
 
-		$upload = [
+		$upload = array(
 			'file'  => $new_file,
 			'url'   => $uploads['url'] . "/$file_name",
 			'type'  => $wp_filetype['type'],
 			'error' => false,
-		];
+		);
 
 		// keep track of the old and new urls so we can substitute them later
 		$this->url_remap[$url] = $upload['url'];
