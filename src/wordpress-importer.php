@@ -304,6 +304,7 @@ class WP_Import extends WP_Importer {
 
 		$create_users = $this->allow_create_users();
 		if ( $create_users ) {
+			echo '<label for="user_new_'. $n . '">';
 			if ( $this->version != '1.0' ) {
 				_e( 'or create new user with login name:', 'wordpress-importer' );
 				$value = '';
@@ -311,21 +312,26 @@ class WP_Import extends WP_Importer {
 				_e( 'as a new user:', 'wordpress-importer' );
 				$value = esc_attr( sanitize_user( $author['author_login'], true ) );
 			}
+			echo '</label>';
 
-			echo ' <input type="text" name="user_new['.$n.']" value="'. $value .'" /><br />';
+			echo ' <input type="text" id="user_new_' . $n . '" name="user_new['.$n.']" value="'. $value .'" /><br />';
 		}
 
+		echo '<label for="imported_authors_'. $n . '">';
 		if ( ! $create_users && $this->version == '1.0' ) {
 			_e( 'assign posts to an existing user:', 'wordpress-importer' );
 		} else {
 			_e( 'or assign posts to an existing user:', 'wordpress-importer' );
 		}
+		echo '</label>';
 
-		wp_dropdown_users( array(
+		echo ' ' . wp_dropdown_users( array(
 			'name'            => "user_map[$n]",
+			'id'              => 'imported_authors_' . $n,
 			'multi'           => true,
 			'show_option_all' => __( '- Select -', 'wordpress-importer' ),
 			'show'            => 'display_name_with_login',
+			'echo'            => 0,
 		) );
 
 		echo '<input type="hidden" name="imported_authors['.$n.']" value="' . esc_attr( $author['author_login'] ) . '" />';
