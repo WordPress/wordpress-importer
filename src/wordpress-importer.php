@@ -1071,12 +1071,12 @@ class WP_Import extends WP_Importer {
 		$file_ext = pathinfo( $file_name, PATHINFO_EXTENSION );
 		if ( ! $file_ext && ! empty( $headers['content-type'] ) ) {
 			$extension = self::get_file_extension_by_mime_type( $headers['content-type'] );
-			var_dump( $extension );
 			if ( $extension ) {
 				$file_name = "{$file_name}.{$extension}";
 			}
 		}
 
+		// Handle the upload like _wp_handle_upload() does.
 		$wp_filetype     = wp_check_filetype_and_ext( $tmp_file_name, $file_name );
 		$ext             = empty( $wp_filetype['ext'] ) ? '' : $wp_filetype['ext'];
 		$type            = empty( $wp_filetype['type'] ) ? '' : $wp_filetype['type'];
