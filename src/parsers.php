@@ -89,7 +89,8 @@ class WXR_Parser_SimpleXML {
 			return new WP_Error( 'WXR_parse_error', __( 'This does not appear to be a WXR file, missing/invalid WXR version number', 'wordpress-importer' ) );
 
 		$base_url = $xml->xpath('/rss/channel/wp:base_site_url');
-		$base_url = (string) trim( $base_url[0] );
+		$base_url = (string) trim( isset( $base_url[0] ) ? $base_url[0] : '' );
+
 		
 		$base_blog_url = $xml->xpath('/rss/channel/wp:base_blog_url');
 		if ( $base_blog_url ) {
