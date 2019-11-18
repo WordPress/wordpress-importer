@@ -1,6 +1,6 @@
 <?php
 /**
- * PHPUnit bootstrap file for the WordPress Importer
+ * PHP Unit bootstrap file for the WordPress Importer
  *
  * @package Sample_Plugin
  */
