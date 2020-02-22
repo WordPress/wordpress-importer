@@ -572,7 +572,7 @@ class WP_Import extends WP_Importer {
 			// Export gets meta straight from the DB so could have a serialized string
 			$value = maybe_unserialize( $meta['value'] );
 
-			add_term_meta( $term_id, wp_slash( $key), wp_slash( $value ) );
+			add_term_meta( $term_id, wp_slash( $key ), wp_slash_strings_only( $value ) );
 
 			/**
 			 * Fires after term meta is imported.
@@ -822,10 +822,12 @@ class WP_Import extends WP_Importer {
 
 					if ( $key ) {
 						// export gets meta straight from the DB so could have a serialized string
-						if ( ! $value )
+						if ( ! $value ) {
 							$value = maybe_unserialize( $meta['value'] );
+						}
 
-						add_post_meta( $post_id, $key, $value );
+						add_post_meta( $post_id, wp_slash( $key ), wp_slash_strings_only( $value ) );
+
 						do_action( 'import_post_meta', $post_id, $key, $value );
 
 						// if the post has a featured image, take note of this in case of remap

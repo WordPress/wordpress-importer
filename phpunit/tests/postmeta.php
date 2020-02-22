@@ -4,6 +4,7 @@ require_once dirname( __FILE__ ) . '/base.php';
 
 /**
  * @group import
+ * @group post-meta
  */
 class Tests_Import_Postmeta extends WP_Import_UnitTestCase {
 	function setUp() {
@@ -93,5 +94,22 @@ class Tests_Import_Postmeta extends WP_Import_UnitTestCase {
 		$this->_import_wp( DIR_TESTDATA_WP_IMPORTER . '/test-serialized-postmeta-with-cdata.xml', array( 'johncoswell' => 'johncoswell' ) );
 		// evil content in the CDATA
 		$this->assertEquals( '<wp:meta_value>evil</wp:meta_value>', get_post_meta( 10, 'evil', true ) );
+	}
+
+	/**
+	 * @ticket 11574
+	 */
+	function test_serialized_postmeta_with_slashes() {
+		$this->_import_wp( DIR_TESTDATA_WP_IMPORTER . '/test-serialized-postmeta-with-cdata.xml', array( 'johncoswell' => 'johncoswell' ) );
+
+		$expected_integer      = '1';
+		$expected_string       = '¯\_(ツ)_/¯';
+		$expected_array        = array( 'key' => '¯\_(ツ)_/¯' );
+		$expected_array_nested = array( 'key' => array( 'foo' => '¯\_(ツ)_/¯', 'bar' => '\o/' ) );
+
+		$this->assertEquals( $expected_string, get_post_meta( 10, 'string', true ) );
+		$this->assertEquals( $expected_array, get_post_meta( 10, 'array', true ) );
+		$this->assertEquals( $expected_array_nested, get_post_meta( 10, 'array-nested', true ) );
+		$this->assertEquals( $expected_integer, get_post_meta( 10, 'integer', true ) );
 	}
 }
