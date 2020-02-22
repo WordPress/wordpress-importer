@@ -994,9 +994,12 @@ class WP_Import extends WP_Importer {
 
 		// Fetch the remote URL and write it to the placeholder file.
 		$remote_response = wp_safe_remote_get( $url, array(
-			'timeout'  => 300,
-			'stream'   => true,
-			'filename' => $tmp_file_name,
+			'timeout'    => 300,
+			'stream'     => true,
+			'filename'   => $tmp_file_name,
+			'headers'    => array(
+				'Accept-Encoding' => 'identity',
+			),
 		) );
 
 		$remote_response_code = (int) wp_remote_retrieve_response_code( $remote_response );
@@ -1024,7 +1027,7 @@ class WP_Import extends WP_Importer {
 
 		if ( isset( $headers['content-length'] ) && $filesize !== (int) $headers['content-length'] ) {
 			@unlink( $tmp_file_name );
-			return new WP_Error( 'import_file_error', __('Remote file is incorrect size', 'wordpress-importer' ) );
+			return new WP_Error( 'import_file_error', __('Downloaded file has incorrect size', 'wordpress-importer' ) );
 		}
 
 		$max_size = (int) $this->max_attachment_size();
