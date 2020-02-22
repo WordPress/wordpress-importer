@@ -1,10 +1,13 @@
 <?php
-
 /**
  * WordPress Importer class for managing the import process of a WXR file
  *
  * @package WordPress
  * @subpackage Importer
+ */
+
+/**
+ * WordPress importer class.
  */
 class WP_Import extends WP_Importer {
 	var $max_wxr_version = 1.2; // max. supported WXR version
