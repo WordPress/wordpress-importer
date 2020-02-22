@@ -26,7 +26,7 @@ class Tests_Import_Comment_Meta extends WP_Import_UnitTestCase {
 		$expected_array  = array( 'key' => '¯\_(ツ)_/¯' );
 
 		$comments_count = wp_count_comments();
-		$this->assertEquals( 1, $comments_count->all );
+		$this->assertEquals( 1, $comments_count->approved );
 
 		$comments = get_comments();
 		$this->assertEquals( 1, count( $comments ) );
