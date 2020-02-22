@@ -1006,54 +1006,117 @@ class WP_Import extends WP_Importer {
 	 * @return array|WP_Error Local file location details on success, WP_Error otherwise
 	 */
 	function fetch_remote_file( $url, $post ) {
-		// extract the file name and extension from the url
-		$file_name = basename( $url );
+		// Extract the file name from the URL.
+		$file_name = basename( parse_url( $url, PHP_URL_PATH ) );
 
-		// get placeholder file in the upload dir with a unique, sanitized filename
-		$upload = wp_upload_bits( $file_name, 0, '', $post['upload_date'] );
-		if ( $upload['error'] )
-			return new WP_Error( 'upload_dir_error', $upload['error'] );
-
-		// fetch the remote url and write it to the placeholder file
-		$remote_response = wp_safe_remote_get( $url, array(
-			'timeout' => 300,
-            		'stream' => true,
-            		'filename' => $upload['file'],
-        	) );
-
-		$headers = wp_remote_retrieve_headers( $remote_response );
-
-		// request failed
-		if ( ! $headers ) {
-			@unlink( $upload['file'] );
-			return new WP_Error( 'import_file_error', __('Remote server did not respond', 'wordpress-importer') );
+		if ( ! $file_name ) {
+			$file_name = md5( $url );
 		}
 
-		$remote_response_code = wp_remote_retrieve_response_code( $remote_response );
+		$tmp_file_name = wp_tempnam( $file_name );
+		if ( ! $tmp_file_name ) {
+			return new WP_Error( 'import_no_file', __( 'Could not create temporary file.', 'wordpress-importer' ) );
+		}
 
-		// make sure the fetch was successful
-		if ( $remote_response_code != '200' ) {
-			@unlink( $upload['file'] );
+		// Fetch the remote URL and write it to the placeholder file.
+		$remote_response = wp_safe_remote_get( $url, array(
+			'timeout'  => 300,
+			'stream'   => true,
+			'filename' => $tmp_file_name,
+		) );
+
+		$remote_response_code = (int) wp_remote_retrieve_response_code( $remote_response );
+
+		// Make sure the fetch was successful.
+		if ( 200 !== $remote_response_code ) {
+			@unlink( $tmp_file_name );
 			return new WP_Error( 'import_file_error', sprintf( __('Remote server returned error response %1$d %2$s', 'wordpress-importer'), esc_html($remote_response_code), get_status_header_desc($remote_response_code) ) );
 		}
 
-		$filesize = filesize( $upload['file'] );
+		$headers = wp_remote_retrieve_headers( $remote_response );
 
-		if ( isset( $headers['content-length'] ) && $filesize != $headers['content-length'] ) {
-			@unlink( $upload['file'] );
-			return new WP_Error( 'import_file_error', __('Remote file is incorrect size', 'wordpress-importer') );
+		// Request failed.
+		if ( ! $headers ) {
+			@unlink( $tmp_file_name );
+			return new WP_Error( 'import_file_error', __('Remote server did not respond', 'wordpress-importer') );
 		}
 
-		if ( 0 == $filesize ) {
-			@unlink( $upload['file'] );
+		$filesize = (int) filesize( $tmp_file_name );
+
+		if ( 0 === $filesize ) {
+			@unlink( $tmp_file_name );
 			return new WP_Error( 'import_file_error', __('Zero size file downloaded', 'wordpress-importer') );
+		}
+
+		if ( isset( $headers['content-length'] ) && $filesize !== (int) $headers['content-length'] ) {
+			@unlink( $tmp_file_name );
+			return new WP_Error( 'import_file_error', __('Remote file is incorrect size', 'wordpress-importer' ) );
 		}
 
 		$max_size = (int) $this->max_attachment_size();
 		if ( ! empty( $max_size ) && $filesize > $max_size ) {
-			@unlink( $upload['file'] );
-			return new WP_Error( 'import_file_error', sprintf(__('Remote file is too large, limit is %s', 'wordpress-importer'), size_format($max_size) ) );
+			@unlink( $tmp_file_name );
+			return new WP_Error( 'import_file_error', sprintf(__('Remote file is too large, limit is %s', 'wordpress-importer' ), size_format($max_size) ) );
 		}
+
+		// Override file name with Content-Disposition header value.
+		if ( ! empty( $headers['content-disposition'] ) ) {
+			$file_name_from_disposition = self::get_filename_from_disposition( (array) $headers['content-disposition'] );
+			if ( $file_name_from_disposition ) {
+				$file_name = $file_name_from_disposition;
+			}
+		}
+
+		// Set file extension if missing.
+		$file_ext = pathinfo( $file_name, PATHINFO_EXTENSION );
+		if ( ! $file_ext && ! empty( $headers['content-type'] ) ) {
+			$extension = self::get_file_extension_by_mime_type( $headers['content-type'] );
+			if ( $extension ) {
+				$file_name = "{$file_name}.{$extension}";
+			}
+		}
+
+		// Handle the upload like _wp_handle_upload() does.
+		$wp_filetype     = wp_check_filetype_and_ext( $tmp_file_name, $file_name );
+		$ext             = empty( $wp_filetype['ext'] ) ? '' : $wp_filetype['ext'];
+		$type            = empty( $wp_filetype['type'] ) ? '' : $wp_filetype['type'];
+		$proper_filename = empty( $wp_filetype['proper_filename'] ) ? '' : $wp_filetype['proper_filename'];
+
+		// Check to see if wp_check_filetype_and_ext() determined the filename was incorrect.
+		if ( $proper_filename ) {
+			$file_name = $proper_filename;
+		}
+
+		if ( ( ! $type || ! $ext ) && ! current_user_can( 'unfiltered_upload' ) ) {
+			return new WP_Error( 'import_file_error', __( 'Sorry, this file type is not permitted for security reasons.', 'wordpress-importer' ) );
+		}
+
+		$uploads = wp_upload_dir( $post['upload_date'] );
+		if ( ! ( $uploads && false === $uploads['error'] ) ) {
+			return new WP_Error( 'upload_dir_error', $upload['error'] );
+		}
+
+		// Move the file to the uploads dir.
+		$file_name     = wp_unique_filename( $uploads['path'], $file_name );
+		$new_file      = $uploads['path'] . "/$file_name";
+		$move_new_file = copy( $tmp_file_name, $new_file );
+
+		if ( ! $move_new_file ) {
+			@unlink( $tmp_file_name );
+			return new WP_Error( 'import_file_error', __( 'The uploaded file could not be moved', 'wordpress-importer' ) );
+		}
+
+		// Set correct file permissions.
+		$stat  = stat( dirname( $new_file ) );
+		$perms = $stat['mode'] & 0000666;
+		chmod( $new_file, $perms );
+
+		$upload = array(
+			'file'  => $new_file,
+			'url'   => $uploads['url'] . "/$file_name",
+			'type'  => $wp_filetype['type'],
+			'error' => false,
+		);
 
 		// keep track of the old and new urls so we can substitute them later
 		$this->url_remap[$url] = $upload['url'];
@@ -1236,6 +1299,104 @@ class WP_Import extends WP_Importer {
 	// return the difference in length between two strings
 	function cmpr_strlen( $a, $b ) {
 		return strlen($b) - strlen($a);
+	}
+
+	/**
+	 * Parses filename from a Content-Disposition header value.
+	 *
+	 * As per RFC6266:
+	 *
+	 *     content-disposition = "Content-Disposition" ":"
+	 *                            disposition-type *( ";" disposition-parm )
+	 *
+	 *     disposition-type    = "inline" | "attachment" | disp-ext-type
+	 *                         ; case-insensitive
+	 *     disp-ext-type       = token
+	 *
+	 *     disposition-parm    = filename-parm | disp-ext-parm
+	 *
+	 *     filename-parm       = "filename" "=" value
+	 *                         | "filename*" "=" ext-value
+	 *
+	 *     disp-ext-parm       = token "=" value
+	 *                         | ext-token "=" ext-value
+	 *     ext-token           = <the characters in token, followed by "*">
+	 *
+	 * @since 0.6.5
+	 *
+	 * @see WP_REST_Attachments_Controller::get_filename_from_disposition()
+	 *
+	 * @link http://tools.ietf.org/html/rfc2388
+	 * @link http://tools.ietf.org/html/rfc6266
+	 *
+	 * @param string[] $disposition_header List of Content-Disposition header values.
+	 * @return string|null Filename if available, or null if not found.
+	 */
+	protected static function get_filename_from_disposition( $disposition_header ) {
+		// Get the filename.
+		$filename = null;
+
+		foreach ( $disposition_header as $value ) {
+			$value = trim( $value );
+
+			if ( strpos( $value, ';' ) === false ) {
+				continue;
+			}
+
+			list( $type, $attr_parts ) = explode( ';', $value, 2 );
+
+			$attr_parts = explode( ';', $attr_parts );
+			$attributes = array();
+
+			foreach ( $attr_parts as $part ) {
+				if ( strpos( $part, '=' ) === false ) {
+					continue;
+				}
+
+				list( $key, $value ) = explode( '=', $part, 2 );
+
+				$attributes[ trim( $key ) ] = trim( $value );
+			}
+
+			if ( empty( $attributes['filename'] ) ) {
+				continue;
+			}
+
+			$filename = trim( $attributes['filename'] );
+
+			// Unquote quoted filename, but after trimming.
+			if ( substr( $filename, 0, 1 ) === '"' && substr( $filename, -1, 1 ) === '"' ) {
+				$filename = substr( $filename, 1, -1 );
+			}
+		}
+
+		return $filename;
+	}
+
+	/**
+	 * Retrieves file extension by mime type.
+	 *
+	 * @since 0.6.5
+	 *
+	 * @param string $mime_type Mime type to search extension for.
+	 * @return string|null File extension if available, or null if not found.
+	 */
+	protected static function get_file_extension_by_mime_type( $mime_type ) {
+		static $map = null;
+
+		if ( is_array( $map ) ) {
+			return isset( $map[ $mime_type ] ) ? $map[ $mime_type ] : null;
+		}
+
+		$mime_types = wp_get_mime_types();
+		$map        = array_flip( $mime_types );
+
+		// Some types have multiple extensions, use only the first one.
+		foreach ( $map as $type => $extensions ) {
+			$map[ $type ] = strtok( $extensions, '|' );
+		}
+
+		return isset( $map[ $mime_type ] ) ? $map[ $mime_type ] : null;
 	}
 }
 
