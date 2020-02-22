@@ -10,4 +10,4 @@ The [WordPress Importer](https://wordpress.org/plugins/wordpress-importer/) will
 * Categories, tags and terms from custom taxonomies
 * Authors
 
-For further information and instructions please see the [Codex page on Importing Content](https://codex.wordpress.org/Importing_Content#WordPress)
+For further information and instructions please see the [documention on Importing Content](https://wordpress.org/support/article/importing-content/#wordpress)
