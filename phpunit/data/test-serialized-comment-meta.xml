@@ -16,16 +16,15 @@
 <!-- 7. WordPress will then import each of the posts, pages, comments, categories, etc. -->
 <!--    contained in this file into your site. -->
 
-<!-- generator="WordPress/5.3-beta2-46374" created="2019-10-06 11:11" -->
+<!-- generator="WordPress/5.4-beta2-47310-src" created="2020-02-22 15:12" -->
 <rss version="2.0"
 	xmlns:excerpt="http://wordpress.org/export/1.0/excerpt/"
 	xmlns:content="http://purl.org/rss/1.0/modules/content/"
 	xmlns:wfw="http://wellformedweb.org/CommentAPI/"
 	xmlns:dc="http://purl.org/dc/elements/1.1/"
-	xmlns:wp="http://wordpress.org/export/1.0/"
->
+	xmlns:wp="http://wordpress.org/export/1.0/">
 	<channel>
-		<title>Test With Serialized Term Meta</title>
+		<title>Test With Serialized Comment Meta</title>
 		<link>http://test.wordpress.org/</link>
 		<description>Just another blog</description>
 		<pubDate>Mon, 30 Nov 2009 21:35:27 +0000</pubDate>
@@ -34,58 +33,13 @@
 		<wp:wxr_version>1.0</wp:wxr_version>
 		<wp:base_site_url>http://test.wordpress.org/</wp:base_site_url>
 		<wp:base_blog_url>http://test.wordpress.org/</wp:base_blog_url>
-		<wp:category>
-			<wp:term_id>1</wp:term_id>
-			<wp:category_nicename><![CDATA[category]]></wp:category_nicename>
-			<wp:category_parent />
-			<wp:cat_name><![CDATA[category]]></wp:cat_name>
-			<wp:termmeta>
-				<wp:meta_key><![CDATA[string]]></wp:meta_key>
-				<wp:meta_value><![CDATA[¯\_(ツ)_/¯]]></wp:meta_value>
-			</wp:termmeta>
-			<wp:termmeta>
-				<wp:meta_key><![CDATA[array]]></wp:meta_key>
-				<wp:meta_value><![CDATA[a:1:{s:3:"key";s:13:"¯\_(ツ)_/¯";}]]></wp:meta_value>
-			</wp:termmeta>
-		</wp:category>
-		<wp:tag>
-			<wp:term_id>2</wp:term_id>
-			<wp:tag_slug><![CDATA[post_tag]]></wp:tag_slug>
-			<wp:tag_name><![CDATA[post_tag]]></wp:tag_name>
-			<wp:tag_description><![CDATA[¯\_(ツ)_/¯]]></wp:tag_description>
-			<wp:termmeta>
-				<wp:meta_key><![CDATA[string]]></wp:meta_key>
-				<wp:meta_value><![CDATA[¯\_(ツ)_/¯]]></wp:meta_value>
-			</wp:termmeta>
-			<wp:termmeta>
-				<wp:meta_key><![CDATA[array]]></wp:meta_key>
-				<wp:meta_value><![CDATA[a:1:{s:3:"key";s:13:"¯\_(ツ)_/¯";}]]></wp:meta_value>
-			</wp:termmeta>
-		</wp:tag>
-		<wp:term>
-			<wp:term_id><![CDATA[3]]></wp:term_id>
-			<wp:term_taxonomy><![CDATA[custom_taxonomy]]></wp:term_taxonomy>
-			<wp:term_slug><![CDATA[custom_taxonomy]]></wp:term_slug>
-			<wp:term_parent><![CDATA[]]></wp:term_parent>
-			<wp:term_name><![CDATA[custom_taxonomy]]></wp:term_name>
-			<wp:termmeta>
-				<wp:meta_key><![CDATA[string]]></wp:meta_key>
-				<wp:meta_value><![CDATA[¯\_(ツ)_/¯]]></wp:meta_value>
-			</wp:termmeta>
-			<wp:termmeta>
-				<wp:meta_key><![CDATA[array]]></wp:meta_key>
-				<wp:meta_value><![CDATA[a:1:{s:3:"key";s:13:"¯\_(ツ)_/¯";}]]></wp:meta_value>
-			</wp:termmeta>
-		</wp:term>
+
 		<item>
-			<title>My Entry with term meta</title>
-			<link>http://test.wordpress.org/term-meta</link>
+			<title>My Entry with comments and comment meta</title>
+			<link>http://test.wordpress.org/comment-meta</link>
 			<pubDate>Tue, 30 Nov 1999 00:00:00 +0000</pubDate>
 			<dc:creator><![CDATA[admin]]></dc:creator>
-			<category domain="post_tag" nicename="post_tag"><![CDATA[post_tag]]></category>
-			<category domain="category" nicename="category"><![CDATA[category]]></category>
-			<category domain="custom_taxonomy" nicename="custom_taxonomy"><![CDATA[custom_taxonomy]]></category>
-			<guid isPermaLink="false">http://test.wordpress.org/term-meta</guid>
+			<guid isPermaLink="false">http://test.wordpress.org/comment-meta</guid>
 			<description />
 			<content:encoded><![CDATA[This is my content]]></content:encoded>
 			<excerpt:encoded />
@@ -100,6 +54,31 @@
 			<wp:menu_order>0</wp:menu_order>
 			<wp:post_type>post</wp:post_type>
 			<wp:post_password />
+			<category domain="category" nicename="uncategorized"><![CDATA[Uncategorized]]></category>
+			<wp:comment>
+				<wp:comment_id>1</wp:comment_id>
+				<wp:comment_author><![CDATA[A WordPress Commenter]]></wp:comment_author>
+				<wp:comment_author_email><![CDATA[wapuu@wordpress.example]]></wp:comment_author_email>
+				<wp:comment_author_url>https://wordpress.org/</wp:comment_author_url>
+				<wp:comment_author_IP><![CDATA[]]></wp:comment_author_IP>
+				<wp:comment_date><![CDATA[2020-01-05 12:50:15]]></wp:comment_date>
+				<wp:comment_date_gmt><![CDATA[2020-01-05 12:50:15]]></wp:comment_date_gmt>
+				<wp:comment_content><![CDATA[Hi, this is a comment.
+To get started with moderating, editing, and deleting comments, please visit the Comments screen in the dashboard.
+Commenter avatars come from <a href="https://gravatar.com">Gravatar</a>.]]></wp:comment_content>
+				<wp:comment_approved><![CDATA[1]]></wp:comment_approved>
+				<wp:comment_type><![CDATA[]]></wp:comment_type>
+				<wp:comment_parent>0</wp:comment_parent>
+				<wp:comment_user_id>0</wp:comment_user_id>
+				<wp:commentmeta>
+					<wp:meta_key><![CDATA[string]]></wp:meta_key>
+					<wp:meta_value><![CDATA[¯\_(ツ)_/¯]]></wp:meta_value>
+				</wp:commentmeta>
+				<wp:commentmeta>
+					<wp:meta_key><![CDATA[array]]></wp:meta_key>
+					<wp:meta_value><![CDATA[a:1:{s:3:"key";s:13:"¯\_(ツ)_/¯";}]]></wp:meta_value>
+				</wp:commentmeta>
+			</wp:comment>
 		</item>
 	</channel>
 </rss>
