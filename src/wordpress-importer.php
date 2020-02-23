@@ -10,11 +10,14 @@ Text Domain: wordpress-importer
 License: GPL version 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 */
 
-if ( ! defined( 'WP_LOAD_IMPORTERS' ) )
+if ( ! defined( 'WP_LOAD_IMPORTERS' ) ) {
 	return;
+}
 
 /** Display verbose errors */
-define( 'IMPORT_DEBUG', false );
+if ( ! defined( 'IMPORT_DEBUG' ) ) {
+	define( 'IMPORT_DEBUG', WP_DEBUG );
+}
 
 // Load Importer API
 require_once ABSPATH . 'wp-admin/includes/import.php';
