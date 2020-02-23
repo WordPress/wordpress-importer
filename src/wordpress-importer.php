@@ -19,7 +19,7 @@ if ( ! defined( 'IMPORT_DEBUG' ) ) {
 	define( 'IMPORT_DEBUG', WP_DEBUG );
 }
 
-// Load Importer API
+/** WordPress Import Administration API */
 require_once ABSPATH . 'wp-admin/includes/import.php';
 
 if ( ! class_exists( 'WP_Importer' ) ) {
@@ -27,6 +27,9 @@ if ( ! class_exists( 'WP_Importer' ) ) {
 	if ( file_exists( $class_wp_importer ) )
 		require $class_wp_importer;
 }
+
+/** Functions missing in older WordPress versions. */
+require_once dirname( __FILE__ ) . '/compat.php';
 
 /** WXR_Parser class */
 require_once dirname( __FILE__ ) . '/parsers/class-wxr-parser.php';
@@ -41,7 +44,7 @@ require_once dirname( __FILE__ ) . '/parsers/class-wxr-parser-xml.php';
 require_once dirname( __FILE__ ) . '/parsers/class-wxr-parser-regex.php';
 
 /** WP_Import class */
-require dirname( __FILE__ ) . '/class-wp-import.php';
+require_once dirname( __FILE__ ) . '/class-wp-import.php';
 
 function wordpress_importer_init() {
 	load_plugin_textdomain( 'wordpress-importer' );
