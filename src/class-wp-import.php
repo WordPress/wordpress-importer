@@ -784,16 +784,22 @@ class WP_Import extends WP_Importer {
 				foreach ( $newcomments as $key => $comment ) {
 					// if this is a new post we can skip the comment_exists() check
 					if ( ! $post_exists || ! comment_exists( $comment['comment_author'], $comment['comment_date'] ) ) {
-						if ( isset( $inserted_comments[$comment['comment_parent']] ) )
-							$comment['comment_parent'] = $inserted_comments[$comment['comment_parent']];
-						$comment = wp_slash( $comment );
-						$comment = wp_filter_comment( $comment );
-						$inserted_comments[$key] = wp_insert_comment( $comment );
-						do_action( 'wp_import_insert_comment', $inserted_comments[$key], $comment, $comment_post_ID, $post );
+						if ( isset( $inserted_comments[$comment['comment_parent']] ) ) {
+							$comment['comment_parent'] = $inserted_comments[ $comment['comment_parent'] ];
+						}
+
+						$comment_data = wp_slash( $comment );
+						unset( $comment_data['commentmeta'] ); // Handled separately, wp_insert_comment() also expects `comment_meta`.
+						$comment_data = wp_filter_comment( $comment_data );
+
+						$inserted_comments[ $key ] = wp_insert_comment( $comment_data );
+
+						do_action( 'wp_import_insert_comment', $inserted_comments[ $key ], $comment, $comment_post_ID, $post );
 
 						foreach( $comment['commentmeta'] as $meta ) {
 							$value = maybe_unserialize( $meta['value'] );
-							add_comment_meta( $inserted_comments[$key], $meta['key'], $value );
+
+							add_comment_meta( $inserted_comments[ $key ], wp_slash( $meta['key'] ), wp_slash( $value ) );
 						}
 
 						$num_comments++;
