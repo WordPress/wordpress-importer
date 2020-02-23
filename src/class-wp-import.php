@@ -1010,12 +1010,33 @@ class WP_Import extends WP_Importer {
 			),
 		) );
 
+		if ( is_wp_error( $remote_response ) ) {
+			@unlink( $tmp_file_name );
+			return new WP_Error(
+				'import_file_error',
+				sprintf(
+					/* translators: 1: The WordPress error message. 2: The WordPress error code. */
+					__( 'Request failed due to an error: %1$s (%2$s)', 'wordpress-importer' ),
+					esc_html( $remote_response->get_error_message() ),
+					esc_html( $remote_response->get_error_code() )
+				)
+			);
+		}
+
 		$remote_response_code = (int) wp_remote_retrieve_response_code( $remote_response );
 
 		// Make sure the fetch was successful.
 		if ( 200 !== $remote_response_code ) {
 			@unlink( $tmp_file_name );
-			return new WP_Error( 'import_file_error', sprintf( __('Remote server returned error response %1$d %2$s', 'wordpress-importer'), esc_html($remote_response_code), get_status_header_desc($remote_response_code) ) );
+			return new WP_Error(
+				'import_file_error',
+				sprintf(
+					/* translators: 1: The HTTP error message. 2: The HTTP error code. */
+					__( 'Remote server returned the following unexpected result: %1$s (%2$s)', 'wordpress-importer' ),
+					get_status_header_desc( $remote_response_code ),
+					esc_html( $remote_response_code )
+				)
+			);
 		}
 
 		$headers = wp_remote_retrieve_headers( $remote_response );
