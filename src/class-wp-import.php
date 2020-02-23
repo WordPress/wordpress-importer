@@ -1025,7 +1025,7 @@ class WP_Import extends WP_Importer {
 			return new WP_Error( 'import_file_error', __('Zero size file downloaded', 'wordpress-importer') );
 		}
 
-		if ( isset( $headers['content-length'] ) && $filesize !== (int) $headers['content-length'] ) {
+		if ( ! isset( $headers['content-encoding'] ) && isset( $headers['content-length'] ) && $filesize !== (int) $headers['content-length'] ) {
 			@unlink( $tmp_file_name );
 			return new WP_Error( 'import_file_error', __('Downloaded file has incorrect size', 'wordpress-importer' ) );
 		}
