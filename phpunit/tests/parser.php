@@ -294,5 +294,80 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 		}
 	}
 
-	// tags in CDATA #11574
+	/**
+	 * @group term-meta
+	 */
+	function test_term_meta_parsing() {
+		$file = DIR_TESTDATA_WP_IMPORTER . '/test-serialized-term-meta.xml';
+
+		$expected_meta = array(
+			array(
+				'key'   => 'string',
+				'value' => '¯\_(ツ)_/¯',
+			),
+			array(
+				'key'   => 'array',
+				'value' => 'a:1:{s:3:"key";s:13:"¯\_(ツ)_/¯";}',
+			),
+		);
+
+		foreach ( array( 'WXR_Parser_SimpleXML', 'WXR_Parser_XML', 'WXR_Parser_Regex' ) as $p ) {
+			$message = 'Parser ' . $p;
+			$parser  = new $p;
+			$result  = $parser->parse( $file );
+
+			$this->assertEquals( 1, count( $result['categories'] ), $message );
+			$this->assertEquals( 1, count( $result['tags'] ), $message );
+			$this->assertEquals( 1, count( $result['terms'] ), $message );
+
+			$category = $result['categories'][0];
+			$this->assertArrayHasKey( 'termmeta', $category, $message );
+			$this->assertEquals( 2, count( $category['termmeta'] ), $message );
+			$this->assertEquals( $expected_meta, $category['termmeta'], $message );
+
+			$tag = $result['tags'][0];
+			$this->assertArrayHasKey( 'termmeta', $tag, $message );
+			$this->assertEquals( 2, count( $tag['termmeta'] ), $message );
+			$this->assertEquals( $expected_meta, $tag['termmeta'], $message );
+
+			$term = $result['terms'][0];
+			$this->assertArrayHasKey( 'termmeta', $term, $message );
+			$this->assertEquals( 2, count( $term['termmeta'] ), $message );
+			$this->assertEquals( $expected_meta, $term['termmeta'], $message );
+		}
+	}
+
+	/**
+	 * @group comment-meta
+	 */
+	function test_comment_meta_parsing() {
+		$file = DIR_TESTDATA_WP_IMPORTER . '/test-serialized-comment-meta.xml';
+
+		$expected_meta = array(
+			array(
+				'key'   => 'string',
+				'value' => '¯\_(ツ)_/¯',
+			),
+			array(
+				'key'   => 'array',
+				'value' => 'a:1:{s:3:"key";s:13:"¯\_(ツ)_/¯";}',
+			),
+		);
+
+		foreach ( array( 'WXR_Parser_SimpleXML', 'WXR_Parser_XML', 'WXR_Parser_Regex' ) as $p ) {
+			$message = 'Parser ' . $p;
+			$parser  = new $p;
+			$result  = $parser->parse( $file );
+
+			$this->assertEquals( 1, count( $result['posts'] ), $message );
+
+			$post = $result['posts'][0];
+			$this->assertArrayHasKey( 'comments', $post, $message );
+
+			$comment = $post['comments'][0];
+			$this->assertArrayHasKey( 'commentmeta', $comment, $message );
+			$this->assertEquals( 2, count( $comment['commentmeta'] ), $message );
+			$this->assertEquals( $expected_meta, $comment['commentmeta'], $message );
+		}
+	}
 }

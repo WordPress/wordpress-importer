@@ -138,6 +138,12 @@ class WXR_Parser_XML {
 				array_push( $this->$n, $this->data );
 				$this->data = false;
 				break;
+			case 'wp:termmeta':
+				if ( ! empty( $this->sub_data ) ) {
+					$this->data['termmeta'][] = $this->sub_data;
+				}
+				$this->sub_data = false;
+				break;
 			case 'wp:author':
 				if ( ! empty($this->data['author_login']) )
 					$this->authors[$this->data['author_login']] = $this->data;

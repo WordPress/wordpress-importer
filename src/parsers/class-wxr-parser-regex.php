@@ -129,26 +129,40 @@ class WXR_Parser_Regex {
 	}
 
 	function process_category( $c ) {
-		return array(
+		$term = array(
 			'term_id' => $this->get_tag( $c, 'wp:term_id' ),
 			'cat_name' => $this->get_tag( $c, 'wp:cat_name' ),
 			'category_nicename'	=> $this->get_tag( $c, 'wp:category_nicename' ),
 			'category_parent' => $this->get_tag( $c, 'wp:category_parent' ),
 			'category_description' => $this->get_tag( $c, 'wp:category_description' ),
 		);
+
+		$term_meta = $this->process_meta( $c, 'wp:termmeta' );
+		if ( ! empty( $term_meta ) ) {
+			$term['termmeta'] = $term_meta;
+		}
+
+		return $term;
 	}
 
 	function process_tag( $t ) {
-		return array(
+		$term = array(
 			'term_id' => $this->get_tag( $t, 'wp:term_id' ),
 			'tag_name' => $this->get_tag( $t, 'wp:tag_name' ),
 			'tag_slug' => $this->get_tag( $t, 'wp:tag_slug' ),
 			'tag_description' => $this->get_tag( $t, 'wp:tag_description' ),
 		);
+
+		$term_meta = $this->process_meta( $t, 'wp:termmeta' );
+		if ( ! empty( $term_meta ) ) {
+			$term['termmeta'] = $term_meta;
+		}
+
+		return $term;
 	}
 
 	function process_term( $t ) {
-		return array(
+		$term = array(
 			'term_id' => $this->get_tag( $t, 'wp:term_id' ),
 			'term_taxonomy' => $this->get_tag( $t, 'wp:term_taxonomy' ),
 			'slug' => $this->get_tag( $t, 'wp:term_slug' ),
@@ -156,6 +170,32 @@ class WXR_Parser_Regex {
 			'term_name' => $this->get_tag( $t, 'wp:term_name' ),
 			'term_description' => $this->get_tag( $t, 'wp:term_description' ),
 		);
+
+		$term_meta = $this->process_meta( $t, 'wp:termmeta' );
+		if ( ! empty( $term_meta ) ) {
+			$term['termmeta'] = $term_meta;
+		}
+
+		return $term;
+	}
+
+	function process_meta( $string, $tag ) {
+		$parsed_meta = array();
+
+		preg_match_all( "|<$tag>(.+?)</$tag>|is", $string, $meta );
+
+		if ( ! isset( $meta[1] ) ) {
+			return $parsed_meta;
+		}
+
+		foreach ( $meta[1] as $m ) {
+			$parsed_meta[] = array(
+				'key'   => $this->get_tag( $m, 'wp:meta_key' ),
+				'value' => $this->get_tag( $m, 'wp:meta_value' ),
+			);
+		}
+
+		return $parsed_meta;
 	}
 
 	function process_author( $a ) {
@@ -219,16 +259,6 @@ class WXR_Parser_Regex {
 		$comments = $comments[1];
 		if ( $comments ) {
 			foreach ( $comments as $comment ) {
-				preg_match_all( '|<wp:commentmeta>(.+?)</wp:commentmeta>|is', $comment, $commentmeta );
-				$commentmeta = $commentmeta[1];
-				$c_meta = array();
-				foreach ( $commentmeta as $m ) {
-					$c_meta[] = array(
-						'key' => $this->get_tag( $m, 'wp:meta_key' ),
-						'value' => $this->get_tag( $m, 'wp:meta_value' ),
-					);
-				}
-
 				$post_comments[] = array(
 					'comment_id' => $this->get_tag( $comment, 'wp:comment_id' ),
 					'comment_author' => $this->get_tag( $comment, 'wp:comment_author' ),
@@ -242,23 +272,18 @@ class WXR_Parser_Regex {
 					'comment_type' => $this->get_tag( $comment, 'wp:comment_type' ),
 					'comment_parent' => $this->get_tag( $comment, 'wp:comment_parent' ),
 					'comment_user_id' => $this->get_tag( $comment, 'wp:comment_user_id' ),
-					'commentmeta' => $c_meta,
+					'commentmeta' => $this->process_meta( $comment, 'wp:commentmeta' ),
 				);
 			}
 		}
-		if ( ! empty( $post_comments ) ) $postdata['comments'] = $post_comments;
+		if ( ! empty( $post_comments ) ) {
+			$postdata['comments'] = $post_comments;
+		}
 
-		preg_match_all( '|<wp:postmeta>(.+?)</wp:postmeta>|is', $post, $postmeta );
-		$postmeta = $postmeta[1];
-		if ( $postmeta ) {
-			foreach ( $postmeta as $p ) {
-				$post_postmeta[] = array(
-					'key' => $this->get_tag( $p, 'wp:meta_key' ),
-					'value' => $this->get_tag( $p, 'wp:meta_value' ),
-				);
-			}
+		$post_meta = $this->process_meta( $post, 'wp:postmeta' );
+		if ( ! empty( $post_meta ) ) {
+			$postdata['postmeta'] = $post_meta;
 		}
-		if ( ! empty( $post_postmeta ) ) $postdata['postmeta'] = $post_postmeta;
 
 		return $postdata;
 	}
