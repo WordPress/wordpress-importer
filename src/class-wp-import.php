@@ -1070,7 +1070,7 @@ class WP_Import extends WP_Importer {
 
 		$uploads = wp_upload_dir( $post['upload_date'] );
 		if ( ! ( $uploads && false === $uploads['error'] ) ) {
-			return new WP_Error( 'upload_dir_error', $upload['error'] );
+			return new WP_Error( 'upload_dir_error', $uploads['error'] );
 		}
 
 		// Move the file to the uploads dir.
