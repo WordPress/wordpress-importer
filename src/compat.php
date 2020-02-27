@@ -12,7 +12,7 @@ if ( ! function_exists( 'wp_slash_strings_only' ) ) {
 	 *
 	 * Compat for WordPress < 5.3.0.
 	 *
-	 * @since 0.6.5
+	 * @since 0.7.0
 	 *
 	 * @param mixed $value Scalar or array of scalars.
 	 * @return mixed Slashes $value
@@ -28,7 +28,7 @@ if ( ! function_exists( 'addslashes_strings_only' ) ) {
 	 *
 	 * Compat for WordPress < 5.3.0.
 	 *
-	 * @since 0.6.5
+	 * @since 0.7.0
 	 *
 	 * @param mixed $value
 	 * @return mixed
@@ -44,7 +44,7 @@ if ( ! function_exists( 'map_deep' ) ) {
 	 *
 	 * Compat for WordPress < 4.4.0.
 	 *
-	 * @since 0.6.5
+	 * @since 0.7.0
 	 *
 	 * @param mixed    $value    The array, object, or scalar.
 	 * @param callable $callback The function to map onto $value.

@@ -1328,7 +1328,7 @@ class WP_Import extends WP_Importer {
 	 *                         | ext-token "=" ext-value
 	 *     ext-token           = <the characters in token, followed by "*">
 	 *
-	 * @since 0.6.5
+	 * @since 0.7.0
 	 *
 	 * @see WP_REST_Attachments_Controller::get_filename_from_disposition()
 	 *
@@ -1382,7 +1382,7 @@ class WP_Import extends WP_Importer {
 	/**
 	 * Retrieves file extension by mime type.
 	 *
-	 * @since 0.6.5
+	 * @since 0.7.0
 	 *
 	 * @param string $mime_type Mime type to search extension for.
 	 * @return string|null File extension if available, or null if not found.
