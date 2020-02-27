@@ -89,7 +89,7 @@ A message like "Fatal error: Allowed memory size of 8388608 bytes exhausted" ind
 
 For those with shared hosting, the best alternative may be to consult hosting support to determine the safest approach for running the import. A host may be willing to temporarily lift the memory limit and/or run the process directly from their end.
 
--- [WordPress Codex: Importing Content](https://codex.wordpress.org/Importing_Content#Before_Importing)
+-- [Support Article: Importing Content](https://wordpress.org/support/article/importing-content/#before-importing)
 
 == Filters ==
 
