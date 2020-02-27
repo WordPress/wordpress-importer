@@ -39,6 +39,19 @@ If you would prefer to do things manually then follow these instructions:
 
 == Changelog ==
 
+= 0.7 =
+* Updates minimum WordPress requirement to 3.7.
+* Fix bug that caused not importing term meta.
+* Fix bug that caused slashes to be stripped from imported meta data.
+* Fix bug that prevented import of serialized meta data.
+* Fix file size check after download of remote files with HTTP compression enabled.
+* Improve accessibility of form fields by adding missing labels.
+* Improve imports of remote files without name and/or extension.
+* Add support for `wp:base_blog_url` field to allow importing multiple files with WP-CLI.
+* Add support for term meta parsing when using the regular expressions or XML parser.
+* Developers: All classes have been moved into their own files.
+* Developers: Allow to change `IMPORT_DEBUG` via wp-config.php and change default value to the value of `WP_DEBUG`.
+
 = 0.6.4 =
 * Improve PHP7 compatibility.
 * Fix bug that caused slashes to be stripped from imported comments.
