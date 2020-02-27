@@ -6,7 +6,7 @@
  * @subpackage Importer
  */
 
-_deprecated_file( basename( __FILE__ ), '0.6.5' );
+_deprecated_file( basename( __FILE__ ), '0.7.0' );
 
 /** WXR_Parser class */
 require_once dirname( __FILE__ ) . '/parsers/class-wxr-parser.php';
