@@ -80,23 +80,6 @@ an export file is uploaded to a server with bad permissions and WordPress 3.3 or
 = 0.1 =
 * Initial release
 
-== Upgrade Notice ==
-
-= 0.6 =
-Support for exports from WordPress 3.4.
-
-= 0.5.2 =
-Fix incorrect error message when the export file could not be uploaded.
-
-= 0.5 =
-Import comment meta and other minor bugfixes and enhancements.
-
-= 0.4 =
-Bug fixes for attachment importing and other small enhancements.
-
-= 0.3 =
-Upgrade for a more robust and reliable experience when importing WordPress export files, and for compatibility with WordPress 3.1.
-
 == Frequently Asked Questions ==
 
 = Help! I'm getting out of memory errors or a blank screen. =
