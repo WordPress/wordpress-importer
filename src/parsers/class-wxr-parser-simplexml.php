@@ -11,7 +11,11 @@
  */
 class WXR_Parser_SimpleXML {
 	function parse( $file ) {
-		$authors = $posts = $categories = $tags = $terms = array();
+		$authors    = array();
+		$posts      = array();
+		$categories = array();
+		$tags       = array();
+		$terms      = array();
 
 		$internal_errors = libxml_use_internal_errors( true );
 

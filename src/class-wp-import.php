@@ -677,7 +677,8 @@ class WP_Import extends WP_Importer {
 			if ( $post_exists && get_post_type( $post_exists ) == $post['post_type'] ) {
 				printf( __( '%1$s &#8220;%2$s&#8221; already exists.', 'wordpress-importer' ), $post_type_object->labels->singular_name, esc_html( $post['post_title'] ) );
 				echo '<br />';
-				$comment_post_ID                                     = $post_id = $post_exists;
+				$comment_post_ID                                     = $post_exists;
+				$post_id                                             = $post_exists;
 				$this->processed_posts[ intval( $post['post_id'] ) ] = intval( $post_exists );
 			} else {
 				$post_parent = (int) $post['post_parent'];
@@ -741,9 +742,11 @@ class WP_Import extends WP_Importer {
 						}
 					}
 
-					$comment_post_ID = $post_id = $this->process_attachment( $postdata, $remote_url );
+					$comment_post_ID = $this->process_attachment( $postdata, $remote_url );
+					$post_id         = $comment_post_ID;
 				} else {
-					$comment_post_ID = $post_id = wp_insert_post( $postdata, true );
+					$comment_post_ID = wp_insert_post( $postdata, true );
+					$post_id         = $comment_post_ID;
 					do_action( 'wp_import_insert_post', $post_id, $original_post_ID, $postdata, $post );
 				}
 
@@ -1023,7 +1026,8 @@ class WP_Import extends WP_Importer {
 			return $upload;
 		}
 
-		if ( $info = wp_check_filetype( $upload['file'] ) ) {
+		$info = wp_check_filetype( $upload['file'] );
+		if ( $info ) {
 			$post['post_mime_type'] = $info['type'];
 		} else {
 			return new WP_Error( 'attachment_processing_error', __( 'Invalid file type', 'wordpress-importer' ) );
@@ -1219,7 +1223,8 @@ class WP_Import extends WP_Importer {
 
 		// find parents for post orphans
 		foreach ( $this->post_orphans as $child_id => $parent_id ) {
-			$local_child_id = $local_parent_id = false;
+			$local_child_id  = false;
+			$local_parent_id = false;
 			if ( isset( $this->processed_posts[ $child_id ] ) ) {
 				$local_child_id = $this->processed_posts[ $child_id ];
 			}
@@ -1241,7 +1246,8 @@ class WP_Import extends WP_Importer {
 
 		// find parents for menu item orphans
 		foreach ( $this->menu_item_orphans as $child_id => $parent_id ) {
-			$local_child_id = $local_parent_id = 0;
+			$local_child_id  = 0;
+			$local_parent_id = 0;
 			if ( isset( $this->processed_menu_items[ $child_id ] ) ) {
 				$local_child_id = $this->processed_menu_items[ $child_id ];
 			}

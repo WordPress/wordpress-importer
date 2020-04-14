@@ -23,7 +23,8 @@ class WXR_Parser_Regex {
 	}
 
 	function parse( $file ) {
-		$wxr_version = $in_multiline = false;
+		$wxr_version  = false;
+		$in_multiline = false;
 
 		$multiline_content = '';
 
@@ -66,10 +67,12 @@ class WXR_Parser_Regex {
 
 				foreach ( $multiline_tags as $tag => $handler ) {
 					// Handle multi-line tags on a singular line
+					$pos         = strpos( $importline, "<$tag>" );
+					$pos_closing = strpos( $importline, "</$tag>" );
 					if ( preg_match( '|<' . $tag . '>(.*?)</' . $tag . '>|is', $importline, $matches ) ) {
 						$this->{$handler[0]}[] = call_user_func( $handler[1], $matches[1] );
 
-					} elseif ( false !== ( $pos = strpos( $importline, "<$tag>" ) ) ) {
+					} elseif ( false !== $pos ) {
 						// Take note of any content after the opening tag
 						$multiline_content = trim( substr( $importline, $pos + strlen( $tag ) + 2 ) );
 
@@ -77,9 +80,9 @@ class WXR_Parser_Regex {
 						$importline   = '';
 						$in_multiline = $tag;
 
-					} elseif ( false !== ( $pos = strpos( $importline, "</$tag>" ) ) ) {
+					} elseif ( false !== $pos_closing ) {
 						$in_multiline       = false;
-						$multiline_content .= trim( substr( $importline, 0, $pos ) );
+						$multiline_content .= trim( substr( $importline, 0, $pos_closing ) );
 
 						$this->{$handler[0]}[] = call_user_func( $handler[1], $multiline_content );
 					}

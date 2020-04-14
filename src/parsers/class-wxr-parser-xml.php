@@ -59,8 +59,18 @@ class WXR_Parser_XML {
 	);
 
 	function parse( $file ) {
-		$this->wxr_version = $this->in_post = $this->cdata = $this->data = $this->sub_data = $this->in_tag = $this->in_sub_tag = false;
-		$this->authors     = $this->posts = $this->term = $this->category = $this->tag = array();
+		$this->wxr_version = false;
+		$this->in_post     = false;
+		$this->cdata       = false;
+		$this->data        = false;
+		$this->sub_data    = false;
+		$this->in_tag      = false;
+		$this->in_sub_tag  = false;
+		$this->authors     = array();
+		$this->posts       = array();
+		$this->term        = array();
+		$this->category    = array();
+		$this->tag         = array();
 
 		$xml = xml_parser_create( 'UTF-8' );
 		xml_parser_set_option( $xml, XML_OPTION_SKIP_WHITE, 1 );

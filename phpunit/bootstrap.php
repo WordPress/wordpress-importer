@@ -8,7 +8,8 @@
 $_tests_dir = getenv( 'WP_TESTS_DIR' );
 
 // Check if we're installed in a src checkout.
-if ( ! $_tests_dir && false !== ( $pos = stripos( __FILE__, '/src/wp-content/plugins/' ) ) ) {
+$pos = stripos( __FILE__, '/src/wp-content/plugins/' );
+if ( ! $_tests_dir && false !== $pos ) {
 	$_tests_dir = substr( __FILE__, 0, $pos ) . '/tests/phpunit/';
 }
 
