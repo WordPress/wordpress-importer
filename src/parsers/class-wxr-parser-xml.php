@@ -124,10 +124,12 @@ class WXR_Parser_XML {
 				break;
 			case 'item':
 				$this->in_post = true;
+				break;
 			case 'title':
 				if ( $this->in_post ) {
 					$this->in_tag = 'post_title';
-				} break;
+				}
+				break;
 			case 'guid':
 				$this->in_tag = 'guid';
 				break;
