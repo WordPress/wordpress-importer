@@ -105,12 +105,12 @@ class WXR_Parser_XML {
 	}
 
 	function tag_open( $parse, $tag, $attr ) {
-		if ( in_array( $tag, $this->wp_tags ) ) {
+		if ( in_array( $tag, $this->wp_tags, true ) ) {
 			$this->in_tag = substr( $tag, 3 );
 			return;
 		}
 
-		if ( in_array( $tag, $this->wp_sub_tags ) ) {
+		if ( in_array( $tag, $this->wp_sub_tags, true ) ) {
 			$this->in_sub_tag = substr( $tag, 3 );
 			return;
 		}

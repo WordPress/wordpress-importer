@@ -1344,7 +1344,7 @@ class WP_Import extends WP_Importer {
 	function is_valid_meta_key( $key ) {
 		// skip attachment metadata since we'll regenerate it from scratch
 		// skip _edit_lock as not relevant for import
-		if ( in_array( $key, array( '_wp_attached_file', '_wp_attachment_metadata', '_edit_lock' ) ) ) {
+		if ( in_array( $key, array( '_wp_attached_file', '_wp_attachment_metadata', '_edit_lock' ), true ) ) {
 			return false;
 		}
 		return $key;
