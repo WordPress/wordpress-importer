@@ -51,6 +51,11 @@ before_script:
   - export PATH="$HOME/.composer/vendor/bin:$PATH"
   - phpenv config-rm xdebug.ini || echo 'No xdebug config.'
   - |
+    if [[ "$TRAVIS_PHP_VERSION" == "7.3" ]]; then
+      composer global require wp-coding-standards/wpcs phpcompatibility/phpcompatibility-wp dealerdirect/phpcodesniffer-composer-installer
+      phpcs
+    fi
+  - |
     bash phpunit/install.sh wordpress_test root '' localhost $WP_VERSION
     if [[ "$TRAVIS_PHP_VERSION" != "5.2" ]]; then
       composer global require "phpunit/phpunit=4.8.*|5.7.*|6.5.*|7.5.*"
