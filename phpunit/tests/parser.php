@@ -1,4 +1,4 @@
-<?php
+<?php // phpcs:ignore WordPress.Files.FileName
 
 require_once dirname( __FILE__ ) . '/base.php';
 
