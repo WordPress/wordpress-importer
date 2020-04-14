@@ -25,8 +25,9 @@ require_once ABSPATH . 'wp-admin/includes/import.php';
 
 if ( ! class_exists( 'WP_Importer' ) ) {
 	$class_wp_importer = ABSPATH . 'wp-admin/includes/class-wp-importer.php';
-	if ( file_exists( $class_wp_importer ) )
+	if ( file_exists( $class_wp_importer ) ) {
 		require $class_wp_importer;
+	}
 }
 
 /** Functions missing in older WordPress versions. */
@@ -55,6 +56,6 @@ function wordpress_importer_init() {
 	 * @global WP_Import $wp_import
 	 */
 	$GLOBALS['wp_import'] = new WP_Import();
-	register_importer( 'wordpress', 'WordPress', __('Import <strong>posts, pages, comments, custom fields, categories, and tags</strong> from a WordPress export file.', 'wordpress-importer'), array( $GLOBALS['wp_import'], 'dispatch' ) );
+	register_importer( 'WordPress', 'WordPress', __( 'Import <strong>posts, pages, comments, custom fields, categories, and tags</strong> from a WordPress export file.', 'wordpress-importer' ), array( $GLOBALS['wp_import'], 'dispatch' ) );
 }
 add_action( 'admin_init', 'wordpress_importer_init' );
