@@ -272,19 +272,19 @@ class WP_Import extends WP_Importer {
 	function author_select( $n, $author ) {
 		_e( 'Import author:', 'wordpress-importer' );
 		echo ' <strong>' . esc_html( $author['author_display_name'] );
-		if ( $this->version != '1.0' ) {
+		if ( '1.0' != $this->version ) {
 			echo ' (' . esc_html( $author['author_login'] ) . ')';
 		}
 		echo '</strong><br />';
 
-		if ( $this->version != '1.0' ) {
+		if ( '1.0' != $this->version ) {
 			echo '<div style="margin-left:18px">';
 		}
 
 		$create_users = $this->allow_create_users();
 		if ( $create_users ) {
 			echo '<label for="user_new_' . $n . '">';
-			if ( $this->version != '1.0' ) {
+			if ( '1.0' != $this->version ) {
 				_e( 'or create new user with login name:', 'wordpress-importer' );
 				$value = '';
 			} else {
@@ -297,7 +297,7 @@ class WP_Import extends WP_Importer {
 		}
 
 		echo '<label for="imported_authors_' . $n . '">';
-		if ( ! $create_users && $this->version == '1.0' ) {
+		if ( ! $create_users && '1.0' == $this->version ) {
 			_e( 'assign posts to an existing user:', 'wordpress-importer' );
 		} else {
 			_e( 'or assign posts to an existing user:', 'wordpress-importer' );
@@ -317,7 +317,7 @@ class WP_Import extends WP_Importer {
 
 		echo '<input type="hidden" name="imported_authors[' . $n . ']" value="' . esc_attr( $author['author_login'] ) . '" />';
 
-		if ( $this->version != '1.0' ) {
+		if ( '1.0' != $this->version ) {
 			echo '</div>';
 		}
 	}
@@ -350,7 +350,7 @@ class WP_Import extends WP_Importer {
 			} elseif ( $create_users ) {
 				if ( ! empty( $_POST['user_new'][ $i ] ) ) {
 					$user_id = wp_create_user( $_POST['user_new'][ $i ], wp_generate_password() );
-				} elseif ( $this->version != '1.0' ) {
+				} elseif ( '1.0' != $this->version ) {
 					$user_data = array(
 						'user_login'   => $old_login,
 						'user_pass'    => wp_generate_password(),
@@ -647,7 +647,7 @@ class WP_Import extends WP_Importer {
 				continue;
 			}
 
-			if ( $post['status'] == 'auto-draft' ) {
+			if ( 'auto-draft' == $post['status'] ) {
 				continue;
 			}
 
@@ -732,7 +732,7 @@ class WP_Import extends WP_Importer {
 					$postdata['upload_date'] = $post['post_date'];
 					if ( isset( $post['postmeta'] ) ) {
 						foreach ( $post['postmeta'] as $meta ) {
-							if ( $meta['key'] == '_wp_attached_file' ) {
+							if ( '_wp_attached_file' == $meta['key'] ) {
 								if ( preg_match( '%^[0-9]{4}/[0-9]{2}%', $meta['value'], $matches ) ) {
 									$postdata['upload_date'] = $matches[0];
 								}
@@ -760,7 +760,7 @@ class WP_Import extends WP_Importer {
 					continue;
 				}
 
-				if ( $post['is_sticky'] == 1 ) {
+				if ( 1 == $post['is_sticky'] ) {
 					stick_post( $post_id );
 				}
 			}
