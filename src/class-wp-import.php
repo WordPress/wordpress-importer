@@ -231,25 +231,26 @@ class WP_Import extends WP_Importer {
 	 */
 	function import_options() {
 		$j = 0;
+		// phpcs:disable Generic.WhiteSpace.ScopeIndent.Incorrect
 		?>
 <form action="<?php echo admin_url( 'admin.php?import=wordpress&amp;step=2' ); ?>" method="post">
-		<?php wp_nonce_field( 'import-wordpress' ); ?>
+	<?php wp_nonce_field( 'import-wordpress' ); ?>
 	<input type="hidden" name="import_id" value="<?php echo $this->id; ?>" />
 
-		<?php if ( ! empty( $this->authors ) ) : ?>
+<?php if ( ! empty( $this->authors ) ) : ?>
 	<h3><?php _e( 'Assign Authors', 'wordpress-importer' ); ?></h3>
 	<p><?php _e( 'To make it simpler for you to edit and save the imported content, you may want to reassign the author of the imported item to an existing user of this site, such as your primary administrator account.', 'wordpress-importer' ); ?></p>
-			<?php if ( $this->allow_create_users() ) : ?>
+<?php if ( $this->allow_create_users() ) : ?>
 	<p><?php printf( __( 'If a new user is created by WordPress, a new password will be randomly generated and the new user&#8217;s role will be set as %s. Manually changing the new user&#8217;s details will be necessary.', 'wordpress-importer' ), esc_html( get_option( 'default_role' ) ) ); ?></p>
 <?php endif; ?>
 	<ol id="authors">
-			<?php foreach ( $this->authors as $author ) : ?>
+<?php foreach ( $this->authors as $author ) : ?>
 		<li><?php $this->author_select( $j++, $author ); ?></li>
 <?php endforeach; ?>
 	</ol>
 <?php endif; ?>
 
-		<?php if ( $this->allow_fetch_attachments() ) : ?>
+<?php if ( $this->allow_fetch_attachments() ) : ?>
 	<h3><?php _e( 'Import Attachments', 'wordpress-importer' ); ?></h3>
 	<p>
 		<input type="checkbox" value="1" name="fetch_attachments" id="import-attachments" />
@@ -260,6 +261,7 @@ class WP_Import extends WP_Importer {
 	<p class="submit"><input type="submit" class="button" value="<?php esc_attr_e( 'Submit', 'wordpress-importer' ); ?>" /></p>
 </form>
 		<?php
+		// phpcs:enable Generic.WhiteSpace.ScopeIndent.Incorrect
 	}
 
 	/**
