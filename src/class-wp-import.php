@@ -677,8 +677,8 @@ class WP_Import extends WP_Importer {
 			if ( $post_exists && get_post_type( $post_exists ) == $post['post_type'] ) {
 				printf( __( '%1$s &#8220;%2$s&#8221; already exists.', 'wordpress-importer' ), $post_type_object->labels->singular_name, esc_html( $post['post_title'] ) );
 				echo '<br />';
-				$comment_post_ID                                     = $post_exists;
-				$post_id                                             = $post_exists;
+				$comment_post_id = $post_exists;
+				$post_id         = $post_exists;
 				$this->processed_posts[ intval( $post['post_id'] ) ] = intval( $post_exists );
 			} else {
 				$post_parent = (int) $post['post_parent'];
@@ -720,7 +720,7 @@ class WP_Import extends WP_Importer {
 					'post_password'  => $post['post_password'],
 				);
 
-				$original_post_ID = $post['post_id'];
+				$original_post_id = $post['post_id'];
 				$postdata         = apply_filters( 'wp_import_post_data_processed', $postdata, $post );
 
 				$postdata = wp_slash( $postdata );
@@ -742,12 +742,12 @@ class WP_Import extends WP_Importer {
 						}
 					}
 
-					$comment_post_ID = $this->process_attachment( $postdata, $remote_url );
-					$post_id         = $comment_post_ID;
+					$comment_post_id = $this->process_attachment( $postdata, $remote_url );
+					$post_id         = $comment_post_id;
 				} else {
-					$comment_post_ID = wp_insert_post( $postdata, true );
-					$post_id         = $comment_post_ID;
-					do_action( 'wp_import_insert_post', $post_id, $original_post_ID, $postdata, $post );
+					$comment_post_id = wp_insert_post( $postdata, true );
+					$post_id         = $comment_post_id;
+					do_action( 'wp_import_insert_post', $post_id, $original_post_id, $postdata, $post );
 				}
 
 				if ( is_wp_error( $post_id ) ) {
@@ -822,7 +822,7 @@ class WP_Import extends WP_Importer {
 				$inserted_comments = array();
 				foreach ( $post['comments'] as $comment ) {
 					$comment_id                                    = $comment['comment_id'];
-					$newcomments[ $comment_id ]['comment_post_ID'] = $comment_post_ID;
+					$newcomments[ $comment_id ]['comment_post_ID'] = $comment_post_id;
 					$newcomments[ $comment_id ]['comment_author']  = $comment['comment_author'];
 					$newcomments[ $comment_id ]['comment_author_email'] = $comment['comment_author_email'];
 					$newcomments[ $comment_id ]['comment_author_IP']    = $comment['comment_author_IP'];
@@ -853,7 +853,7 @@ class WP_Import extends WP_Importer {
 
 						$inserted_comments[ $key ] = wp_insert_comment( $comment_data );
 
-						do_action( 'wp_import_insert_comment', $inserted_comments[ $key ], $comment, $comment_post_ID, $post );
+						do_action( 'wp_import_insert_comment', $inserted_comments[ $key ], $comment, $comment_post_id, $post );
 
 						foreach ( $comment['commentmeta'] as $meta ) {
 							$value = maybe_unserialize( $meta['value'] );
