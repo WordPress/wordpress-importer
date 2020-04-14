@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<ruleset name="WordPressImporterCodingStandards">
+	<description>Coding Standards for WordPress Importer.</description>
+
+	<!-- Supported PHP versions -->
+	<config name="testVersion" value="5.2-"/>
+
+	<file>.</file>
+	<exclude-pattern>*/vendor/</exclude-pattern>
+
+	<rule ref="WordPress-Core">
+		<exclude name="WordPress.PHP.StrictComparisons"/>
+		<exclude name="WordPress.WP.I18n"/>
+	</rule>
+	<rule ref="WordPress.Files.FileName">
+		<exclude-pattern>*/phpunit/tests/*\.php$</exclude-pattern>
+	</rule>
+<!-- next up:
+	<rule ref="WordPress-Extra">
+		<exclude name="WordPress.Security.EscapeOutput"/>
+	</rule>
+-->
+	<rule ref="PHPCompatibilityWP"/>
+</ruleset>
