@@ -63,7 +63,9 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 					'author_display_name' => 'John Doe',
 					'author_first_name'   => 'John',
 					'author_last_name'    => 'Doe',
-				), $result['authors']['john'], $message
+				),
+				$result['authors']['john'],
+				$message
 			);
 			$this->assertEquals(
 				array(
@@ -72,7 +74,9 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 					'category_parent'      => '',
 					'cat_name'             => 'alpha',
 					'category_description' => 'The alpha category',
-				), $result['categories'][0], $message
+				),
+				$result['categories'][0],
+				$message
 			);
 			$this->assertEquals(
 				array(
@@ -80,7 +84,9 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 					'tag_slug'        => 'clippable',
 					'tag_name'        => 'Clippable',
 					'tag_description' => 'The Clippable post_tag',
-				), $result['tags'][0], $message
+				),
+				$result['tags'][0],
+				$message
 			);
 			$this->assertEquals(
 				array(
@@ -90,7 +96,9 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 					'term_parent'      => '',
 					'term_name'        => 'bieup',
 					'term_description' => 'The bieup post_tax',
-				), $result['terms'][0], $message
+				),
+				$result['terms'][0],
+				$message
 			);
 
 			$this->assertEquals( 2, count( $result['posts'] ), $message );
@@ -113,7 +121,9 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 						'slug'   => 'bieup',
 						'domain' => 'post_tax',
 					),
-				), $result['posts'][0]['terms'], $message
+				),
+				$result['posts'][0]['terms'],
+				$message
 			);
 			$this->assertEquals(
 				array(
@@ -121,7 +131,9 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 						'key'   => '_wp_page_template',
 						'value' => 'default',
 					),
-				), $result['posts'][1]['postmeta'], $message
+				),
+				$result['posts'][1]['postmeta'],
+				$message
 			);
 		}
 	}
@@ -154,7 +166,9 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 						'slug'   => 'uncategorized',
 						'domain' => 'category',
 					),
-				), $result['posts'][0]['terms'], $message
+				),
+				$result['posts'][0]['terms'],
+				$message
 			);
 			$this->assertEquals(
 				array(
@@ -173,7 +187,9 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 						'slug'   => 'roar',
 						'domain' => 'tag',
 					),
-				), $result['posts'][2]['terms'], $message
+				),
+				$result['posts'][2]['terms'],
+				$message
 			);
 			$this->assertEquals(
 				array(
@@ -192,7 +208,9 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 						'slug'   => 'face',
 						'domain' => 'tag',
 					),
-				), $result['posts'][3]['terms'], $message
+				),
+				$result['posts'][3]['terms'],
+				$message
 			);
 
 			$this->assertEquals(
@@ -201,7 +219,9 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 						'key'   => '_wp_page_template',
 						'value' => 'default',
 					),
-				), $result['posts'][1]['postmeta'], $message
+				),
+				$result['posts'][1]['postmeta'],
+				$message
 			);
 		}
 	}

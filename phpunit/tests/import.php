@@ -22,6 +22,7 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		global $wpdb;
 		// crude but effective: make sure there's no residual data in the main tables
 		foreach ( array( 'posts', 'postmeta', 'comments', 'terms', 'term_taxonomy', 'term_relationships', 'users', 'usermeta' ) as $table ) {
+			// phpcs:ignore WordPress.DB.PreparedSQL
 			$wpdb->query( "DELETE FROM {$wpdb->$table}" );
 		}
 	}
@@ -258,7 +259,8 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 				'def1' => array( 'def1' ),
 				'xyz1' => array( 'xyz1' ),
 				'XYZ2' => array( 'XYZ2' ),
-			), get_importers()
+			),
+			get_importers()
 		);
 		$wp_importers = $_wp_importers; // Restore global state
 	}
@@ -289,7 +291,7 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 
 		$comments = get_comments(
 			array(
-				'post_id' => $posts[0]->post_ID
+				'post_id' => $posts[0]->post_ID,
 			)
 		);
 		$this->assertNotEmpty( $comments );

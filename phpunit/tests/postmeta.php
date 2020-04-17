@@ -105,7 +105,12 @@ class Tests_Import_Postmeta extends WP_Import_UnitTestCase {
 		$expected_integer      = '1';
 		$expected_string       = '¯\_(ツ)_/¯';
 		$expected_array        = array( 'key' => '¯\_(ツ)_/¯' );
-		$expected_array_nested = array( 'key' => array( 'foo' => '¯\_(ツ)_/¯', 'bar' => '\o/' ) );
+		$expected_array_nested = array(
+			'key' => array(
+				'foo' => '¯\_(ツ)_/¯',
+				'bar' => '\o/',
+			),
+		);
 
 		$this->assertEquals( $expected_string, get_post_meta( 10, 'string', true ) );
 		$this->assertEquals( $expected_array, get_post_meta( 10, 'array', true ) );
