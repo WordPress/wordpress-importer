@@ -27,7 +27,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 			$parser = new $p;
 			$result = $parser->parse( $file );
 			$this->assertWPError( $result );
-			$this->assertEquals( 'There was an error when reading this WXR file', $result->get_error_message() );
+			$this->assertSame( 'There was an error when reading this WXR file', $result->get_error_message() );
 		}
 	}
 
@@ -40,7 +40,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 				$parser = new $p;
 				$result = $parser->parse( $file );
 				$this->assertWPError( $result );
-				$this->assertEquals( 'This does not appear to be a WXR file, missing/invalid WXR version number', $result->get_error_message() );
+				$this->assertSame( 'This does not appear to be a WXR file, missing/invalid WXR version number', $result->get_error_message() );
 			}
 		}
 	}
@@ -54,7 +54,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 			$result  = $parser->parse( $file );
 
 			$this->assertInternalType( 'array', $result, $message );
-			$this->assertEquals( 'http://localhost/', $result['base_url'], $message );
+			$this->assertSame( 'http://localhost/', $result['base_url'], $message );
 			$this->assertEquals(
 				array(
 					'author_id'           => 2,
@@ -147,13 +147,13 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 			$result  = $parser->parse( $file );
 
 			$this->assertInternalType( 'array', $result, $message );
-			$this->assertEquals( 'http://localhost/', $result['base_url'], $message );
-			$this->assertEquals( 'alpha', $result['categories'][0]['category_nicename'], $message );
-			$this->assertEquals( 'alpha', $result['categories'][0]['cat_name'], $message );
-			$this->assertEquals( '', $result['categories'][0]['category_parent'], $message );
-			$this->assertEquals( 'The alpha category', $result['categories'][0]['category_description'], $message );
-			$this->assertEquals( 'chicken', $result['tags'][0]['tag_slug'], $message );
-			$this->assertEquals( 'chicken', $result['tags'][0]['tag_name'], $message );
+			$this->assertSame( 'http://localhost/', $result['base_url'], $message );
+			$this->assertSame( 'alpha', $result['categories'][0]['category_nicename'], $message );
+			$this->assertSame( 'alpha', $result['categories'][0]['cat_name'], $message );
+			$this->assertSame( '', $result['categories'][0]['category_parent'], $message );
+			$this->assertSame( 'The alpha category', $result['categories'][0]['category_description'], $message );
+			$this->assertSame( 'chicken', $result['tags'][0]['tag_slug'], $message );
+			$this->assertSame( 'chicken', $result['tags'][0]['tag_name'], $message );
 
 			$this->assertCount( 6, $result['posts'], $message );
 			$this->assertCount( 19, $result['posts'][0], $message );
@@ -236,7 +236,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 			$result  = $parser->parse( $file );
 
 			$this->assertInternalType( 'array', $result, $message );
-			$this->assertEquals( 'http://localhost/', $result['base_url'], $message );
+			$this->assertSame( 'http://localhost/', $result['base_url'], $message );
 
 			$this->assertEmpty( $result['authors'], $message );
 			$this->assertEmpty( $result['posts'], $message );
@@ -264,7 +264,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 			$result  = $parser->parse( $file );
 
 			$post = $result['posts'][0];
-			$this->assertEquals( 'Content with nested <![CDATA[ tags ]]> :)', $post['post_content'], $message );
+			$this->assertSame( 'Content with nested <![CDATA[ tags ]]> :)', $post['post_content'], $message );
 			foreach ( $post['postmeta'] as $meta ) {
 				switch ( $meta['key'] ) {
 					case 'Plain string':
@@ -295,7 +295,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 		$result = $parser->parse( $file );
 
 		$post = $result['posts'][0];
-		$this->assertEquals( 'Content with nested <![CDATA[ tags ]]> :)', $post['post_content'] );
+		$this->assertSame( 'Content with nested <![CDATA[ tags ]]> :)', $post['post_content'] );
 		foreach ( $post['postmeta'] as $meta ) {
 			switch ( $meta['key'] ) {
 				case 'Plain string':

@@ -32,7 +32,7 @@ class Tests_Import_Comment_Meta extends WP_Import_UnitTestCase {
 		$this->assertCount( 1, $comments );
 
 		$comment = $comments[0];
-		$this->assertEquals( $expected_string, get_comment_meta( $comment->comment_ID, 'string', true ) );
+		$this->assertSame( $expected_string, get_comment_meta( $comment->comment_ID, 'string', true ) );
 		$this->assertEquals( $expected_array, get_comment_meta( $comment->comment_ID, 'array', true ) );
 	}
 }

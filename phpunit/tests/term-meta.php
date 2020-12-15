@@ -29,17 +29,17 @@ class Tests_Import_Term_Meta extends WP_Import_UnitTestCase {
 
 		$term = get_term_by( 'slug', 'post_tag', 'post_tag' );
 		$this->assertInstanceOf( 'WP_Term', $term );
-		$this->assertEquals( $expected_string, get_term_meta( $term->term_id, 'string', true ) );
+		$this->assertSame( $expected_string, get_term_meta( $term->term_id, 'string', true ) );
 		$this->assertEquals( $expected_array, get_term_meta( $term->term_id, 'array', true ) );
 
 		$term = get_term_by( 'slug', 'category', 'category' );
 		$this->assertInstanceOf( 'WP_Term', $term );
-		$this->assertEquals( $expected_string, get_term_meta( $term->term_id, 'string', true ) );
+		$this->assertSame( $expected_string, get_term_meta( $term->term_id, 'string', true ) );
 		$this->assertEquals( $expected_array, get_term_meta( $term->term_id, 'array', true ) );
 
 		$term = get_term_by( 'slug', 'custom_taxonomy', 'custom_taxonomy' );
 		$this->assertInstanceOf( 'WP_Term', $term );
-		$this->assertEquals( $expected_string, get_term_meta( $term->term_id, 'string', true ) );
+		$this->assertSame( $expected_string, get_term_meta( $term->term_id, 'string', true ) );
 		$this->assertEquals( $expected_array, get_term_meta( $term->term_id, 'array', true ) );
 	}
 }
