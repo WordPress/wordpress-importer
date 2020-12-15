@@ -1,12 +1,34 @@
 <?xml version="1.0"?>
-<ruleset name="WordPressImporterCodingStandards">
+<ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="WordPressImporterCodingStandards" xsi:noNamespaceSchemaLocation="./vendor/squizlabs/php_codesniffer/phpcs.xsd">
 	<description>Coding Standards for WordPress Importer.</description>
 
-	<!-- Supported PHP versions -->
-	<config name="testVersion" value="5.2-"/>
+	<!--
+	#############################################################################
+	COMMAND LINE ARGUMENTS
+	https://github.com/squizlabs/PHP_CodeSniffer/wiki/Annotated-ruleset.xml
+	#############################################################################
+	-->
 
 	<file>.</file>
 	<exclude-pattern>*/vendor/</exclude-pattern>
+
+	<!-- Only check PHP files. -->
+	<arg name="extensions" value="php"/>
+
+	<!-- Show progress, show the error codes for each message (source). -->
+	<arg value="ps"/>
+
+	<!-- Strip the filepaths down to the relevant bit. -->
+	<arg name="basepath" value="./"/>
+
+	<!-- Check up to 8 files simultaneously. -->
+	<arg name="parallel" value="8"/>
+
+	<!--
+	#############################################################################
+	USE THE WordPress AND PHPCompatibilityWP RULESETS
+	#############################################################################
+	-->
 
 	<rule ref="WordPress-Core">
 		<exclude name="WordPress.PHP.StrictComparisons"/>
@@ -20,5 +42,9 @@
 		<exclude name="WordPress.Security.EscapeOutput"/>
 	</rule>
 -->
+
+	<!-- Supported PHP versions -->
+	<config name="testVersion" value="5.2-"/>
 	<rule ref="PHPCompatibilityWP"/>
+
 </ruleset>
