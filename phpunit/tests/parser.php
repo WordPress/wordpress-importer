@@ -148,12 +148,12 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 
 			$this->assertTrue( is_array( $result ), $message );
 			$this->assertEquals( 'http://localhost/', $result['base_url'], $message );
-			$this->assertEquals( $result['categories'][0]['category_nicename'], 'alpha', $message );
-			$this->assertEquals( $result['categories'][0]['cat_name'], 'alpha', $message );
-			$this->assertEquals( $result['categories'][0]['category_parent'], '', $message );
-			$this->assertEquals( $result['categories'][0]['category_description'], 'The alpha category', $message );
-			$this->assertEquals( $result['tags'][0]['tag_slug'], 'chicken', $message );
-			$this->assertEquals( $result['tags'][0]['tag_name'], 'chicken', $message );
+			$this->assertEquals( 'alpha', $result['categories'][0]['category_nicename'], $message );
+			$this->assertEquals( 'alpha', $result['categories'][0]['cat_name'], $message );
+			$this->assertEquals( '', $result['categories'][0]['category_parent'], $message );
+			$this->assertEquals( 'The alpha category', $result['categories'][0]['category_description'], $message );
+			$this->assertEquals( 'chicken', $result['tags'][0]['tag_slug'], $message );
+			$this->assertEquals( 'chicken', $result['tags'][0]['tag_name'], $message );
 
 			$this->assertEquals( 6, count( $result['posts'] ), $message );
 			$this->assertEquals( 19, count( $result['posts'][0] ), $message );
