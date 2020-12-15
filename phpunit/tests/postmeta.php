@@ -24,7 +24,7 @@ class Tests_Import_Postmeta extends WP_Import_UnitTestCase {
 		$this->_import_wp( DIR_TESTDATA_WP_IMPORTER . '/test-serialized-postmeta-no-cdata.xml', array( 'johncoswell' => 'john' ) );
 		$expected['special_post_title'] = 'A special title';
 		$expected['is_calendar']        = '';
-		$this->assertEquals( $expected, get_post_meta( 122, 'post-options', true ) );
+		$this->assertSame( $expected, get_post_meta( 122, 'post-options', true ) );
 	}
 
 	function test_utw_postmeta() {
@@ -84,7 +84,7 @@ class Tests_Import_Postmeta extends WP_Import_UnitTestCase {
 		//Serialised will only work with 3.0 onwards.
 		$expected['special_post_title'] = 'A special title';
 		$expected['is_calendar']        = '';
-		$this->assertEquals( $expected, get_post_meta( 10, 'post-options', true ) );
+		$this->assertSame( $expected, get_post_meta( 10, 'post-options', true ) );
 	}
 
 	/**
@@ -113,8 +113,8 @@ class Tests_Import_Postmeta extends WP_Import_UnitTestCase {
 		);
 
 		$this->assertSame( $expected_string, get_post_meta( 10, 'string', true ) );
-		$this->assertEquals( $expected_array, get_post_meta( 10, 'array', true ) );
-		$this->assertEquals( $expected_array_nested, get_post_meta( 10, 'array-nested', true ) );
+		$this->assertSame( $expected_array, get_post_meta( 10, 'array', true ) );
+		$this->assertSame( $expected_array_nested, get_post_meta( 10, 'array-nested', true ) );
 		$this->assertSame( $expected_integer, get_post_meta( 10, 'integer', true ) );
 	}
 }

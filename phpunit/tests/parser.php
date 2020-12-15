@@ -125,7 +125,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 				$result['posts'][0]['terms'],
 				$message
 			);
-			$this->assertEquals(
+			$this->assertSame(
 				array(
 					array(
 						'key'   => '_wp_page_template',
@@ -213,7 +213,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 				$message
 			);
 
-			$this->assertEquals(
+			$this->assertSame(
 				array(
 					array(
 						'key'   => '_wp_page_template',
@@ -279,7 +279,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 					default:
 						$this->fail( 'Unknown postmeta (' . $meta['key'] . ') was parsed out by' . $p );
 				}
-				$this->assertEquals( $value, $meta['value'], $message );
+				$this->assertSame( $value, $meta['value'], $message );
 			}
 		}
 	}
@@ -310,7 +310,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 				default:
 					$this->fail( 'Unknown postmeta (' . $meta['key'] . ') was parsed out by' . $p );
 			}
-			$this->assertEquals( $value, $meta['value'] );
+			$this->assertSame( $value, $meta['value'] );
 		}
 	}
 
@@ -343,17 +343,17 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 			$category = $result['categories'][0];
 			$this->assertArrayHasKey( 'termmeta', $category, $message );
 			$this->assertCount( 2, $category['termmeta'], $message );
-			$this->assertEquals( $expected_meta, $category['termmeta'], $message );
+			$this->assertSame( $expected_meta, $category['termmeta'], $message );
 
 			$tag = $result['tags'][0];
 			$this->assertArrayHasKey( 'termmeta', $tag, $message );
 			$this->assertCount( 2, $tag['termmeta'], $message );
-			$this->assertEquals( $expected_meta, $tag['termmeta'], $message );
+			$this->assertSame( $expected_meta, $tag['termmeta'], $message );
 
 			$term = $result['terms'][0];
 			$this->assertArrayHasKey( 'termmeta', $term, $message );
 			$this->assertCount( 2, $term['termmeta'], $message );
-			$this->assertEquals( $expected_meta, $term['termmeta'], $message );
+			$this->assertSame( $expected_meta, $term['termmeta'], $message );
 		}
 	}
 
@@ -387,7 +387,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 			$comment = $post['comments'][0];
 			$this->assertArrayHasKey( 'commentmeta', $comment, $message );
 			$this->assertCount( 2, $comment['commentmeta'], $message );
-			$this->assertEquals( $expected_meta, $comment['commentmeta'], $message );
+			$this->assertSame( $expected_meta, $comment['commentmeta'], $message );
 		}
 	}
 }

@@ -45,7 +45,7 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 
 		// ensure that authors were imported correctly
 		$user_count = count_users();
-		$this->assertEquals( 3, $user_count['total_users'] );
+		$this->assertSame( 3, $user_count['total_users'] );
 		$admin = get_user_by( 'login', 'admin' );
 		$this->assertSame( 'admin', $admin->user_login );
 		$this->assertSame( 'local@host.null', $admin->user_email );
@@ -62,10 +62,10 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		$this->assertEquals( 30, wp_count_terms( 'category' ) );
 		$this->assertEquals( 3, wp_count_terms( 'post_tag' ) );
 		$foo = get_term_by( 'slug', 'foo', 'category' );
-		$this->assertEquals( 0, $foo->parent );
+		$this->assertSame( 0, $foo->parent );
 		$bar     = get_term_by( 'slug', 'bar', 'category' );
 		$foo_bar = get_term_by( 'slug', 'foo-bar', 'category' );
-		$this->assertEquals( $bar->term_id, $foo_bar->parent );
+		$this->assertSame( $bar->term_id, $foo_bar->parent );
 
 		// check that posts/pages were imported correctly
 		$post_count = wp_count_posts( 'post' );
@@ -75,7 +75,7 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		$this->assertEquals( 4, $page_count->publish );
 		$this->assertEquals( 1, $page_count->draft );
 		$comment_count = wp_count_comments();
-		$this->assertEquals( 1, $comment_count->total_comments );
+		$this->assertSame( 1, $comment_count->total_comments );
 
 		$posts = get_posts(
 			array(
@@ -93,7 +93,7 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		$this->assertEquals( $admin->ID, $post->post_author );
 		$this->assertSame( 'post', $post->post_type );
 		$this->assertSame( 'publish', $post->post_status );
-		$this->assertEquals( 0, $post->post_parent );
+		$this->assertSame( 0, $post->post_parent );
 		$cats = wp_get_post_categories( $post->ID );
 		$this->assertCount( 27, $cats );
 
@@ -103,7 +103,7 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		$this->assertEquals( $admin->ID, $post->post_author );
 		$this->assertSame( 'post', $post->post_type );
 		$this->assertSame( 'publish', $post->post_status );
-		$this->assertEquals( 0, $post->post_parent );
+		$this->assertSame( 0, $post->post_parent );
 		$cats = wp_get_post_categories( $post->ID );
 		$this->assertCount( 1, $cats );
 		$this->assertTrue( has_post_format( 'aside', $post->ID ) );
@@ -114,7 +114,7 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		$this->assertEquals( $admin->ID, $post->post_author );
 		$this->assertSame( 'post', $post->post_type );
 		$this->assertSame( 'publish', $post->post_status );
-		$this->assertEquals( 0, $post->post_parent );
+		$this->assertSame( 0, $post->post_parent );
 		$cats = wp_get_post_categories( $post->ID, array( 'fields' => 'all' ) );
 		$this->assertCount( 1, $cats );
 		$this->assertSame( 'foo', $cats[0]->slug );
@@ -125,7 +125,7 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		$this->assertEquals( $editor->ID, $post->post_author );
 		$this->assertSame( 'post', $post->post_type );
 		$this->assertSame( 'publish', $post->post_status );
-		$this->assertEquals( 0, $post->post_parent );
+		$this->assertSame( 0, $post->post_parent );
 		$cats = wp_get_post_categories( $post->ID, array( 'fields' => 'all' ) );
 		$this->assertCount( 1, $cats );
 		$this->assertSame( 'foo-bar', $cats[0]->slug );
@@ -136,7 +136,7 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		$this->assertEquals( $admin->ID, $post->post_author );
 		$this->assertSame( 'post', $post->post_type );
 		$this->assertSame( 'private', $post->post_status );
-		$this->assertEquals( 0, $post->post_parent );
+		$this->assertSame( 0, $post->post_parent );
 		$cats = wp_get_post_categories( $post->ID );
 		$this->assertCount( 1, $cats );
 		$tags = wp_get_post_tags( $post->ID );
@@ -151,7 +151,7 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		$this->assertEquals( $admin->ID, $post->post_author );
 		$this->assertSame( 'page', $post->post_type );
 		$this->assertSame( 'publish', $post->post_status );
-		$this->assertEquals( 0, $post->post_parent );
+		$this->assertSame( 0, $post->post_parent );
 		$this->assertSame( 'onecolumn-page.php', get_post_meta( $post->ID, '_wp_page_template', true ) );
 
 		$post = $posts[6];
@@ -160,7 +160,7 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		$this->assertEquals( $admin->ID, $post->post_author );
 		$this->assertSame( 'page', $post->post_type );
 		$this->assertSame( 'draft', $post->post_status );
-		$this->assertEquals( 0, $post->post_parent );
+		$this->assertSame( 0, $post->post_parent );
 		$this->assertSame( 'default', get_post_meta( $post->ID, '_wp_page_template', true ) );
 
 		$post = $posts[7];
@@ -169,7 +169,7 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		$this->assertEquals( $admin->ID, $post->post_author );
 		$this->assertSame( 'page', $post->post_type );
 		$this->assertSame( 'publish', $post->post_status );
-		$this->assertEquals( 0, $post->post_parent );
+		$this->assertSame( 0, $post->post_parent );
 		$this->assertSame( 'default', get_post_meta( $post->ID, '_wp_page_template', true ) );
 
 		$post = $posts[8];
@@ -178,7 +178,7 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		$this->assertEquals( $admin->ID, $post->post_author );
 		$this->assertSame( 'page', $post->post_type );
 		$this->assertSame( 'publish', $post->post_status );
-		$this->assertEquals( $posts[7]->ID, $post->post_parent );
+		$this->assertSame( $posts[7]->ID, $post->post_parent );
 		$this->assertSame( 'default', get_post_meta( $post->ID, '_wp_page_template', true ) );
 
 		$post = $posts[9];
@@ -187,7 +187,7 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		$this->assertEquals( $admin->ID, $post->post_author );
 		$this->assertSame( 'page', $post->post_type );
 		$this->assertSame( 'publish', $post->post_status );
-		$this->assertEquals( 0, $post->post_parent );
+		$this->assertSame( 0, $post->post_parent );
 		$this->assertSame( 'default', get_post_meta( $post->ID, '_wp_page_template', true ) );
 
 		$post = $posts[10];
@@ -196,7 +196,7 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		$this->assertEquals( $author->ID, $post->post_author );
 		$this->assertSame( 'post', $post->post_type );
 		$this->assertSame( 'publish', $post->post_status );
-		$this->assertEquals( 0, $post->post_parent );
+		$this->assertSame( 0, $post->post_parent );
 		$cats = wp_get_post_categories( $post->ID );
 		$this->assertCount( 1, $cats );
 	}
@@ -211,7 +211,7 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		$this->_import_wp( DIR_TESTDATA_WP_IMPORTER . '/small-export.xml', $authors );
 
 		$user_count = count_users();
-		$this->assertEquals( 3, $user_count['total_users'] );
+		$this->assertSame( 3, $user_count['total_users'] );
 		$admin = get_user_by( 'login', 'admin' );
 		$this->assertSame( 'admin', $admin->user_login );
 		$this->assertSame( 'local@host.null', $admin->user_email );
@@ -227,10 +227,10 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		$this->assertEquals( 30, wp_count_terms( 'category' ) );
 		$this->assertEquals( 3, wp_count_terms( 'post_tag' ) );
 		$foo = get_term_by( 'slug', 'foo', 'category' );
-		$this->assertEquals( 0, $foo->parent );
+		$this->assertSame( 0, $foo->parent );
 		$bar     = get_term_by( 'slug', 'bar', 'category' );
 		$foo_bar = get_term_by( 'slug', 'foo-bar', 'category' );
-		$this->assertEquals( $bar->term_id, $foo_bar->parent );
+		$this->assertSame( $bar->term_id, $foo_bar->parent );
 
 		$post_count = wp_count_posts( 'post' );
 		$this->assertEquals( 5, $post_count->publish );
@@ -239,7 +239,7 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		$this->assertEquals( 4, $page_count->publish );
 		$this->assertEquals( 1, $page_count->draft );
 		$comment_count = wp_count_comments();
-		$this->assertEquals( 1, $comment_count->total_comments );
+		$this->assertSame( 1, $comment_count->total_comments );
 	}
 
 	function test_ordering_of_importers() {
@@ -252,7 +252,7 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 			'ABC1' => array( 'ABC1' ),
 			'def1' => array( 'def1' ),
 		);
-		$this->assertEquals(
+		$this->assertSame(
 			array(
 				'ABC1' => array( 'ABC1' ),
 				'abc2' => array( 'abc2' ),
