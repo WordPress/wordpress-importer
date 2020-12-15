@@ -101,9 +101,9 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 				$message
 			);
 
-			$this->assertEquals( 2, count( $result['posts'] ), $message );
-			$this->assertEquals( 19, count( $result['posts'][0] ), $message );
-			$this->assertEquals( 18, count( $result['posts'][1] ), $message );
+			$this->assertCount( 2, $result['posts'], $message );
+			$this->assertCount( 19, $result['posts'][0], $message );
+			$this->assertCount( 18, $result['posts'][1], $message );
 			$this->assertEquals(
 				array(
 					array(
@@ -155,9 +155,9 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 			$this->assertEquals( 'chicken', $result['tags'][0]['tag_slug'], $message );
 			$this->assertEquals( 'chicken', $result['tags'][0]['tag_name'], $message );
 
-			$this->assertEquals( 6, count( $result['posts'] ), $message );
-			$this->assertEquals( 19, count( $result['posts'][0] ), $message );
-			$this->assertEquals( 18, count( $result['posts'][1] ), $message );
+			$this->assertCount( 6, $result['posts'], $message );
+			$this->assertCount( 19, $result['posts'][0], $message );
+			$this->assertCount( 18, $result['posts'][1], $message );
 
 			$this->assertEquals(
 				array(
@@ -241,9 +241,9 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 			$this->assertEmpty( $result['authors'], $message );
 			$this->assertEmpty( $result['posts'], $message );
 
-			$this->assertEquals( 2, count( $result['categories'] ), $message );
-			$this->assertEquals( 3, count( $result['tags'] ), $message );
-			$this->assertEquals( 2, count( $result['terms'] ), $message );
+			$this->assertCount( 2, $result['categories'], $message );
+			$this->assertCount( 3, $result['tags'], $message );
+			$this->assertCount( 2, $result['terms'], $message );
 
 			// TODO: Verify the content of the terms extracted and verify each has the expected fields & field types.
 		}
@@ -336,23 +336,23 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 			$parser  = new $p;
 			$result  = $parser->parse( $file );
 
-			$this->assertEquals( 1, count( $result['categories'] ), $message );
-			$this->assertEquals( 1, count( $result['tags'] ), $message );
-			$this->assertEquals( 1, count( $result['terms'] ), $message );
+			$this->assertCount( 1, $result['categories'], $message );
+			$this->assertCount( 1, $result['tags'], $message );
+			$this->assertCount( 1, $result['terms'], $message );
 
 			$category = $result['categories'][0];
 			$this->assertArrayHasKey( 'termmeta', $category, $message );
-			$this->assertEquals( 2, count( $category['termmeta'] ), $message );
+			$this->assertCount( 2, $category['termmeta'], $message );
 			$this->assertEquals( $expected_meta, $category['termmeta'], $message );
 
 			$tag = $result['tags'][0];
 			$this->assertArrayHasKey( 'termmeta', $tag, $message );
-			$this->assertEquals( 2, count( $tag['termmeta'] ), $message );
+			$this->assertCount( 2, $tag['termmeta'], $message );
 			$this->assertEquals( $expected_meta, $tag['termmeta'], $message );
 
 			$term = $result['terms'][0];
 			$this->assertArrayHasKey( 'termmeta', $term, $message );
-			$this->assertEquals( 2, count( $term['termmeta'] ), $message );
+			$this->assertCount( 2, $term['termmeta'], $message );
 			$this->assertEquals( $expected_meta, $term['termmeta'], $message );
 		}
 	}
@@ -379,14 +379,14 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 			$parser  = new $p;
 			$result  = $parser->parse( $file );
 
-			$this->assertEquals( 1, count( $result['posts'] ), $message );
+			$this->assertCount( 1, $result['posts'], $message );
 
 			$post = $result['posts'][0];
 			$this->assertArrayHasKey( 'comments', $post, $message );
 
 			$comment = $post['comments'][0];
 			$this->assertArrayHasKey( 'commentmeta', $comment, $message );
-			$this->assertEquals( 2, count( $comment['commentmeta'] ), $message );
+			$this->assertCount( 2, $comment['commentmeta'], $message );
 			$this->assertEquals( $expected_meta, $comment['commentmeta'], $message );
 		}
 	}
