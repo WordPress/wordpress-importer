@@ -23,6 +23,7 @@ env:
 
 matrix:
   include:
+    - php: 8.0
     - php: 7.4
       env: WP_VERSION=trunk
     - php: 7.4
@@ -58,7 +59,7 @@ matrix:
       env: WP_VERSION=trunk
 
   allow_failures:
-    - php: nightly
+    - php: "nightly"
       env: WP_VERSION=trunk
 
 before_script:
@@ -66,7 +67,7 @@ before_script:
   - phpenv config-rm xdebug.ini || echo 'No xdebug config.'
   - bash phpunit/install.sh wordpress_test root '' localhost $WP_VERSION
   - |
-    if [[ "$TRAVIS_PHP_VERSION" == "nightly" ]]; then
+    if [[ ${TRAVIS_PHP_VERSION:0:1} == "8" || "$TRAVIS_PHP_VERSION" == "nightly" ]]; then
       composer global require phpunit/phpunit:"7.5.*" --ignore-platform-reqs
     elif [[ "$TRAVIS_PHP_VERSION" != "5.2" ]]; then
       composer global require phpunit/phpunit:"4.8.*||5.7.*||6.5.*||7.5.*"
