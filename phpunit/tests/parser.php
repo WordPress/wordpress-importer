@@ -53,7 +53,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 			$parser  = new $p;
 			$result  = $parser->parse( $file );
 
-			$this->assertTrue( is_array( $result ), $message );
+			$this->assertInternalType( 'array', $result, $message );
 			$this->assertEquals( 'http://localhost/', $result['base_url'], $message );
 			$this->assertEquals(
 				array(
@@ -146,7 +146,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 			$parser  = new $p;
 			$result  = $parser->parse( $file );
 
-			$this->assertTrue( is_array( $result ), $message );
+			$this->assertInternalType( 'array', $result, $message );
 			$this->assertEquals( 'http://localhost/', $result['base_url'], $message );
 			$this->assertEquals( 'alpha', $result['categories'][0]['category_nicename'], $message );
 			$this->assertEquals( 'alpha', $result['categories'][0]['cat_name'], $message );
@@ -235,7 +235,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 			$parser  = new $p;
 			$result  = $parser->parse( $file );
 
-			$this->assertTrue( is_array( $result ), $message );
+			$this->assertInternalType( 'array', $result, $message );
 			$this->assertEquals( 'http://localhost/', $result['base_url'], $message );
 
 			$this->assertEmpty( $result['authors'], $message );
