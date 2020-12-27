@@ -27,12 +27,6 @@ matrix:
       env: WP_VERSION=trunk
     - php: 7.4
     - php: 7.3
-    - php: 7.3
-      name: "PHPCS check"
-      script:
-        - |
-          composer global require wp-coding-standards/wpcs phpcompatibility/phpcompatibility-wp dealerdirect/phpcodesniffer-composer-installer
-          phpcs
     - php: 7.2
     - php: 7.1
     - php: 7.0

@@ -1,0 +1,41 @@
+name: CS
+
+on:
+  # Run on all pushes and on all pull requests.
+  # Prevent the build from running when there are only irrelevant changes.
+  push:
+    paths-ignore:
+      - '**.md'
+      - '**.txt'
+  pull_request:
+    paths-ignore:
+      - '**.md'
+      - '**.txt'
+
+jobs:
+  checkcs:
+    name: 'PHPCS check'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          coverage: none
+
+      - name: 'Composer: set up PHPCS dependencies'
+        run: |
+          composer require --no-update squizlabs/php_codesniffer wp-coding-standards/wpcs phpcompatibility/phpcompatibility-wp dealerdirect/phpcodesniffer-composer-installer
+
+      # Install dependencies and handle caching in one go.
+      # @link https://github.com/marketplace/actions/install-composer-dependencies
+      - name: Install Composer dependencies
+        uses: "ramsey/composer-install@v1"
+
+      # Check the code-style consistency of the PHP files.
+      - name: Check PHP code style
+        run: vendor/bin/phpcs --report=checkstyle
