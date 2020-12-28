@@ -1,0 +1,183 @@
+name: Test
+
+on:
+  # Run on all pushes and on all pull requests.
+  # Prevent the build from running when there are only irrelevant changes.
+  push:
+    paths-ignore:
+      - '**.md'
+      - '**.txt'
+  pull_request:
+    paths-ignore:
+      - '**.md'
+      - '**.txt'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # Notes regarding supported versions in WP:
+        # PHP 5.3-5.5 are supported since WP 3.7 until WP 5.1 (including).
+        # PHP 5.6 is supported since WP 4.1.
+        # PHP 7.0 is supported since WP 4.4.
+        # PHP 7.1 is supported since WP 4.7.
+        # PHP 7.2 is supported since WP 4.9.
+        # PHP 7.3 is supported since WP 5.0.
+        # PHP 7.4 is supported since WP 5.3.
+        # PHP 8.0 is sort of supported since WP 5.6.
+        # This doesn't mean that the plugin doesn't work on earlier version as it may not hit incompatible
+        # parts of WP, but just something to be aware of in case of failures.
+        php: ['5.6', '7.0', '7.1', '7.2', '7.3', '7.4', '8.0']
+        wp: ['latest', '3.7']
+        experimental: [false]
+
+        include:
+          # As support for PHP < 5.6 was dropped in WP 5.2, PHP 5.3 - 5.5 can only be tested against WP < 5.2.
+          # Complement the builds run via the matrix with high/low WP builds for PHP 5.3 - 5.5.
+          - php: '5.5'
+            wp: '5.1'
+            experimental: false
+          - php: '5.5'
+            wp: '3.7'
+            experimental: false
+          - php: '5.4'
+            wp: '5.1'
+            experimental: false
+          - php: '5.4'
+            wp: '3.7'
+            experimental: false
+          - php: '5.3'
+            wp: '5.1'
+            experimental: false
+          - php: '5.3'
+            wp: '3.7'
+            experimental: false
+
+          # Complement the builds run via the matrix with some additional builds against specific WP versions.
+          - php: '7.4'
+            wp: '5.4'
+            experimental: false
+          - php: '7.3'
+            wp: '5.3'
+            experimental: false
+          - php: '7.2'
+            wp: '5.2'
+            experimental: false
+          - php: '7.1'
+            wp: '4.6'
+            experimental: false
+          - php: '7.0'
+            wp: '4.3'
+            experimental: false
+          - php: '5.6'
+            wp: '4.0'
+            experimental: false
+          - php: '5.6'
+            wp: '5.5'
+            experimental: false
+          - php: '5.5'
+            wp: '4.5'
+            experimental: false
+          - php: '5.4'
+            wp: '5.0'
+            experimental: false
+          - php: '5.3'
+            wp: '4.9'
+            experimental: false
+
+          # Experimental builds. These are allowed to fail.
+          - php: '7.4'
+            wp: 'trunk'
+            experimental: true
+
+          - php: '8.1'
+            wp: 'trunk'
+            experimental: true
+
+    name: "Test: PHP ${{ matrix.php }} - WP ${{ matrix.wp }}"
+
+    continue-on-error: ${{ matrix.experimental }}
+
+    services:
+      mysql:
+        # WP 4.5 is the first WP version which properly supports MySQL 5.7.
+        # See: https://core.trac.wordpress.org/ticket/34692
+        # WP 5.4 is the first WP version which largely supports MySQL 8.0.
+        # See: https://core.trac.wordpress.org/ticket/49344
+        #image: mysql:${{ ( matrix.wp < 4.5 && '5.6' ) || ( matrix.wp < 5.4 && '5.7' ) || '8.0' }}
+        image: mysql:5.6.50
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: false
+          MYSQL_DATABASE: wordpress_test
+        ports:
+          - 3306/tcp
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+          # The PHP 5.6 and 7.0 images don't include mysql[i] by default.
+          extensions: mysqli
+
+      - name: Start mysql service
+        run: sudo /etc/init.d/mysql start
+
+      - name: Verify mysql version
+        run: |
+          mysqld --version
+          mysqladmin -V
+
+      - name: Set up WordPress
+        run: phpunit/install.sh wordpress_test root root 127.0.0.1 ${{ matrix.wp }}
+
+      - name: Determine supported PHPUnit version
+        id: set_phpunit
+        run: |
+          # Originally, only PHPUnit 4.x and 5.x were supported.
+          # As of WP 5.1, PHPUnit 6.x and 7.x are also supported.
+          # With WP 5.2 dropping support for PHP < 5.6, support for PHPUnit 4.x was also dropped.
+          # On PHP >= 8.0, PHPUnit 7.5+ is needed, no matter what.
+          if [[ "${{ matrix.php }}" > "7.4" ]]; then
+            echo '::set-output name=PHPUNIT::7.5.*'
+          else
+            if [[ "${{ matrix.wp }}" == "latest" || "${{ matrix.wp }}" == "trunk" || "${{ matrix.wp }}" > "5.1" ]]; then
+              echo '::set-output name=PHPUNIT::5.7.*||6.5.*||7.5.*'
+            elif [ "${{ matrix.wp }}" == "5.1" ]; then
+              echo '::set-output name=PHPUNIT::4.8.*||5.7.*||6.5.*||7.5.*'
+            else
+              echo '::set-output name=PHPUNIT::4.8.*||5.7.*'
+            fi
+          fi
+
+      - name: 'Composer: set up PHPUnit'
+        run: composer require --no-update phpunit/phpunit:"${{ steps.set_phpunit.outputs.PHPUNIT }}"
+
+      # Install dependencies and handle caching in one go.
+      # @link https://github.com/marketplace/actions/install-composer-dependencies
+      - name: Install Composer dependencies for PHP < 8.0
+        if: ${{ matrix.php < 8.0 }}
+        uses: "ramsey/composer-install@v1"
+
+      # For the PHP 8.0 and above, we need to install with ignore platform reqs as not all dependencies allow it yet.
+      - name: Install Composer dependencies for PHP >= 8.0
+        if: ${{ matrix.php >= 8.0 }}
+        uses: "ramsey/composer-install@v1"
+        with:
+          composer-options: --ignore-platform-reqs
+
+      - name: Run the unit tests - single site
+        run: vendor/bin/phpunit
+
+      - name: Run the unit tests - multi site
+        run: vendor/bin/phpunit
+        env:
+          WP_MULTISITE: 1
