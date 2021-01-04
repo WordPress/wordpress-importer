@@ -101,21 +101,6 @@ jobs:
 
     continue-on-error: ${{ matrix.experimental }}
 
-    services:
-      mysql:
-        # WP 4.5 is the first WP version which properly supports MySQL 5.7.
-        # See: https://core.trac.wordpress.org/ticket/34692
-        # WP 5.4 is the first WP version which largely supports MySQL 8.0.
-        # See: https://core.trac.wordpress.org/ticket/49344
-        #image: mysql:${{ ( matrix.wp < 4.5 && '5.6' ) || ( matrix.wp < 5.4 && '5.7' ) || '8.0' }}
-        image: mysql:5.6.50
-        env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: false
-          MYSQL_DATABASE: wordpress_test
-        ports:
-          - 3306/tcp
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -128,9 +113,15 @@ jobs:
           # The PHP 5.6 and 7.0 images don't include mysql[i] by default.
           extensions: mysqli
 
+      - name: Install MySQL
+        uses: mirromutth/mysql-action@v1.1
+        with:
+          mysql version: '5.6'
+          mysql root password: 'root'
+
       - name: Verify mysql version
         run: |
-          mysqld --version --port ${{ job.services.mysql.ports['3306'] }}
+          mysqld --version
           mysqladmin -V
 
       - name: Set up WordPress
