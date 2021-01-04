@@ -128,12 +128,6 @@ jobs:
           # The PHP 5.6 and 7.0 images don't include mysql[i] by default.
           extensions: mysqli
 
-      - name: Stop the default MySQL service
-        run: sudo service mysql stop
-
-      - name: Start mysql service
-        run: sudo /etc/init.d/mysql start
-
       - name: Verify mysql version
         run: |
           mysqld --version --port ${{ job.services.mysql.ports['3306'] }}
