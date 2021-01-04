@@ -136,7 +136,7 @@ jobs:
 
       - name: Verify mysql version
         run: |
-          mysqld --version
+          mysqld --version --port ${{ job.services.mysql.ports['3306'] }}
           mysqladmin -V
 
       - name: Set up WordPress
