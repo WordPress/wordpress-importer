@@ -1,4 +1,4 @@
-name: CS
+name: Coding Standards
 
 on:
   # Run on all pushes and on all pull requests.
