@@ -79,16 +79,19 @@ class WXR_Parser_Regex {
 						// We don't want to have this line added to `$is_multiline` below.
 						$importline   = '';
 						$in_multiline = $tag;
+						$is_tag_line  = true;
 
 					} elseif ( false !== $pos_closing ) {
 						$in_multiline       = false;
 						$multiline_content .= trim( substr( $importline, 0, $pos_closing ) );
 
 						$this->{$handler[0]}[] = call_user_func( $handler[1], $multiline_content );
+					} else {
+						$is_tag_line  = false;
 					}
 				}
 
-				if ( $in_multiline && $importline ) {
+				if ( $in_multiline && ! $is_tag_line ) {
 					$multiline_content .= $importline . "\n";
 				}
 			}
