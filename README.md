@@ -1,6 +1,7 @@
 # WordPress Importer
 
-[![Build Status](https://img.shields.io/travis/com/WordPress/wordpress-importer/master.svg)](https://travis-ci.com/WordPress/wordpress-importer)
+[![CS Build Status](https://github.com/WordPress/wordpress-importer/workflows/CS/badge.svg)](https://github.com/WordPress/wordpress-importer/actions?query=workflow%3ACS)
+[![Test Build Status](https://github.com/WordPress/wordpress-importer/workflows/Test/badge.svg)](https://github.com/WordPress/wordpress-importer/actions?query=workflow%3ATest)
 
 The [WordPress Importer](https://wordpress.org/plugins/wordpress-importer/) will import the following content from a WordPress export file:
 
