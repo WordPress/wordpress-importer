@@ -44,7 +44,7 @@
 -->
 
 	<!-- Supported PHP versions -->
-	<config name="testVersion" value="5.2-"/>
+	<config name="testVersion" value="5.6-"/>
 	<rule ref="PHPCompatibilityWP"/>
 
 </ruleset>
