@@ -26,7 +26,8 @@ class Tests_Import_Comment_Meta extends WP_Import_UnitTestCase {
 		$expected_array  = array( 'key' => '¯\_(ツ)_/¯' );
 
 		$comments_count = wp_count_comments();
-		$this->assertSame( 1, $comments_count->approved );
+		// Note: using assertEquals() as the return type changes across different WP versions - numeric string vs int.
+		$this->assertEquals( 1, $comments_count->approved );
 
 		$comments = get_comments();
 		$this->assertCount( 1, $comments );
