@@ -236,7 +236,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 			$result  = $parser->parse( $file );
 
 			// Check the number of new lines characters
-			$this->assertEquals( 3, substr_count( $result['posts'][0]['post_content'], PHP_EOL ), $message );
+			$this->assertSame( 3, substr_count( $result['posts'][0]['post_content'], PHP_EOL ), $message );
 		}
 	}
 
