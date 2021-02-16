@@ -226,6 +226,20 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 		}
 	}
 
+	// Test that all parsers preserve blank lines in content
+	function test_blank_lines_in_content() {
+		$file = DIR_TESTDATA_WP_IMPORTER . '/post-content-blank-lines.xml';
+
+		foreach ( array( 'WXR_Parser_SimpleXML', 'WXR_Parser_XML', 'WXR_Parser_Regex' ) as $p ) {
+			$message = $p . ' failed and is missing blank lines';
+			$parser  = new $p;
+			$result  = $parser->parse( $file );
+
+			// Check the number of new lines characters
+			$this->assertSame( 3, substr_count( $result['posts'][0]['post_content'], PHP_EOL ), $message );
+		}
+	}
+
 	// Tests that each parser detects the same number of terms.
 	function test_varied_taxonomy_term_spacing() {
 		$file = DIR_TESTDATA_WP_IMPORTER . '/term-formats.xml';
