@@ -38,6 +38,7 @@ class WXR_Parser_Regex {
 		$fp = $this->fopen( $file, 'r' );
 		if ( $fp ) {
 			while ( ! $this->feof( $fp ) ) {
+				$is_tag_line = false;
 				$importline = rtrim( $this->fgets( $fp ) );
 
 				if ( ! $wxr_version && preg_match( '|<wp:wxr_version>(\d+\.\d+)</wp:wxr_version>|', $importline, $version ) ) {
@@ -77,7 +78,6 @@ class WXR_Parser_Regex {
 						$multiline_content = trim( substr( $importline, $pos + strlen( $tag ) + 2 ) );
 
 						// We don't want to have this line added to `$is_multiline` below.
-						$importline   = '';
 						$in_multiline = $tag;
 						$is_tag_line  = true;
 
@@ -86,8 +86,6 @@ class WXR_Parser_Regex {
 						$multiline_content .= trim( substr( $importline, 0, $pos_closing ) );
 
 						$this->{$handler[0]}[] = call_user_func( $handler[1], $multiline_content );
-					} else {
-						$is_tag_line  = false;
 					}
 				}
 
