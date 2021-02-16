@@ -39,7 +39,7 @@ class WXR_Parser_Regex {
 		if ( $fp ) {
 			while ( ! $this->feof( $fp ) ) {
 				$is_tag_line = false;
-				$importline = rtrim( $this->fgets( $fp ) );
+				$importline  = rtrim( $this->fgets( $fp ) );
 
 				if ( ! $wxr_version && preg_match( '|<wp:wxr_version>(\d+\.\d+)</wp:wxr_version>|', $importline, $version ) ) {
 					$wxr_version = $version[1];
