@@ -55,7 +55,7 @@ class WXR_Parser_Regex {
 					preg_match( '|<wp:base_blog_url>(.*?)</wp:base_blog_url>|is', $importline, $blog_url );
 					$this->base_blog_url = $blog_url[1];
 					continue;
-				} else {
+				} elseif ( empty( $this->base_blog_url ) ) {
 					$this->base_blog_url = $this->base_url;
 				}
 
