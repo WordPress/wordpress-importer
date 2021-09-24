@@ -1,0 +1,23 @@
+{
+    "name": "wordpress/wordpress-importer",
+    "description": "Wordpress plugin to import posts, pages, comments, custom fields, categories, tags and more from a WordPress export file.",
+    "keywords": [
+        "importer", "wordpress"
+    ],
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "homepage": "https://wordpress.org/plugins/wordpress-importer/",
+    "support": {
+        "issues": "https://wordpress.org/support/plugin/wordpress-importer/",
+        "source": "https://github.com/WordPress/wordpress-importer"
+    },
+    "require": {
+        "php": ">=5.6"
+    },
+    "require-dev": {
+        "wp-coding-standards/wpcs": "^2.3",
+        "dealerdirect/phpcodesniffer-composer-installer": "^0.7",
+        "phpcompatibility/phpcompatibility-wp": "^2.1",
+        "phpunit/phpunit": "^5.7.21 || ^6.5 || ^7.5"
+    }
+}

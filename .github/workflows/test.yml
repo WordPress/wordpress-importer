@@ -91,20 +91,6 @@ jobs:
       - name: Set up WordPress
         run: phpunit/install.sh wordpress_test root '' 127.0.0.1:3306 ${{ matrix.wp }}
 
-      # On WP 5.2, PHPUnit 5.x, 6.x and 7.x are supported.
-      # On PHP >= 8.0, PHPUnit 7.5+ is needed, no matter what.
-      - name: Determine supported PHPUnit version
-        id: set_phpunit
-        run: |
-          if [[ "${{ matrix.php }}" > "7.4" ]]; then
-            echo '::set-output name=PHPUNIT::7.5.*'
-          else
-            echo '::set-output name=PHPUNIT::5.7.*||6.5.*||7.5.*'
-          fi
-
-      - name: 'Composer: set up PHPUnit'
-        run: composer require --no-update phpunit/phpunit:"${{ steps.set_phpunit.outputs.PHPUNIT }}"
-
       # Install dependencies and handle caching in one go.
       # @link https://github.com/marketplace/actions/install-composer-dependencies
       - name: Install Composer dependencies for PHP < 8.0
