@@ -1,6 +1,8 @@
 <?php
 
-abstract class WP_Import_UnitTestCase extends WP_UnitTestCase {
+use Yoast\WPTestUtils\WPIntegration\TestCase;
+
+abstract class WP_Import_UnitTestCase extends TestCase {
 	/**
 	 * Import a WXR file.
 	 *

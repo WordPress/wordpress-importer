@@ -2,45 +2,38 @@
 /**
  * PHPUnit bootstrap file for the WordPress Importer
  *
- * @package Sample_Plugin
+ * @package WordPress
+ * @subpackage Importer
  */
 
-$_tests_dir = getenv( 'WP_TESTS_DIR' );
+use Yoast\WPTestUtils\WPIntegration;
 
-// Check if we're installed in a src checkout.
-$pos = stripos( __FILE__, '/src/wp-content/plugins/' );
-if ( ! $_tests_dir && false !== $pos ) {
-	$_tests_dir = substr( __FILE__, 0, $pos ) . '/tests/phpunit/';
-}
+require_once dirname( __DIR__ ) . '/vendor/yoast/wp-test-utils/src/WPIntegration/bootstrap-functions.php';
 
-if ( ! $_tests_dir ) {
-	$_tests_dir = rtrim( sys_get_temp_dir(), '/\\' ) . '/wordpress-tests-lib';
-}
+$_tests_dir = WPIntegration\get_path_to_wp_test_dir();
+
+define( 'WP_LOAD_IMPORTERS', true );
+
+define( 'DIR_TESTDATA_WP_IMPORTER', dirname( __FILE__ ) . '/data' );
 
 if ( ! file_exists( $_tests_dir . '/includes/functions.php' ) ) {
 	echo "Could not find $_tests_dir/includes/functions.php\n";
 	exit( 1 );
 }
 
-define( 'WP_LOAD_IMPORTERS', true );
-
-define( 'DIR_TESTDATA_WP_IMPORTER', dirname( __FILE__ ) . '/data' );
-
 // Give access to tests_add_filter() function.
-require_once $_tests_dir . '/includes/functions.php';
+require_once $_tests_dir . 'includes/functions.php';
 
 /**
  * Manually load the importer
  */
 function _manually_load_importer() {
 	if ( ! class_exists( 'WP_Import' ) ) {
-		require dirname( dirname( __FILE__ ) ) . '/src/wordpress-importer.php';
+		require dirname( __DIR__ ) . '/src/wordpress-importer.php';
 	}
 }
 tests_add_filter( 'plugins_loaded', '_manually_load_importer' );
 
-// Include the PHPUnit Polyfills autoloader.
-require dirname( __DIR__ ) . '/vendor/yoast/phpunit-polyfills/phpunitpolyfills-autoload.php';
+WPIntegration\bootstrap_it();
 
-// Start up the WP testing environment.
-require $_tests_dir . '/includes/bootstrap.php';
+require_once __DIR__ . '/tests/base.php';
