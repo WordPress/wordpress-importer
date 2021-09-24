@@ -118,6 +118,10 @@ class WXR_Parser_XML {
 		switch ( $tag ) {
 			case 'category':
 				if ( isset( $attr['domain'], $attr['nicename'] ) ) {
+					if ( false === $this->sub_data ) {
+						$this->sub_data = array();
+					}
+
 					$this->sub_data['domain'] = $attr['domain'];
 					$this->sub_data['slug']   = $attr['nicename'];
 				}
@@ -233,9 +237,17 @@ class WXR_Parser_XML {
 
 			default:
 				if ( $this->in_sub_tag ) {
+					if ( false === $this->sub_data ) {
+						$this->sub_data = array();
+					}
+
 					$this->sub_data[ $this->in_sub_tag ] = ! empty( $this->cdata ) ? $this->cdata : '';
 					$this->in_sub_tag                    = false;
 				} elseif ( $this->in_tag ) {
+					if ( false === $this->data ) {
+						$this->data = array();
+					}
+
 					$this->data[ $this->in_tag ] = ! empty( $this->cdata ) ? $this->cdata : '';
 					$this->in_tag                = false;
 				}
