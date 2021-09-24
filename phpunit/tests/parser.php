@@ -22,7 +22,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 	function test_malformed_wxr() {
 		$file = DIR_TESTDATA_WP_IMPORTER . '/malformed.xml';
 
-		// regex based parser cannot detect malformed XML
+		// Regex based parser cannot detect malformed XML.
 		foreach ( array( 'WXR_Parser_SimpleXML', 'WXR_Parser_XML' ) as $p ) {
 			$parser = new $p;
 			$result = $parser->parse( $file );
