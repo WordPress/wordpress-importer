@@ -51,8 +51,17 @@ jobs:
           - php: '5.6'
             wp: '5.5'
             experimental: false
+          - php: '7.2'
+            wp: '5.7'
+            experimental: false
+          - php: '7.0'
+            wp: '5.8'
+            experimental: false
 
           # Experimental builds. These are allowed to fail.
+          - php: '8.1'
+            wp: 'trunk'
+            experimental: true
           - php: '7.4'
             wp: 'trunk'
             experimental: true
@@ -91,15 +100,22 @@ jobs:
       - name: Set up WordPress
         run: phpunit/install.sh wordpress_test root '' 127.0.0.1:3306 ${{ matrix.wp }}
 
+      # Remove the PHPUnit requirement for WP 5.9 and higher in favour of letting the Polyfills manage it.
+      # The Composer command will exit with error code 2 as the package is not removed, so ignore "failure" of this step.
+      - name: Conditionally remove PHPUnit requirement
+        if: ${{ matrix.wp == 'trunk' || matrix.wp >= 5.9 }}
+        continue-on-error: true
+        run: composer remove --dev phpunit/phpunit || true
+
       # Install dependencies and handle caching in one go.
       # @link https://github.com/marketplace/actions/install-composer-dependencies
       - name: Install Composer dependencies for PHP < 8.0
-        if: ${{ matrix.php < 8.0 }}
+        if: ${{ matrix.php < 8.0 || ( ( matrix.wp == 'trunk' || matrix.wp >= 5.9 ) && matrix.wp != 'latest' ) }}
         uses: "ramsey/composer-install@v1"
 
-      # For the PHP 8.0 and above, we need to install with ignore platform reqs as not all dependencies allow it yet.
+      # For PHP 8.0 and above on WP 5.2 - 5.8, we need to install with ignore platform reqs as not all dependencies allow it.
       - name: Install Composer dependencies for PHP >= 8.0
-        if: ${{ matrix.php >= 8.0 }}
+        if: ${{ matrix.php >= 8.0 && ( matrix.wp == 'latest' || ( matrix.wp != 'trunk' && matrix.wp < 5.9 ) ) }}
         uses: "ramsey/composer-install@v1"
         with:
           composer-options: --ignore-platform-reqs
