@@ -6,8 +6,8 @@ require_once dirname( __FILE__ ) . '/base.php';
  * @group import
  */
 class Tests_Import_Import extends WP_Import_UnitTestCase {
-	function setUp() {
-		parent::setUp();
+	function set_up() {
+		parent::set_up();
 
 		if ( ! defined( 'WP_IMPORTING' ) ) {
 			define( 'WP_IMPORTING', true );
@@ -27,10 +27,10 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		}
 	}
 
-	function tearDown() {
+	function tear_down() {
 		remove_filter( 'import_allow_create_users', '__return_true' );
 
-		parent::tearDown();
+		parent::tear_down();
 	}
 
 	function test_small_import() {

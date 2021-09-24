@@ -39,5 +39,8 @@ function _manually_load_importer() {
 }
 tests_add_filter( 'plugins_loaded', '_manually_load_importer' );
 
+// Include the PHPUnit Polyfills autoloader.
+require dirname( __DIR__ ) . '/vendor/yoast/phpunit-polyfills/phpunitpolyfills-autoload.php';
+
 // Start up the WP testing environment.
 require $_tests_dir . '/includes/bootstrap.php';
