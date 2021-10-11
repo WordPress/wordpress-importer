@@ -98,9 +98,8 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
+          ini-values: zend.assertions=1, error_reporting=-1, display_errors=On
           coverage: none
-          # The PHP 5.6 and 7.0 images don't include mysql[i] by default.
-          extensions: mysqli
 
       - name: Set up WordPress
         run: phpunit/install.sh wordpress_test root '' 127.0.0.1:3306 ${{ matrix.wp }}
