@@ -6,8 +6,8 @@ require_once dirname( __FILE__ ) . '/base.php';
  * @group import
  */
 class Tests_Import_Import extends WP_Import_UnitTestCase {
-	function setUp() {
-		parent::setUp();
+	function set_up() {
+		parent::set_up();
 
 		if ( ! defined( 'WP_IMPORTING' ) ) {
 			define( 'WP_IMPORTING', true );
@@ -20,17 +20,17 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		add_filter( 'import_allow_create_users', '__return_true' );
 
 		global $wpdb;
-		// crude but effective: make sure there's no residual data in the main tables
+		// Crude but effective: make sure there's no residual data in the main tables.
 		foreach ( array( 'posts', 'postmeta', 'comments', 'terms', 'term_taxonomy', 'term_relationships', 'users', 'usermeta' ) as $table ) {
-			// phpcs:ignore WordPress.DB.PreparedSQL
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$wpdb->query( "DELETE FROM {$wpdb->$table}" );
 		}
 	}
 
-	function tearDown() {
+	function tear_down() {
 		remove_filter( 'import_allow_create_users', '__return_true' );
 
-		parent::tearDown();
+		parent::tear_down();
 	}
 
 	function test_small_import() {
@@ -43,7 +43,7 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		);
 		$this->_import_wp( DIR_TESTDATA_WP_IMPORTER . '/small-export.xml', $authors );
 
-		// ensure that authors were imported correctly
+		// Ensure that authors were imported correctly.
 		$user_count = count_users();
 		$this->assertSame( 3, $user_count['total_users'] );
 		$admin = get_user_by( 'login', 'admin' );
@@ -58,7 +58,7 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		$this->assertSame( 'author', $author->user_login );
 		$this->assertSame( 'author@example.org', $author->user_email );
 
-		// check that terms were imported correctly
+		// Check that terms were imported correctly.
 		$this->assertSame( '30', wp_count_terms( 'category' ) );
 		$this->assertSame( '3', wp_count_terms( 'post_tag' ) );
 		$foo = get_term_by( 'slug', 'foo', 'category' );
@@ -67,7 +67,7 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		$foo_bar = get_term_by( 'slug', 'foo-bar', 'category' );
 		$this->assertSame( $bar->term_id, $foo_bar->parent );
 
-		// check that posts/pages were imported correctly
+		// Check that posts/pages were imported correctly.
 		$post_count = wp_count_posts( 'post' );
 		$this->assertSame( '5', $post_count->publish );
 		$this->assertSame( '1', $post_count->private );

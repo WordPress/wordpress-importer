@@ -11,6 +11,7 @@
 /phpcs.xml.dist export-ignore
 /phpunit.xml.dist export-ignore
 /phpunit/ export-ignore
+/composer.json export-ignore
 
 #
 # Auto detect text files and perform LF normalization
