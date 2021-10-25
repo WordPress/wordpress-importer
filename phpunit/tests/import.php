@@ -275,5 +275,22 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		$this->assertSame( '\o/ ¯\_(ツ)_/¯', $comments[0]->comment_content );
 	}
 
+	/**
+	 * Ensure no PHP 8.1 deprecation notice is thrown when a URL is passed without a path component.
+	 *
+	 * Note: this test doesn't test anything else of the functionality in the `WP_Import::fetch_remote_file()` method!
+	 */
+	public function test_fetch_remote_file_php81_deprecation() {
+		$importer = new WP_Import();
+		$result   = $importer->fetch_remote_file( 'https://example.com', array() );
+
+		$this->assertWPError( $result, 'Call to fetch_remote_file() did not return expected WP Error object' );
+		$this->assertSame(
+			'Sorry, this file type is not permitted for security reasons.',
+			$result->get_error_message(),
+			'The WP Error object did not contain the expected error'
+		);
+	}
+
 	// function test_menu_import
 }
