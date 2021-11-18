@@ -1060,7 +1060,11 @@ class WP_Import extends WP_Importer {
 	 */
 	function fetch_remote_file( $url, $post ) {
 		// Extract the file name from the URL.
-		$file_name = basename( parse_url( $url, PHP_URL_PATH ) );
+		$path      = parse_url( $url, PHP_URL_PATH );
+		$file_name = '';
+		if ( is_string( $path ) ) {
+			$file_name = basename( $path );
+		}
 
 		if ( ! $file_name ) {
 			$file_name = md5( $url );
