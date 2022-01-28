@@ -107,18 +107,18 @@ jobs:
       - name: Conditionally remove PHPUnit requirement
         if: ${{ ( matrix.wp == 'trunk' || matrix.wp >= 5.9 ) && matrix.wp != 'latest' }}
         continue-on-error: true
-        run: composer remove --dev phpunit/phpunit --no-update || true
+        run: composer remove --dev phpunit/phpunit --no-update --no-interaction || true
 
       # Install dependencies and handle caching in one go.
       # @link https://github.com/marketplace/actions/install-composer-dependencies
       - name: Install Composer dependencies for PHP < 8.0
         if: ${{ matrix.php < 8.0 || ( ( matrix.wp == 'trunk' || matrix.wp >= 5.9 ) && matrix.wp != 'latest' ) }}
-        uses: "ramsey/composer-install@v1"
+        uses: "ramsey/composer-install@v2"
 
       # For PHP 8.0 and above on WP 5.2 - 5.8, we need to install with ignore platform reqs as not all dependencies allow it.
       - name: Install Composer dependencies for PHP >= 8.0
         if: ${{ matrix.php >= 8.0 && ( matrix.wp == 'latest' || ( matrix.wp != 'trunk' && matrix.wp < 5.9 ) ) }}
-        uses: "ramsey/composer-install@v1"
+        uses: "ramsey/composer-install@v2"
         with:
           composer-options: --ignore-platform-reqs
 
