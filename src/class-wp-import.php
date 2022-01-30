@@ -423,7 +423,7 @@ class WP_Import extends WP_Importer {
 				'category_description' => wp_slash( $description ),
 			);
 
-			$id = wp_insert_category( $data );
+			$id = wp_insert_category( $data, true );
 			if ( ! is_wp_error( $id ) && $id > 0 ) {
 				if ( isset( $cat['term_id'] ) ) {
 					$this->processed_terms[ intval( $cat['term_id'] ) ] = $id;
@@ -888,7 +888,7 @@ class WP_Import extends WP_Importer {
 					if ( $key ) {
 						// export gets meta straight from the DB so could have a serialized string
 						if ( ! $value ) {
-							$value = maybe_unserialize( $meta['value'] );
+							$value = maybe_unserialize( $meta['value'] ); 
 						}
 
 						add_post_meta( $post_id, wp_slash( $key ), wp_slash_strings_only( $value ) );
