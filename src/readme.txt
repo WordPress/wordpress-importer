@@ -41,13 +41,13 @@ If you would prefer to do things manually then follow these instructions:
 == Changelog ==
 
 = 0.8 =
- * Updated minimum WordPress requirement to 5.2
- * Updated minimum PHP requirement to 5.6
- * Updated compatibility tested-up-to to WordPress 6.0
- * PHP 8.0 & PHP 8.1 compatibility fixes
- * Improved Unit testing & automated testing
- * Regex Parser: ensure that blank lines in content are respected
- * Avoid a PHP fatal error when IMPORT_DEBUG is enabled and a category creation error occurs.
+* Updated minimum WordPress requirement to 5.2
+* Updated minimum PHP requirement to 5.6
+* Updated compatibility tested-up-to to WordPress 6.0
+* PHP 8.0 & PHP 8.1 compatibility fixes
+* Improved Unit testing & automated testing
+* Regex Parser: ensure that blank lines in content are respected
+* Avoid a PHP fatal error when IMPORT_DEBUG is enabled and a category creation error occurs.
 
 = 0.7 =
 * Update minimum WordPress requirement to 3.7 and ensure compatibility with PHP 7.4.
