@@ -3,7 +3,7 @@ Contributors: wordpressdotorg
 Donate link: https://wordpressfoundation.org/donate/
 Tags: importer, wordpress
 Requires at least: 5.2
-Tested up to: 5.6
+Tested up to: 6.0
 Requires PHP: 5.6
 Stable tag: 0.7.0
 License: GPLv2 or later
@@ -39,6 +39,9 @@ If you would prefer to do things manually then follow these instructions:
 1. Go to the Tools -> Import screen, click on WordPress
 
 == Changelog ==
+
+= 0.7.1 =
+ * Update compatibility tested-up-to to WordPress 6.0
 
 = 0.7 =
 * Update minimum WordPress requirement to 3.7 and ensure compatibility with PHP 7.4.
