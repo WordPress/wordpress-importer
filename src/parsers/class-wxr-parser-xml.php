@@ -70,6 +70,8 @@ class WXR_Parser_XML {
 	public $term;
 	public $category;
 	public $tag;
+	public $base_url;
+	public $base_blog_url;
 
 	function parse( $file ) {
 		$this->wxr_version = false;
