@@ -10,7 +10,7 @@
  * WXR Parser that makes use of the XML Parser PHP extension.
  */
 class WXR_Parser_XML {
-	var $wp_tags     = array(
+	public $wp_tags     = array(
 		'wp:post_id',
 		'wp:post_date',
 		'wp:post_date_gmt',
@@ -43,7 +43,7 @@ class WXR_Parser_XML {
 		'wp:author_first_name',
 		'wp:author_last_name',
 	);
-	var $wp_sub_tags = array(
+	public $wp_sub_tags = array(
 		'wp:comment_id',
 		'wp:comment_author',
 		'wp:comment_author_email',
@@ -57,6 +57,19 @@ class WXR_Parser_XML {
 		'wp:comment_parent',
 		'wp:comment_user_id',
 	);
+
+	public $wxr_version;
+	public $in_post;
+	public $cdata;
+	public $data;
+	public $sub_data;
+	public $in_tag;
+	public $in_sub_tag;
+	public $authors;
+	public $posts;
+	public $term;
+	public $category;
+	public $tag;
 
 	function parse( $file ) {
 		$this->wxr_version = false;
