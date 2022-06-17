@@ -64,6 +64,9 @@ jobs:
           - php: '8.1'
             wp: 'trunk'
             experimental: true
+          - php: '8.2'
+            wp: 'trunk'
+            experimental: true
           - php: '7.4'
             wp: 'trunk'
             experimental: true
@@ -102,25 +105,45 @@ jobs:
       - name: Set up WordPress
         run: phpunit/install.sh wordpress_test root '' 127.0.0.1:3306 ${{ matrix.wp }}
 
+      # Determine the type of Composer install which is needed.
+      # 1. WP 5.9 or higher - all PHPUnit versions needed are supported, use the most appropriate one.
+      # 2. WP 5.9 or higher with PHP 8.2 (RC) - not all dependencies of PHPUnit have declared PHP 8.2 compatibility, so needs ignore platform.
+      # 3. WP < 5.9 with PHP < 8.0 - PHPUnit 5 - 7 supported, use the most appropriate one.
+      # 4. WP < 5.9 with PHP 8.0 or higher - PHPUnit 5 - 7 supported, needs ignore platform reqs to install PHPUnit 7 for PHP >= 8.0.
+      - name: Determine the type of Composer install to use
+        id: composer_toggle
+        run: |
+          if [[ "${{ matrix.wp }}" =~ ^(trunk|latest|5\.9|[6789]\.[0-9])$ ]]; then
+            if [[ "${{ matrix.php }}" != "8.2" ]]; then
+              echo '::set-output name=TYPE::1'
+            else
+              echo '::set-output name=TYPE::2'
+            fi
+          elif [[ "${{ matrix.php }}" > "7.4" ]]; then
+            echo '::set-output name=TYPE::4'
+          else
+            echo '::set-output name=TYPE::3'
+          fi
+
       # Remove the PHPUnit requirement for WP 5.9 and higher in favour of letting the Polyfills manage it.
       # The Composer command will exit with error code 2 as the package is not removed, so ignore "failure" of this step.
       - name: Conditionally remove PHPUnit requirement
-        if: ${{ ( matrix.wp == 'trunk' || matrix.wp >= 5.9 ) && matrix.wp != 'latest' }}
+        if: ${{ steps.composer_toggle.outputs.TYPE == '1' || steps.composer_toggle.outputs.TYPE == '2' }}
         continue-on-error: true
         run: composer remove --dev phpunit/phpunit --no-update --no-interaction || true
 
       # Install dependencies and handle caching in one go.
       # @link https://github.com/marketplace/actions/install-composer-dependencies
-      - name: Install Composer dependencies for PHP < 8.0
-        if: ${{ matrix.php < 8.0 || ( ( matrix.wp == 'trunk' || matrix.wp >= 5.9 ) && matrix.wp != 'latest' ) }}
+      - name: Install Composer dependencies - normal
+        if: ${{ steps.composer_toggle.outputs.TYPE == '1' || steps.composer_toggle.outputs.TYPE == '3' }}
         uses: "ramsey/composer-install@v2"
 
       # For PHP 8.0 and above on WP 5.2 - 5.8, we need to install with ignore platform reqs as not all dependencies allow it.
-      - name: Install Composer dependencies for PHP >= 8.0
-        if: ${{ matrix.php >= 8.0 && ( matrix.wp == 'latest' || ( matrix.wp != 'trunk' && matrix.wp < 5.9 ) ) }}
+      - name: Install Composer dependencies with ignore platform reqs
+        if: ${{ steps.composer_toggle.outputs.TYPE == '2' || steps.composer_toggle.outputs.TYPE == '4' }}
         uses: "ramsey/composer-install@v2"
         with:
-          composer-options: --ignore-platform-reqs
+          composer-options: --ignore-platform-req=php
 
       - name: Run the unit tests - single site
         run: vendor/bin/phpunit
