@@ -1,9 +1,11 @@
 name: Coding Standards
 
 on:
-  # Run on all pushes and on all pull requests.
+  # Run on all pushes for default branch and on all pull requests.
   # Prevent the build from running when there are only irrelevant changes.
   push:
+    branches:
+      - master
     paths-ignore:
       - '**.md'
       - '**.txt'
@@ -21,7 +23,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install PHP
         uses: shivammathur/setup-php@v2
@@ -30,17 +32,15 @@ jobs:
           tools: cs2pr
           coverage: none
 
-      - name: 'Composer: set up PHPCS dependencies'
-        run: |
-          composer require --no-update squizlabs/php_codesniffer wp-coding-standards/wpcs phpcompatibility/phpcompatibility-wp dealerdirect/phpcodesniffer-composer-installer
-
       # Install dependencies and handle caching in one go.
       # @link https://github.com/marketplace/actions/install-composer-dependencies
       - name: Install Composer dependencies
-        uses: "ramsey/composer-install@v1"
+        uses: "ramsey/composer-install@v2"
 
       # Check the code-style consistency of the PHP files.
       - name: Check PHP code style
-        run: |
-          vendor/bin/phpcs --report-checkstyle=./phpcs-report.xml
-          cs2pr ./phpcs-report.xml
+        continue-on-error: true
+        run: vendor/bin/phpcs -- --report-full --report-checkstyle=./phpcs-report.xml
+
+      - name: Show PHPCS results in PR
+        run: cs2pr ./phpcs-report.xml

@@ -6,8 +6,8 @@ require_once dirname( __FILE__ ) . '/base.php';
  * @group import
  */
 class Tests_Import_Parser extends WP_Import_UnitTestCase {
-	function setUp() {
-		parent::setUp();
+	function set_up() {
+		parent::set_up();
 
 		if ( ! defined( 'WP_IMPORTING' ) ) {
 			define( 'WP_IMPORTING', true );
@@ -22,7 +22,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 	function test_malformed_wxr() {
 		$file = DIR_TESTDATA_WP_IMPORTER . '/malformed.xml';
 
-		// regex based parser cannot detect malformed XML
+		// Regex based parser cannot detect malformed XML.
 		foreach ( array( 'WXR_Parser_SimpleXML', 'WXR_Parser_XML' ) as $p ) {
 			$parser = new $p;
 			$result = $parser->parse( $file );
@@ -53,7 +53,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 			$parser  = new $p;
 			$result  = $parser->parse( $file );
 
-			$this->assertInternalType( 'array', $result, $message );
+			$this->assertIsArray( $result, $message );
 			$this->assertSame( 'http://localhost/', $result['base_url'], $message );
 			$this->assertEquals(
 				array(
@@ -146,7 +146,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 			$parser  = new $p;
 			$result  = $parser->parse( $file );
 
-			$this->assertInternalType( 'array', $result, $message );
+			$this->assertIsArray( $result, $message );
 			$this->assertSame( 'http://localhost/', $result['base_url'], $message );
 			$this->assertSame( 'alpha', $result['categories'][0]['category_nicename'], $message );
 			$this->assertSame( 'alpha', $result['categories'][0]['cat_name'], $message );
@@ -249,7 +249,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 			$parser  = new $p;
 			$result  = $parser->parse( $file );
 
-			$this->assertInternalType( 'array', $result, $message );
+			$this->assertIsArray( $result, $message );
 			$this->assertSame( 'http://localhost/', $result['base_url'], $message );
 
 			$this->assertEmpty( $result['authors'], $message );

@@ -10,7 +10,7 @@
  * WXR Parser that makes use of the XML Parser PHP extension.
  */
 class WXR_Parser_XML {
-	var $wp_tags     = array(
+	public $wp_tags     = array(
 		'wp:post_id',
 		'wp:post_date',
 		'wp:post_date_gmt',
@@ -43,7 +43,7 @@ class WXR_Parser_XML {
 		'wp:author_first_name',
 		'wp:author_last_name',
 	);
-	var $wp_sub_tags = array(
+	public $wp_sub_tags = array(
 		'wp:comment_id',
 		'wp:comment_author',
 		'wp:comment_author_email',
@@ -57,6 +57,21 @@ class WXR_Parser_XML {
 		'wp:comment_parent',
 		'wp:comment_user_id',
 	);
+
+	public $wxr_version;
+	public $in_post;
+	public $cdata;
+	public $data;
+	public $sub_data;
+	public $in_tag;
+	public $in_sub_tag;
+	public $authors;
+	public $posts;
+	public $term;
+	public $category;
+	public $tag;
+	public $base_url;
+	public $base_blog_url;
 
 	function parse( $file ) {
 		$this->wxr_version = false;
@@ -118,6 +133,10 @@ class WXR_Parser_XML {
 		switch ( $tag ) {
 			case 'category':
 				if ( isset( $attr['domain'], $attr['nicename'] ) ) {
+					if ( false === $this->sub_data ) {
+						$this->sub_data = array();
+					}
+
 					$this->sub_data['domain'] = $attr['domain'];
 					$this->sub_data['slug']   = $attr['nicename'];
 				}
@@ -233,9 +252,17 @@ class WXR_Parser_XML {
 
 			default:
 				if ( $this->in_sub_tag ) {
+					if ( false === $this->sub_data ) {
+						$this->sub_data = array();
+					}
+
 					$this->sub_data[ $this->in_sub_tag ] = ! empty( $this->cdata ) ? $this->cdata : '';
 					$this->in_sub_tag                    = false;
 				} elseif ( $this->in_tag ) {
+					if ( false === $this->data ) {
+						$this->data = array();
+					}
+
 					$this->data[ $this->in_tag ] = ! empty( $this->cdata ) ? $this->cdata : '';
 					$this->in_tag                = false;
 				}

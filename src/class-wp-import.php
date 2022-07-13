@@ -423,7 +423,7 @@ class WP_Import extends WP_Importer {
 				'category_description' => wp_slash( $description ),
 			);
 
-			$id = wp_insert_category( $data );
+			$id = wp_insert_category( $data, true );
 			if ( ! is_wp_error( $id ) && $id > 0 ) {
 				if ( isset( $cat['term_id'] ) ) {
 					$this->processed_terms[ intval( $cat['term_id'] ) ] = $id;
@@ -1060,7 +1060,11 @@ class WP_Import extends WP_Importer {
 	 */
 	function fetch_remote_file( $url, $post ) {
 		// Extract the file name from the URL.
-		$file_name = basename( parse_url( $url, PHP_URL_PATH ) );
+		$path      = parse_url( $url, PHP_URL_PATH );
+		$file_name = '';
+		if ( is_string( $path ) ) {
+			$file_name = basename( $path );
+		}
 
 		if ( ! $file_name ) {
 			$file_name = md5( $url );

@@ -7,8 +7,8 @@ require_once dirname( __FILE__ ) . '/base.php';
  * @group post-meta
  */
 class Tests_Import_Postmeta extends WP_Import_UnitTestCase {
-	function setUp() {
-		parent::setUp();
+	function set_up() {
+		parent::set_up();
 
 		if ( ! defined( 'WP_IMPORTING' ) ) {
 			define( 'WP_IMPORTING', true );
@@ -79,9 +79,9 @@ class Tests_Import_Postmeta extends WP_Import_UnitTestCase {
 	function test_serialized_postmeta_with_cdata() {
 		$this->_import_wp( DIR_TESTDATA_WP_IMPORTER . '/test-serialized-postmeta-with-cdata.xml', array( 'johncoswell' => 'johncoswell' ) );
 
-		//HTML in the CDATA should work with old WordPress version
+		// HTML in the CDATA should work with old WordPress version.
 		$this->assertSame( '<pre>some html</pre>', get_post_meta( 10, 'contains-html', true ) );
-		//Serialised will only work with 3.0 onwards.
+		// Serialised will only work with 3.0 onwards.
 		$expected['special_post_title'] = 'A special title';
 		$expected['is_calendar']        = '';
 		$this->assertSame( $expected, get_post_meta( 10, 'post-options', true ) );
@@ -92,7 +92,7 @@ class Tests_Import_Postmeta extends WP_Import_UnitTestCase {
 	 */
 	function test_serialized_postmeta_with_evil_stuff_in_cdata() {
 		$this->_import_wp( DIR_TESTDATA_WP_IMPORTER . '/test-serialized-postmeta-with-cdata.xml', array( 'johncoswell' => 'johncoswell' ) );
-		// evil content in the CDATA
+		// Evil content in the CDATA.
 		$this->assertSame( '<wp:meta_value>evil</wp:meta_value>', get_post_meta( 10, 'evil', true ) );
 	}
 
