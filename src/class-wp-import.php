@@ -951,14 +951,14 @@ class WP_Import extends WP_Importer {
 		}
 
 		$core_meta = array(
-		    '_menu_item_object_id'        => '',
-		    '_menu_item_object'           => '',
-		    '_menu_item_menu_item_parent' => '',
-		    '_menu_item_type'             => '',
-		    '_menu_item_url'              => '',
-		    '_menu_item_target'           => '',
-		    '_menu_item_classes'          => '',
-		    '_menu_item_xfn'              => '',
+			'_menu_item_object_id'        => '',
+			'_menu_item_object'           => '',
+			'_menu_item_menu_item_parent' => '',
+			'_menu_item_type'             => '',
+			'_menu_item_url'              => '',
+			'_menu_item_target'           => '',
+			'_menu_item_classes'          => '',
+			'_menu_item_xfn'              => '',
 		);
 
 		$custom_meta = array();
@@ -966,9 +966,9 @@ class WP_Import extends WP_Importer {
 		// Parse meta items into core fields and any custom fields.
 		foreach ( $item['postmeta'] as $meta ) {
 			if ( array_key_exists( $meta['key'], $core_meta ) ) {
-				$core_meta[$meta['key']] = $meta['value'];
+				$core_meta[ $meta['key'] ] = $meta['value'];
 			} else {
-				$custom_meta[$meta['key']] = $meta['value'];
+				$custom_meta[ $meta['key'] ] = $meta['value'];
 			}
 		}
 
