@@ -1021,24 +1021,23 @@ class WP_Import extends WP_Importer {
 
 			$custom_meta = apply_filters( 'wp_import_nav_menu_meta', $custom_meta, $id, $args );
 
-            foreach ( $custom_meta as $key => $value ) {
-                $key = apply_filters( 'import_nav_menu_meta_key', $key, $id, $args );
+			foreach ( $custom_meta as $key => $value ) {
+				$key = apply_filters( 'import_nav_menu_meta_key', $key, $id, $args );
 
-                // Skip old date meta.
-                if ( '_wp_old_date' === $key ) {
-                    $key = false;
-                }
+				// Skip old date meta.
+				if ( '_wp_old_date' === $key ) {
+					$key = false;
+				}
 
-                if ( $key ) {
-                    // Export gets meta straight from the DB so could have a serialized string.
-                    $value = maybe_unserialize( $value );
-                    
-                    add_post_meta( $id, wp_slash( $key ), wp_slash( $value ) );
+				if ( $key ) {
+					// Export gets meta straight from the DB so could have a serialized string.
+					$value = maybe_unserialize( $value );
 
-                    do_action( 'import_nav_menu_meta', $id, $key, $value );
+					add_post_meta( $id, wp_slash( $key ), wp_slash( $value ) );
 
-                }
-            }
+					do_action( 'import_nav_menu_meta', $id, $key, $value );
+				}
+			}
 		}
 	}
 
