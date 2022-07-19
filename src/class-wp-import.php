@@ -961,18 +961,18 @@ class WP_Import extends WP_Importer {
 		    '_menu_item_xfn'              => '',
 		);
 
-        $custom_meta = array();
+		$custom_meta = array();
 
-        // Parse meta items into core fields and any custom fields.
+		// Parse meta items into core fields and any custom fields.
 		foreach ( $item['postmeta'] as $meta ) {
-            if ( array_key_exists( $meta['key'], $core_meta ) ) {
-                $core_meta[$meta['key']] = $meta['value'];
-            } else {
-                $custom_meta[$meta['key']] = $meta['value'];
-            }
-        }
+			if ( array_key_exists( $meta['key'], $core_meta ) ) {
+				$core_meta[$meta['key']] = $meta['value'];
+			} else {
+				$custom_meta[$meta['key']] = $meta['value'];
+			}
+		}
 
-        foreach ( $core_meta as $key => $value ) {
+		foreach ( $core_meta as $key => $value ) {
 			${$key} = $value;
 		}
 
