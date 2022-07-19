@@ -950,16 +950,16 @@ class WP_Import extends WP_Importer {
 			$menu_id = is_array( $menu_id ) ? $menu_id['term_id'] : $menu_id;
 		}
 
-        $core_meta = array(
-            '_menu_item_object_id'        => '',
-            '_menu_item_object'           => '',
-            '_menu_item_menu_item_parent' => '',
-            '_menu_item_type'             => '',
-            '_menu_item_url'              => '',
-            '_menu_item_target'           => '',
-            '_menu_item_classes'          => '',
-            '_menu_item_xfn'              => ''
-        );
+		$core_meta = array(
+		    '_menu_item_object_id'        => '',
+		    '_menu_item_object'           => '',
+		    '_menu_item_menu_item_parent' => '',
+		    '_menu_item_type'             => '',
+		    '_menu_item_url'              => '',
+		    '_menu_item_target'           => '',
+		    '_menu_item_classes'          => '',
+		    '_menu_item_xfn'              => '',
+		);
 
         $custom_meta = array();
 
@@ -1022,7 +1022,7 @@ class WP_Import extends WP_Importer {
 			$custom_meta = apply_filters( 'wp_import_nav_menu_meta', $custom_meta, $id, $args );
 
             foreach ( $custom_meta as $key => $value ) {
-                $key   = apply_filters( 'import_nav_menu_meta_key', $key, $id, $args );
+                $key = apply_filters( 'import_nav_menu_meta_key', $key, $id, $args );
 
                 // Skip old date meta.
                 if ( '_wp_old_date' === $key ) {
