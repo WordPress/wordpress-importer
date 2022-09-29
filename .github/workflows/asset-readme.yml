@@ -6,7 +6,7 @@ on:
       - master
     paths:
       - '.wordpress-org/**'
-      - 'readme.txt'
+      - 'src/readme.txt'
 
 jobs:
   trunk:
@@ -19,5 +19,6 @@ jobs:
     - name: WordPress.org plugin asset/readme update
       uses: 10up/action-wordpress-plugin-asset-update@stable
       env:
+        README_NAME: src/readme.txt
         SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
         SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
