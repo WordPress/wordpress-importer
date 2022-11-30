@@ -11,6 +11,10 @@
  */
 class WXR_Parser {
 	function parse( $file ) {
+		// just for testing now!
+		$parser = new WXR_Parser_Large_File( $file, 'WXR_Parser_SimpleXML' );
+		return $parser;
+		
 		// Attempt to use proper XML parsers first
 		if ( extension_loaded( 'simplexml' ) ) {
 			$parser = new WXR_Parser_SimpleXML;
