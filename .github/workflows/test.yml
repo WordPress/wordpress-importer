@@ -24,10 +24,17 @@ jobs:
         experimental: [false]
 
         include:
-          # Complement the builds run via the matrix with high/low WP builds for PHP 7.4 and 8.0.
-          # PHP 8.1 is sort of supported since WP 5.9.
+          # Complement the builds run via the matrix with high/low WP builds for PHP 7.4 up to 8.2.
+          # PHP 8.2 is sort of supported since WP 6.1.
+          # PHP 8.1 is sort of supported since WP 5.9 (with the exception of Requests, which was updated in WP 6.2).
           # PHP 8.0 is sort of supported since WP 5.6.
           # PHP 7.4 is supported since WP 5.3.
+          - php: '8.2'
+            wp: 'latest'
+            experimental: false
+          - php: '8.2'
+            wp: '6.1'
+            experimental: false
           - php: '8.1'
             wp: 'latest'
             experimental: false
@@ -68,7 +75,7 @@ jobs:
             experimental: false
 
           # Experimental builds. These are allowed to fail.
-          - php: '8.2'
+          - php: '8.3'
             wp: 'trunk'
             experimental: true
           - php: '7.4'
