@@ -1,7 +1,7 @@
 # WordPress Importer
 
-[![CS Build Status](https://github.com/WordPress/wordpress-importer/workflows/CS/badge.svg)](https://github.com/WordPress/wordpress-importer/actions?query=workflow%3ACS)
-[![Test Build Status](https://github.com/WordPress/wordpress-importer/workflows/Test/badge.svg)](https://github.com/WordPress/wordpress-importer/actions?query=workflow%3ATest)
+[![Coding Standards Build Status](https://github.com/WordPress/wordpress-importer/actions/workflows/cs.yml/badge.svg)](https://github.com/WordPress/wordpress-importer/actions/workflows/cs.yml)
+[![Test Build Status](https://github.com/WordPress/wordpress-importer/actions/workflows/test.yml/badge.svg)](https://github.com/WordPress/wordpress-importer/actions/workflows/test.yml)
 
 The [WordPress Importer](https://wordpress.org/plugins/wordpress-importer/) will import the following content from a WordPress export file:
 
