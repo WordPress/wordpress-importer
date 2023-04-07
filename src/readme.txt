@@ -5,7 +5,7 @@ Tags: importer, wordpress
 Requires at least: 5.2
 Tested up to: 6.2
 Requires PHP: 5.6
-Stable tag: 0.9
+Stable tag: 0.8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -40,7 +40,7 @@ If you would prefer to do things manually then follow these instructions:
 
 == Changelog ==
 
-= 0.9 =
+= 0.8.1 =
 
 * Update compatibility tested-up-to to WordPress 6.2.
 * Update paths to build status badges.
