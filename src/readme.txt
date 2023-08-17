@@ -5,7 +5,7 @@ Tags: importer, wordpress
 Requires at least: 5.2
 Tested up to: 6.3
 Requires PHP: 5.6
-Stable tag: 0.8.2
+Stable tag: 0.8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -39,10 +39,6 @@ If you would prefer to do things manually then follow these instructions:
 1. Go to the Tools -> Import screen, click on WordPress
 
 == Changelog ==
-
-= 0.8.2 =
-
-* Update compatibility tested-up-to to WordPress 6.3.
 
 = 0.8.1 =
 
