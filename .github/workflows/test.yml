@@ -51,10 +51,10 @@ jobs:
             wp: '5.3'
             experimental: false
           - php: '5.6'
-            wp: '5.2'
+            wp: '5.5'
             experimental: false
           - php: '5.6'
-            wp: '5.5'
+            wp: '5.2'
             experimental: false
           - php: '7.2'
             wp: '5.7'
