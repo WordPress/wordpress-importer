@@ -132,7 +132,7 @@ jobs:
         run: composer remove --dev phpunit/phpunit --no-update --no-interaction || true
 
       # Install dependencies and handle caching in one go.
-      # @link https://github.com/marketplace/actions/install-composer-dependencies
+      # @link https://github.com/marketplace/actions/install-php-dependencies-with-composer
       - name: Install Composer dependencies - normal
         if: ${{ steps.composer_toggle.outputs.TYPE == '1' || steps.composer_toggle.outputs.TYPE == '3' }}
         uses: "ramsey/composer-install@v2"
