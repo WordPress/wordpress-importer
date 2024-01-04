@@ -114,14 +114,14 @@ jobs:
         run: |
           if [[ "${{ matrix.wp }}" =~ ^(trunk|latest|5\.9|[6789]\.[0-9])$ ]]; then
             if [[ "${{ matrix.php }}" != "8.2" ]]; then
-              echo '::set-output name=TYPE::1'
+              echo 'TYPE=1' >> $GITHUB_OUTPUT
             else
-              echo '::set-output name=TYPE::2'
+              echo 'TYPE=2' >> $GITHUB_OUTPUT
             fi
           elif [[ "${{ matrix.php }}" > "7.4" ]]; then
-            echo '::set-output name=TYPE::4'
+            echo 'TYPE=4' >> $GITHUB_OUTPUT
           else
-            echo '::set-output name=TYPE::3'
+            echo 'TYPE=3' >> $GITHUB_OUTPUT
           fi
 
       # Remove the PHPUnit requirement for WP 5.9 and higher in favour of letting the Polyfills manage it.
