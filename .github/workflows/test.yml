@@ -136,6 +136,9 @@ jobs:
       - name: Install Composer dependencies - normal
         if: ${{ steps.composer_toggle.outputs.TYPE == '1' || steps.composer_toggle.outputs.TYPE == '3' }}
         uses: "ramsey/composer-install@v2"
+        with:
+          # Bust the cache at least once a month - output format: YYYY-MM-DD.
+          custom-cache-suffix: $(date -u -d "-0 month -$(($(date +%d)-1)) days" "+%F")
 
       # For PHP 8.0 and above on WP 5.2 - 5.8, we need to install with ignore platform reqs as not all dependencies allow it.
       - name: Install Composer dependencies with ignore platform reqs
@@ -143,6 +146,7 @@ jobs:
         uses: "ramsey/composer-install@v2"
         with:
           composer-options: --ignore-platform-req=php
+          custom-cache-suffix: $(date -u -d "-0 month -$(($(date +%d)-1)) days" "+%F")
 
       - name: Run the unit tests - single site
         run: vendor/bin/phpunit
