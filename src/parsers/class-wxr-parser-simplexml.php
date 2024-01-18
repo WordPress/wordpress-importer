@@ -24,7 +24,15 @@ class WXR_Parser_SimpleXML {
 		if ( function_exists( 'libxml_disable_entity_loader' ) && PHP_VERSION_ID < 80000 ) {
 			$old_value = libxml_disable_entity_loader( true );
 		}
-		$success = $dom->loadXML( file_get_contents( $file ) );
+
+		$success = false;
+		if ( is_resource( $file ) ) {
+			fseek( $file, 0, SEEK_SET );
+			$success = $dom->loadXML( stream_get_contents( $file ) );
+		} else {
+			$success = $dom->loadXML( file_get_contents( $file ) );
+		}
+
 		if ( ! is_null( $old_value ) ) {
 			libxml_disable_entity_loader( $old_value );
 		}
