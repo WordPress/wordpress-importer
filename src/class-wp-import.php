@@ -723,29 +723,43 @@ class WP_Import extends WP_Importer {
 
 				$postdata = wp_slash( $postdata );
 
-				if ( 'attachment' == $postdata['post_type'] ) {
-					$remote_url = ! empty( $post['attachment_url'] ) ? $post['attachment_url'] : $post['guid'];
+				switch ($postdata['post_type']) {
+					case 'attachment':
+						$remote_url = !empty($post['attachment_url']) ? $post['attachment_url'] : $post['guid'];
 
-					// try to use _wp_attached file for upload folder placement to ensure the same location as the export site
-					// e.g. location is 2003/05/image.jpg but the attachment post_date is 2010/09, see media_handle_upload()
-					$postdata['upload_date'] = $post['post_date'];
-					if ( isset( $post['postmeta'] ) ) {
-						foreach ( $post['postmeta'] as $meta ) {
-							if ( '_wp_attached_file' == $meta['key'] ) {
-								if ( preg_match( '%^[0-9]{4}/[0-9]{2}%', $meta['value'], $matches ) ) {
-									$postdata['upload_date'] = $matches[0];
+						// try to use _wp_attached file for upload folder placement to ensure the same location as the export site
+						// e.g. location is 2003/05/image.jpg but the attachment post_date is 2010/09, see media_handle_upload()
+						$postdata['upload_date'] = $post['post_date'];
+						if (isset($post['postmeta'])) {
+							foreach ($post['postmeta'] as $meta) {
+								if ('_wp_attached_file' == $meta['key']) {
+									if (preg_match('%^[0-9]{4}/[0-9]{2}%', $meta['value'], $matches)) {
+										$postdata['upload_date'] = $matches[0];
+									}
+									break;
 								}
-								break;
 							}
 						}
-					}
 
-					$comment_post_id = $this->process_attachment( $postdata, $remote_url );
-					$post_id         = $comment_post_id;
-				} else {
-					$comment_post_id = wp_insert_post( $postdata, true );
-					$post_id         = $comment_post_id;
-					do_action( 'wp_import_insert_post', $post_id, $original_post_id, $postdata, $post );
+						$comment_post_id = $this->process_attachment($postdata);
+						$post_id = $comment_post_id;
+						break;
+
+					case 'wp_font_face':
+						$comment_post_id = $this->process_font_face($postdata);
+						$post_id = $comment_post_id;
+						break;
+
+					case 'wp_font_family':
+						$comment_post_id = $this->process_font_family($postdata);
+						$post_id = $comment_post_id;
+						break;
+
+					default:
+						$comment_post_id = wp_insert_post($postdata, true);
+						$post_id = $comment_post_id;
+						do_action('wp_import_insert_post', $post_id, $original_post_id, $postdata, $post);
+						break;
 				}
 
 				if ( is_wp_error( $post_id ) ) {
@@ -997,6 +1011,28 @@ class WP_Import extends WP_Importer {
 		if ( $id && ! is_wp_error( $id ) ) {
 			$this->processed_menu_items[ intval( $item['post_id'] ) ] = (int) $id;
 		}
+	}
+
+	function process_font_face ( $post ) {
+		if ( ! $this->fetch_attachments ) {
+			return new WP_Error(
+				'attachment_processing_error',
+				__( 'Fetching attachments is not enabled', 'wordpress-importer' )
+			);
+		}
+		// TODO: Implement font face processing
+		return $post_id;
+	}
+
+	function process_font_family ( $post ) {
+		if ( ! $this->fetch_attachments ) {
+			return new WP_Error(
+				'attachment_processing_error',
+				__( 'Fetching attachments is not enabled', 'wordpress-importer' )
+			);
+		}
+		// TODO: Implement font family processing
+		return $post_id;
 	}
 
 	/**
