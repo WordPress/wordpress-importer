@@ -93,6 +93,7 @@ class WP_Import extends WP_Importer {
 		$this->backfill_parents();
 		$this->backfill_attachment_urls();
 		$this->remap_featured_images();
+		$this->remap_global_styles_fonts();
 
 		$this->import_end();
 	}
@@ -268,7 +269,7 @@ class WP_Import extends WP_Importer {
 	 * Display import options for an individual author. That is, either create
 	 * a new user based on import info or map to an existing user
 	 *
-	 * @param int $n Index for each author in the form
+	 * @param int   $n Index for each author in the form
 	 * @param array $author Author information, e.g. login, display name, email
 	 */
 	function author_select( $n, $author ) {
@@ -675,8 +676,7 @@ class WP_Import extends WP_Importer {
 			if ( $post_exists && get_post_type( $post_exists ) == $post['post_type'] ) {
 				printf( __( '%1$s &#8220;%2$s&#8221; already exists.', 'wordpress-importer' ), $post_type_object->labels->singular_name, esc_html( $post['post_title'] ) );
 				echo '<br />';
-				$comment_post_id = $post_exists;
-				$post_id         = $post_exists;
+				$post_id = $post_exists;
 				$this->processed_posts[ intval( $post['post_id'] ) ] = intval( $post_exists );
 			} else {
 				$post_parent = (int) $post['post_parent'];
@@ -723,17 +723,17 @@ class WP_Import extends WP_Importer {
 
 				$postdata = wp_slash( $postdata );
 
-				switch ($postdata['post_type']) {
+				switch ( $postdata['post_type'] ) {
 					case 'attachment':
-						$remote_url = !empty($post['attachment_url']) ? $post['attachment_url'] : $post['guid'];
+						$remote_url = ! empty( $post['attachment_url'] ) ? $post['attachment_url'] : $post['guid'];
 
 						// try to use _wp_attached file for upload folder placement to ensure the same location as the export site
 						// e.g. location is 2003/05/image.jpg but the attachment post_date is 2010/09, see media_handle_upload()
 						$postdata['upload_date'] = $post['post_date'];
-						if (isset($post['postmeta'])) {
-							foreach ($post['postmeta'] as $meta) {
-								if ('_wp_attached_file' == $meta['key']) {
-									if (preg_match('%^[0-9]{4}/[0-9]{2}%', $meta['value'], $matches)) {
+						if ( isset( $post['postmeta'] ) ) {
+							foreach ( $post['postmeta'] as $meta ) {
+								if ( '_wp_attached_file' == $meta['key'] ) {
+									if ( preg_match( '%^[0-9]{4}/[0-9]{2}%', $meta['value'], $matches ) ) {
 										$postdata['upload_date'] = $matches[0];
 									}
 									break;
@@ -741,24 +741,18 @@ class WP_Import extends WP_Importer {
 							}
 						}
 
-						$comment_post_id = $this->process_attachment($postdata);
-						$post_id = $comment_post_id;
+						$post_id = $this->process_attachment( $postdata, $remote_url );
 						break;
 
 					case 'wp_font_face':
-						$comment_post_id = $this->process_font_face($postdata);
-						$post_id = $comment_post_id;
-						break;
-
-					case 'wp_font_family':
-						$comment_post_id = $this->process_font_family($postdata);
-						$post_id = $comment_post_id;
+						$postdata         = $this->process_font_face( $postdata );
+						$post_id          = wp_insert_post( $postdata, true );
+						$post['postmeta'] = $this->process_font_face_postmeta( $post['postmeta'], $postdata );
 						break;
 
 					default:
-						$comment_post_id = wp_insert_post($postdata, true);
-						$post_id = $comment_post_id;
-						do_action('wp_import_insert_post', $post_id, $original_post_id, $postdata, $post);
+						$post_id = wp_insert_post( $postdata, true );
+						do_action( 'wp_import_insert_post', $post_id, $original_post_id, $postdata, $post );
 						break;
 				}
 
@@ -834,7 +828,7 @@ class WP_Import extends WP_Importer {
 				$inserted_comments = array();
 				foreach ( $post['comments'] as $comment ) {
 					$comment_id                                    = $comment['comment_id'];
-					$newcomments[ $comment_id ]['comment_post_ID'] = $comment_post_id;
+					$newcomments[ $comment_id ]['comment_post_ID'] = $post_id;
 					$newcomments[ $comment_id ]['comment_author']  = $comment['comment_author'];
 					$newcomments[ $comment_id ]['comment_author_email'] = $comment['comment_author_email'];
 					$newcomments[ $comment_id ]['comment_author_IP']    = $comment['comment_author_IP'];
@@ -865,7 +859,7 @@ class WP_Import extends WP_Importer {
 
 						$inserted_comments[ $key ] = wp_insert_comment( $comment_data );
 
-						do_action( 'wp_import_insert_comment', $inserted_comments[ $key ], $comment, $comment_post_id, $post );
+						do_action( 'wp_import_insert_comment', $inserted_comments[ $key ], $comment, $post_id, $post );
 
 						foreach ( $comment['commentmeta'] as $meta ) {
 							$value = maybe_unserialize( $meta['value'] );
@@ -917,8 +911,6 @@ class WP_Import extends WP_Importer {
 				}
 			}
 		}
-
-		unset( $this->posts );
 	}
 
 	/**
@@ -1013,26 +1005,109 @@ class WP_Import extends WP_Importer {
 		}
 	}
 
-	function process_font_face ( $post ) {
+	/**
+	 * Process the font face data for a post.
+	 *
+	 * @param array $post The post data.
+	 * @return array|WP_Error An array containing the modified post data and the font source URLs, or a WP_Error object if there is an error.
+	 */
+	function process_font_face( $post ) {
 		if ( ! $this->fetch_attachments ) {
 			return new WP_Error(
 				'attachment_processing_error',
 				__( 'Fetching attachments is not enabled', 'wordpress-importer' )
 			);
 		}
-		// TODO: Implement font face processing
-		return $post_id;
+
+		$post['post_content'] = wp_unslash( $post['post_content'] );
+		$font_face            = json_decode( $post['post_content'], true );
+
+		if ( ! $font_face ) {
+			return new WP_Error(
+				'font_face_processing_error',
+				__( 'Invalid font face data', 'wordpress-importer' )
+			);
+		}
+
+		$src = array();
+		if ( isset( $font_face['src'] ) ) {
+			$font_dir       = wp_get_font_dir();
+			$set_upload_dir = function () use ( $font_dir ) {
+				return $font_dir;
+			};
+			add_filter( 'upload_dir', $set_upload_dir );
+			add_filter( 'upload_mimes', array( 'WP_Font_Utils', 'get_allowed_font_mime_types' ) );
+
+			$uploads = array();
+			if ( is_array( $font_face['src'] ) ) {
+				foreach ( $font_face['src'] as $src ) {
+					// $upload = wp_handle_upload( $file );
+					$uploads = $this->fetch_remote_file( $src );
+					if ( is_wp_error( $upload ) ) {
+						return $upload;
+					}
+					$uploads[] = $upload;
+
+				}
+			} else {
+				$upload = $this->fetch_remote_file( $font_face['src'], $font_face );
+				if ( is_wp_error( $upload ) ) {
+					return $upload;
+				}
+				$uploads[] = $upload;
+			}
+
+			$font_face['src'] = array_map(
+				function( $upload ) {
+					return $upload['url'];
+				},
+				$uploads
+			);
+
+			remove_filter( 'upload_dir', $set_upload_dir );
+			remove_filter( 'upload_mimes', array( 'WP_Font_Utils', 'get_allowed_font_mime_types' ) );
+		}
+
+		$post['post_content'] = wp_json_encode( $font_face );
+		$post['post_content'] = wp_slash( $post['post_content'] );
+
+		return $post;
 	}
 
-	function process_font_family ( $post ) {
-		if ( ! $this->fetch_attachments ) {
-			return new WP_Error(
-				'attachment_processing_error',
-				__( 'Fetching attachments is not enabled', 'wordpress-importer' )
-			);
+	function process_font_face_postmeta( $postmeta, $postdata ) {
+		/*
+		 * Removes all post meta with meta_key _wp_font_face_file.
+		 * Adds the post meta for the font face with the potentially new file names.
+		 *
+		 * Because the assets name could have changed if the file already exists in the uploads folder.
+		 */
+		$non_font_face_file_postmeta = array_filter(
+			$postmeta,
+			function( $meta ) {
+				return $meta['key'] !== '_wp_font_face_file';
+			}
+		);
+
+		$post_content = wp_unslash( $postdata['post_content'] );
+		$font_face    = json_decode( $post_content, true );
+
+		if ( ! $font_face ) {
+			return $postmeta;
 		}
-		// TODO: Implement font family processing
-		return $post_id;
+
+		$new_fonce_face_files_meta = array_map(
+			function ( $url ) {
+				return array(
+					'key'   => '_wp_font_face_file',
+					'value' => basename( $url ),
+				);
+			},
+			$font_face['src']
+		);
+
+		$postmeta = array_merge( $non_font_face_file_postmeta, $new_fonce_face_files_meta );
+
+		return $postmeta;
 	}
 
 	/**
@@ -1088,13 +1163,13 @@ class WP_Import extends WP_Importer {
 	}
 
 	/**
-	 * Attempt to download a remote file attachment
+	 * Attempt to download a remote file.
 	 *
 	 * @param string $url URL of item to fetch
-	 * @param array $post Attachment details
+	 * @param array  $post optional. Post details.
 	 * @return array|WP_Error Local file location details on success, WP_Error otherwise
 	 */
-	function fetch_remote_file( $url, $post ) {
+	function fetch_remote_file( $url, $post = array() ) {
 		// Extract the file name from the URL.
 		$path      = parse_url( $url, PHP_URL_PATH );
 		$file_name = '';
@@ -1211,7 +1286,10 @@ class WP_Import extends WP_Importer {
 			return new WP_Error( 'import_file_error', __( 'Sorry, this file type is not permitted for security reasons.', 'wordpress-importer' ) );
 		}
 
-		$uploads = wp_upload_dir( $post['upload_date'] );
+		// $upload_date is used to determine the upload folder of attachments but not for font assets.
+		$upload_date = isset( $post['upload_date'] ) ? $post['upload_date'] : null;
+
+		$uploads = wp_upload_dir( $upload_date );
 		if ( ! ( $uploads && false === $uploads['error'] ) ) {
 			return new WP_Error( 'upload_dir_error', $uploads['error'] );
 		}
@@ -1239,8 +1317,10 @@ class WP_Import extends WP_Importer {
 		);
 
 		// keep track of the old and new urls so we can substitute them later
-		$this->url_remap[ $url ]          = $upload['url'];
-		$this->url_remap[ $post['guid'] ] = $upload['url']; // r13735, really needed?
+		$this->url_remap[ $url ] = $upload['url'];
+		if ( isset( $post['guid'] ) ) {
+			$this->url_remap[ $post['guid'] ] = $upload['url']; // r13735, really needed?
+		}
 		// keep track of the destination if the remote url is redirected somewhere else
 		if ( isset( $headers['x-final-location'] ) && $headers['x-final-location'] != $url ) {
 			$this->url_remap[ $headers['x-final-location'] ] = $upload['url'];
@@ -1327,6 +1407,39 @@ class WP_Import extends WP_Importer {
 				if ( $new_id != $value ) {
 					update_post_meta( $post_id, '_thumbnail_id', $new_id );
 				}
+			}
+		}
+	}
+
+	/**
+	 * Update global styles fonts to be remapped to the new imported fonts.
+	 */
+	function remap_global_styles_fonts() {
+		foreach ( $this->posts as $post ) {
+			// If the post is a global style.
+			if (
+				( 'wp_global_styles' === $post['post_type'] && 'Custom Styles' === $post['post_title'] ) ||
+				( 'revision' === $post['post_type'] && 'Custom Styles' === $post['post_title'] )
+			) {
+				$db_post          = get_post( $this->processed_posts[ $post['post_id'] ] );
+				$new_post_content = $db_post->post_content;
+
+				foreach ( $this->url_remap as $from_url => $to_url ) {
+					$new_post_content = str_replace(
+						wp_json_encode( $from_url ),
+						wp_json_encode( $to_url ),
+						$new_post_content
+					);
+				}
+
+				// update the post content.
+				wp_update_post(
+					array(
+						'ID'           => $db_post->ID,
+						'post_content' => wp_slash( $new_post_content ),
+					)
+				);
+
 			}
 		}
 	}
