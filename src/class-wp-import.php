@@ -1084,7 +1084,7 @@ class WP_Import extends WP_Importer {
 		$non_font_face_file_postmeta = array_filter(
 			$postmeta,
 			function( $meta ) {
-				return $meta['key'] !== '_wp_font_face_file';
+				return '_wp_font_face_file' !== $meta['key'];
 			}
 		);
 
