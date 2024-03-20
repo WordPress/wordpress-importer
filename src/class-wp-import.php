@@ -745,7 +745,14 @@ class WP_Import extends WP_Importer {
 						break;
 
 					case 'wp_font_face':
-						$postdata         = $this->process_font_face( $postdata );
+						$postdata  = $this->process_font_face( $postdata );
+
+						if ( is_wp_error( $postdata ) ) {
+							// Assing the error to $post_id so it is handled later.
+							$post_id = $postdata;
+							break;
+						}
+
 						$post_id          = wp_insert_post( $postdata, true );
 						$post['postmeta'] = $this->process_font_face_postmeta( $post['postmeta'], $postdata );
 						break;
