@@ -1012,13 +1012,6 @@ class WP_Import extends WP_Importer {
 	 * @return array|WP_Error An array containing the modified post data and the font source URLs, or a WP_Error object if there is an error.
 	 */
 	function process_font_face( $post ) {
-		if ( ! $this->fetch_attachments ) {
-			return new WP_Error(
-				'attachment_processing_error',
-				__( 'Fetching attachments is not enabled', 'wordpress-importer' )
-			);
-		}
-
 		$post['post_content'] = wp_unslash( $post['post_content'] );
 		$font_face            = json_decode( $post['post_content'], true );
 
