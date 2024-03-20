@@ -269,7 +269,7 @@ class WP_Import extends WP_Importer {
 	 * Display import options for an individual author. That is, either create
 	 * a new user based on import info or map to an existing user
 	 *
-	 * @param int   $n Index for each author in the form
+	 * @param int $n Index for each author in the form
 	 * @param array $author Author information, e.g. login, display name, email
 	 */
 	function author_select( $n, $author ) {
