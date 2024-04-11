@@ -36,6 +36,9 @@ if ( ! class_exists( 'WP_Importer' ) ) {
 /** Functions missing in older WordPress versions. */
 require_once dirname( __FILE__ ) . '/compat.php';
 
+/** XML Character Stream Filter to sanitize XML input. */
+require_once dirname( __FILE__ ) . '/helpers/class-xml-character-filter.php';
+
 /** WXR_Parser class */
 require_once dirname( __FILE__ ) . '/parsers/class-wxr-parser.php';
 
@@ -47,6 +50,9 @@ require_once dirname( __FILE__ ) . '/parsers/class-wxr-parser-xml.php';
 
 /** WXR_Parser_Regex class */
 require_once dirname( __FILE__ ) . '/parsers/class-wxr-parser-regex.php';
+
+/** WXR_Large_File_Parser class */
+require_once dirname( __FILE__ ) . '/parsers/class-wxr-parser-large-file.php';
 
 /** WP_Import class */
 require_once dirname( __FILE__ ) . '/class-wp-import.php';
