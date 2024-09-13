@@ -10,32 +10,32 @@
  * WordPress importer class.
  */
 class WP_Import extends WP_Importer {
-	var $max_wxr_version = 1.2; // max. supported WXR version
+	public $max_wxr_version = 1.2; // max. supported WXR version
 
-	var $id; // WXR attachment ID
+	public $id; // WXR attachment ID
 
 	// information to import from WXR file
-	var $version;
-	var $authors    = array();
-	var $posts      = array();
-	var $terms      = array();
-	var $categories = array();
-	var $tags       = array();
-	var $base_url   = '';
+	public $version;
+	public $authors    = array();
+	public $posts      = array();
+	public $terms      = array();
+	public $categories = array();
+	public $tags       = array();
+	public $base_url   = '';
 
 	// mappings from old information to new
-	var $processed_authors    = array();
-	var $author_mapping       = array();
-	var $processed_terms      = array();
-	var $processed_posts      = array();
-	var $post_orphans         = array();
-	var $processed_menu_items = array();
-	var $menu_item_orphans    = array();
-	var $missing_menu_items   = array();
+	public $processed_authors    = array();
+	public $author_mapping       = array();
+	public $processed_terms      = array();
+	public $processed_posts      = array();
+	public $post_orphans         = array();
+	public $processed_menu_items = array();
+	public $menu_item_orphans    = array();
+	public $missing_menu_items   = array();
 
-	var $fetch_attachments = false;
-	var $url_remap         = array();
-	var $featured_images   = array();
+	public $fetch_attachments = false;
+	public $url_remap         = array();
+	public $featured_images   = array();
 
 	/**
 	 * Registered callback function for the WordPress Importer
