@@ -7,7 +7,7 @@ require_once dirname( __FILE__ ) . '/base.php';
  * @group post-meta
  */
 class Tests_Import_Postmeta extends WP_Import_UnitTestCase {
-	function set_up() {
+	public function set_up() {
 		parent::set_up();
 
 		if ( ! defined( 'WP_IMPORTING' ) ) {
@@ -20,14 +20,14 @@ class Tests_Import_Postmeta extends WP_Import_UnitTestCase {
 
 	}
 
-	function test_serialized_postmeta_no_cdata() {
+	public function test_serialized_postmeta_no_cdata() {
 		$this->_import_wp( DIR_TESTDATA_WP_IMPORTER . '/test-serialized-postmeta-no-cdata.xml', array( 'johncoswell' => 'john' ) );
 		$expected['special_post_title'] = 'A special title';
 		$expected['is_calendar']        = '';
 		$this->assertSame( $expected, get_post_meta( 122, 'post-options', true ) );
 	}
 
-	function test_utw_postmeta() {
+	public function test_utw_postmeta() {
 		$this->_import_wp( DIR_TESTDATA_WP_IMPORTER . '/test-utw-post-meta-import.xml', array( 'johncoswell' => 'john' ) );
 
 		$classy      = new StdClass();
@@ -76,7 +76,7 @@ class Tests_Import_Postmeta extends WP_Import_UnitTestCase {
 	/**
 	 * @ticket 9633
 	 */
-	function test_serialized_postmeta_with_cdata() {
+	public function test_serialized_postmeta_with_cdata() {
 		$this->_import_wp( DIR_TESTDATA_WP_IMPORTER . '/test-serialized-postmeta-with-cdata.xml', array( 'johncoswell' => 'johncoswell' ) );
 
 		// HTML in the CDATA should work with old WordPress version.
@@ -90,7 +90,7 @@ class Tests_Import_Postmeta extends WP_Import_UnitTestCase {
 	/**
 	 * @ticket 11574
 	 */
-	function test_serialized_postmeta_with_evil_stuff_in_cdata() {
+	public function test_serialized_postmeta_with_evil_stuff_in_cdata() {
 		$this->_import_wp( DIR_TESTDATA_WP_IMPORTER . '/test-serialized-postmeta-with-cdata.xml', array( 'johncoswell' => 'johncoswell' ) );
 		// Evil content in the CDATA.
 		$this->assertSame( '<wp:meta_value>evil</wp:meta_value>', get_post_meta( 10, 'evil', true ) );
@@ -99,7 +99,7 @@ class Tests_Import_Postmeta extends WP_Import_UnitTestCase {
 	/**
 	 * @ticket 11574
 	 */
-	function test_serialized_postmeta_with_slashes() {
+	public function test_serialized_postmeta_with_slashes() {
 		$this->_import_wp( DIR_TESTDATA_WP_IMPORTER . '/test-serialized-postmeta-with-cdata.xml', array( 'johncoswell' => 'johncoswell' ) );
 
 		$expected_integer      = '1';

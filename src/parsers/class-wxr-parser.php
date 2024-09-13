@@ -10,7 +10,7 @@
  * WordPress Importer class for managing parsing of WXR files.
  */
 class WXR_Parser {
-	function parse( $file ) {
+	public function parse( $file ) {
 		// Attempt to use proper XML parsers first
 		if ( extension_loaded( 'simplexml' ) ) {
 			$parser = new WXR_Parser_SimpleXML;

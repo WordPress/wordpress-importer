@@ -7,7 +7,7 @@ require_once dirname( __FILE__ ) . '/base.php';
  * @group term-meta
  */
 class Tests_Import_Term_Meta extends WP_Import_UnitTestCase {
-	function set_up() {
+	public function set_up() {
 		parent::set_up();
 
 		if ( ! defined( 'WP_IMPORTING' ) ) {
@@ -19,7 +19,7 @@ class Tests_Import_Term_Meta extends WP_Import_UnitTestCase {
 		}
 	}
 
-	function test_serialized_term_meta() {
+	public function test_serialized_term_meta() {
 		register_taxonomy( 'custom_taxonomy', array( 'post' ) );
 
 		$this->_import_wp( DIR_TESTDATA_WP_IMPORTER . '/test-serialized-term-meta.xml', array( 'admin' => 'admin' ) );

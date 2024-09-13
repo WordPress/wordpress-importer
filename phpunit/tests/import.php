@@ -6,7 +6,7 @@ require_once dirname( __FILE__ ) . '/base.php';
  * @group import
  */
 class Tests_Import_Import extends WP_Import_UnitTestCase {
-	function set_up() {
+	public function set_up() {
 		parent::set_up();
 
 		if ( ! defined( 'WP_IMPORTING' ) ) {
@@ -27,13 +27,13 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		}
 	}
 
-	function tear_down() {
+	public function tear_down() {
 		remove_filter( 'import_allow_create_users', '__return_true' );
 
 		parent::tear_down();
 	}
 
-	function test_small_import() {
+	public function test_small_import() {
 		global $wpdb;
 
 		$authors = array(
@@ -201,7 +201,7 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		$this->assertCount( 1, $cats );
 	}
 
-	function test_double_import() {
+	public function test_double_import() {
 		$authors = array(
 			'admin'  => false,
 			'editor' => false,

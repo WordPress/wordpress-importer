@@ -7,7 +7,7 @@ require_once dirname( __FILE__ ) . '/base.php';
  * @group comment-meta
  */
 class Tests_Import_Comment_Meta extends WP_Import_UnitTestCase {
-	function set_up() {
+	public function set_up() {
 		parent::set_up();
 
 		if ( ! defined( 'WP_IMPORTING' ) ) {
@@ -19,7 +19,7 @@ class Tests_Import_Comment_Meta extends WP_Import_UnitTestCase {
 		}
 	}
 
-	function test_serialized_comment_meta() {
+	public function test_serialized_comment_meta() {
 		$this->_import_wp( DIR_TESTDATA_WP_IMPORTER . '/test-serialized-comment-meta.xml', array( 'admin' => 'admin' ) );
 
 		$expected_string = '¯\_(ツ)_/¯';

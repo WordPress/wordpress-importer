@@ -10,7 +10,7 @@
  * WXR Parser that makes use of the SimpleXML PHP extension.
  */
 class WXR_Parser_SimpleXML {
-	function parse( $file ) {
+	public function parse( $file ) {
 		$authors    = array();
 		$posts      = array();
 		$categories = array();
