@@ -16,7 +16,6 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 		if ( ! defined( 'WP_LOAD_IMPORTERS' ) ) {
 			define( 'WP_LOAD_IMPORTERS', true );
 		}
-
 	}
 
 	public function test_malformed_wxr() {

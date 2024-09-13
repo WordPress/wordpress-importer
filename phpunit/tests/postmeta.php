@@ -17,7 +17,6 @@ class Tests_Import_Postmeta extends WP_Import_UnitTestCase {
 		if ( ! defined( 'WP_LOAD_IMPORTERS' ) ) {
 			define( 'WP_LOAD_IMPORTERS', true );
 		}
-
 	}
 
 	public function test_serialized_postmeta_no_cdata() {
