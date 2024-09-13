@@ -114,8 +114,8 @@ class WXR_Parser_Regex {
 		);
 	}
 
-	public function get_tag( $string, $tag ) {
-		preg_match( "|<$tag.*?>(.*?)</$tag>|is", $string, $return );
+	public function get_tag( $text, $tag ) {
+		preg_match( "|<$tag.*?>(.*?)</$tag>|is", $text, $return );
 		if ( isset( $return[1] ) ) {
 			if ( substr( $return[1], 0, 9 ) == '<![CDATA[' ) {
 				if ( strpos( $return[1], ']]]]><![CDATA[>' ) !== false ) {
@@ -187,10 +187,10 @@ class WXR_Parser_Regex {
 		return $term;
 	}
 
-	public function process_meta( $string, $tag ) {
+	public function process_meta( $text, $tag ) {
 		$parsed_meta = array();
 
-		preg_match_all( "|<$tag>(.+?)</$tag>|is", $string, $meta );
+		preg_match_all( "|<$tag>(.+?)</$tag>|is", $text, $meta );
 
 		if ( ! isset( $meta[1] ) ) {
 			return $parsed_meta;
