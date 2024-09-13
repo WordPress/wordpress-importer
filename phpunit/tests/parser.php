@@ -24,7 +24,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 
 		// Regex based parser cannot detect malformed XML.
 		foreach ( array( 'WXR_Parser_SimpleXML', 'WXR_Parser_XML' ) as $p ) {
-			$parser = new $p;
+			$parser = new $p();
 			$result = $parser->parse( $file );
 			$this->assertWPError( $result );
 			$this->assertSame( 'There was an error when reading this WXR file', $result->get_error_message() );
@@ -37,7 +37,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 
 		foreach ( array( 'WXR_Parser_SimpleXML', 'WXR_Parser_XML', 'WXR_Parser_Regex' ) as $p ) {
 			foreach ( array( $f1, $f2 ) as $file ) {
-				$parser = new $p;
+				$parser = new $p();
 				$result = $parser->parse( $file );
 				$this->assertWPError( $result );
 				$this->assertSame( 'This does not appear to be a WXR file, missing/invalid WXR version number', $result->get_error_message() );
@@ -50,7 +50,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 
 		foreach ( array( 'WXR_Parser_SimpleXML', 'WXR_Parser_XML', 'WXR_Parser_Regex' ) as $p ) {
 			$message = $p . ' failed';
-			$parser  = new $p;
+			$parser  = new $p();
 			$result  = $parser->parse( $file );
 
 			$this->assertIsArray( $result, $message );
@@ -143,7 +143,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 
 		foreach ( array( 'WXR_Parser_SimpleXML', 'WXR_Parser_XML', 'WXR_Parser_Regex' ) as $p ) {
 			$message = $p . ' failed';
-			$parser  = new $p;
+			$parser  = new $p();
 			$result  = $parser->parse( $file );
 
 			$this->assertIsArray( $result, $message );
@@ -232,7 +232,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 
 		foreach ( array( 'WXR_Parser_SimpleXML', 'WXR_Parser_XML', 'WXR_Parser_Regex' ) as $p ) {
 			$message = $p . ' failed and is missing blank lines';
-			$parser  = new $p;
+			$parser  = new $p();
 			$result  = $parser->parse( $file );
 
 			// Check the number of new lines characters
@@ -246,7 +246,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 
 		foreach ( array( 'WXR_Parser_SimpleXML', 'WXR_Parser_XML', 'WXR_Parser_Regex' ) as $p ) {
 			$message = $p . ' failed';
-			$parser  = new $p;
+			$parser  = new $p();
 			$result  = $parser->parse( $file );
 
 			$this->assertIsArray( $result, $message );
@@ -274,7 +274,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 
 		foreach ( array( 'WXR_Parser_SimpleXML', 'WXR_Parser_XML', 'WXR_Parser_Regex' ) as $p ) {
 			$message = 'Parser ' . $p;
-			$parser  = new $p;
+			$parser  = new $p();
 			$result  = $parser->parse( $file );
 
 			$post = $result['posts'][0];
@@ -305,7 +305,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 	public function test_unescaped_cdata_closing_sequence() {
 		$file = DIR_TESTDATA_WP_IMPORTER . '/crazy-cdata.xml';
 
-		$parser = new WXR_Parser_Regex;
+		$parser = new WXR_Parser_Regex();
 		$result = $parser->parse( $file );
 
 		$post = $result['posts'][0];
@@ -347,7 +347,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 
 		foreach ( array( 'WXR_Parser_SimpleXML', 'WXR_Parser_XML', 'WXR_Parser_Regex' ) as $p ) {
 			$message = 'Parser ' . $p;
-			$parser  = new $p;
+			$parser  = new $p();
 			$result  = $parser->parse( $file );
 
 			$this->assertCount( 1, $result['categories'], $message );
@@ -390,7 +390,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 
 		foreach ( array( 'WXR_Parser_SimpleXML', 'WXR_Parser_XML', 'WXR_Parser_Regex' ) as $p ) {
 			$message = 'Parser ' . $p;
-			$parser  = new $p;
+			$parser  = new $p();
 			$result  = $parser->parse( $file );
 
 			$this->assertCount( 1, $result['posts'], $message );
