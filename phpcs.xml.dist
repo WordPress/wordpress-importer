@@ -31,8 +31,9 @@
 	-->
 
 	<rule ref="WordPress-Core">
-		<exclude name="WordPress.PHP.StrictComparisons"/>
+		<exclude name="Universal.Operators.StrictComparisons"/>
 		<exclude name="WordPress.WP.I18n"/>
+		<exclude name="Modernize.FunctionCalls.Dirname.Nested"/><!-- Needs PHP 7.0 minimum. -->
 	</rule>
 	<rule ref="WordPress.Files.FileName">
 		<exclude-pattern>*/phpunit/tests/*\.php$</exclude-pattern>

@@ -73,7 +73,7 @@ class WXR_Parser_XML {
 	public $base_url;
 	public $base_blog_url;
 
-	function parse( $file ) {
+	public function parse( $file ) {
 		$this->wxr_version = false;
 		$this->in_post     = false;
 		$this->cdata       = false;
@@ -118,7 +118,7 @@ class WXR_Parser_XML {
 		);
 	}
 
-	function tag_open( $parse, $tag, $attr ) {
+	public function tag_open( $parse, $tag, $attr ) {
 		if ( in_array( $tag, $this->wp_tags, true ) ) {
 			$this->in_tag = substr( $tag, 3 );
 			return;
@@ -173,7 +173,7 @@ class WXR_Parser_XML {
 		}
 	}
 
-	function cdata( $parser, $cdata ) {
+	public function cdata( $parser, $cdata ) {
 		if ( ! trim( $cdata ) ) {
 			return;
 		}
@@ -185,7 +185,7 @@ class WXR_Parser_XML {
 		}
 	}
 
-	function tag_close( $parser, $tag ) {
+	public function tag_close( $parser, $tag ) {
 		switch ( $tag ) {
 			case 'wp:comment':
 				unset( $this->sub_data['key'], $this->sub_data['value'] ); // remove meta sub_data

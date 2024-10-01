@@ -24,7 +24,7 @@ if ( ! file_exists( $_tests_dir . '/includes/functions.php' ) ) {
 
 define( 'WP_LOAD_IMPORTERS', true );
 
-define( 'DIR_TESTDATA_WP_IMPORTER', dirname( __FILE__ ) . '/data' );
+define( 'DIR_TESTDATA_WP_IMPORTER', __DIR__ . '/data' );
 
 // Give access to tests_add_filter() function.
 require_once $_tests_dir . '/includes/functions.php';
@@ -34,7 +34,7 @@ require_once $_tests_dir . '/includes/functions.php';
  */
 function _manually_load_importer() {
 	if ( ! class_exists( 'WP_Import' ) ) {
-		require dirname( dirname( __FILE__ ) ) . '/src/wordpress-importer.php';
+		require dirname( __DIR__ ) . '/src/wordpress-importer.php';
 	}
 }
 tests_add_filter( 'plugins_loaded', '_manually_load_importer' );
