@@ -20,7 +20,8 @@ class WXR_Parser_Regex {
 	public $has_gzip;
 
 	function __construct() {
-		$this->has_gzip = is_callable( 'gzopen' );
+		$has_gzip       = is_callable( 'gzopen' );
+		$this->has_gzip = (bool) apply_filters( 'wp_import_has_gzip', $has_gzip ); 
 	}
 
 	function parse( $file ) {
