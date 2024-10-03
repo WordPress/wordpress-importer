@@ -18,6 +18,10 @@ if ( ! defined( 'WP_LOAD_IMPORTERS' ) ) {
 	return;
 }
 
+if ( ! defined( 'WORDPRESS_IMPORTER_VERSION' ) ) {
+	define( 'WORDPRESS_IMPORTER_VERSION', '0.8.2' );
+}
+
 /** Display verbose errors */
 if ( ! defined( 'IMPORT_DEBUG' ) ) {
 	define( 'IMPORT_DEBUG', WP_DEBUG );
