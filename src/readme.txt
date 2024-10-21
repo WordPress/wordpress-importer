@@ -44,6 +44,7 @@ If you would prefer to do things manually then follow these instructions:
 
 * Update compatibility tested-up-to to WordPress 6.7.
 * Update call to `post_exists` to include `post_type` in the query
+* PHP 8.4 compatibility fixes.
 
 = 0.8.2 =
 
