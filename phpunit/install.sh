@@ -17,7 +17,7 @@ WP_TESTS_DIR=${WP_TESTS_DIR-$TMPDIR/wordpress-tests-lib}
 WP_CORE_DIR=${WP_CORE_DIR-$TMPDIR/wordpress/}
 
 if [[ $WP_VERSION =~ ^[0-9]+\.[0-9]+$ ]]; then
-	WP_TESTS_TAG="branches/$WP_VERSION"
+	WP_TESTS_TAG="$WP_VERSION"
 elif [[ $WP_VERSION == 'trunk' ]]; then
 	WP_TESTS_TAG="trunk"
 else
@@ -26,28 +26,33 @@ else
 		echo "Latest WordPress version could not be found"
 		exit 1
 	fi
-	WP_TESTS_TAG="tags/$LATEST_VERSION"
+	WP_TESTS_TAG="$LATEST_VERSION"
 fi
 
 set -ex
 
 install_wp_and_test_suite() {
+  mkdir git-clone
+
 	# setup up WordPress
 	if [ ! -d $WP_CORE_DIR ]; then
 		mkdir -p $WP_CORE_DIR
-		svn co --quiet https://develop.svn.wordpress.org/${WP_TESTS_TAG}/src/ $WP_CORE_DIR
+		checkout_wordpress_develop
+		mv git-clone/src/* $WP_CORE_DIR
 	fi
 
 	# set up testing suite if it doesn't yet exist
 	if [ ! -d $WP_TESTS_DIR ]; then
 		# set up testing suite
 		mkdir -p $WP_TESTS_DIR
-		svn co --quiet https://develop.svn.wordpress.org/${WP_TESTS_TAG}/tests/phpunit/includes/ $WP_TESTS_DIR/includes
-		svn co --quiet https://develop.svn.wordpress.org/${WP_TESTS_TAG}/tests/phpunit/data/ $WP_TESTS_DIR/data
+		checkout_wordpress_develop
+		mv git-clone/tests/phpunit/includes $WP_TESTS_DIR/includes
+		mv git-clone/tests/phpunit/data $WP_TESTS_DIR/data
 	fi
 
 	if [ ! -f wp-tests-config.php ]; then
-		curl -s https://develop.svn.wordpress.org/${WP_TESTS_TAG}/wp-tests-config-sample.php > "$WP_TESTS_DIR"/wp-tests-config.php
+		checkout_wordpress_develop
+		mv git-clone/wp-tests-config-sample.php $WP_TESTS_DIR/wp-tests-config.php
 		# remove all forward slashes in the end
 		WP_CORE_DIR=$(echo $WP_CORE_DIR | sed "s:/\+$::")
 		sed -i "s:dirname( __FILE__ ) . '/src/':'$WP_CORE_DIR/':" "$WP_TESTS_DIR"/wp-tests-config.php
@@ -57,6 +62,7 @@ install_wp_and_test_suite() {
 		sed -i "s|localhost|${DB_HOST}|" "$WP_TESTS_DIR"/wp-tests-config.php
 	fi
 
+  rm -rf git-clone
 }
 
 install_db() {
@@ -78,6 +84,12 @@ install_db() {
 
 	# create database
 	mysqladmin create $DB_NAME --user="$DB_USER" --password="$DB_PASS"$EXTRA
+}
+
+checkout_wordpress_develop() {
+  if [ ! -d "git-clone/.git" ]; then
+    git clone --depth=1 --branch "${WP_TESTS_TAG}" https://github.com/WordPress/wordpress-develop.git git-clone
+  fi
 }
 
 install_wp_and_test_suite
