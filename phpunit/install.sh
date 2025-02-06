@@ -87,7 +87,9 @@ install_db() {
 }
 
 checkout_wordpress_develop() {
-  git clone --depth=1 --branch ${WP_TESTS_TAG} https://github.com/WordPress/wordpress-develop.git git-clone
+  if [ ! -d "git-clone/.git" ]; then
+    git clone --depth=1 --branch "${WP_TESTS_TAG}" https://github.com/WordPress/wordpress-develop.git git-clone
+  fi
 }
 
 install_wp_and_test_suite
