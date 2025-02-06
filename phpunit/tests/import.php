@@ -291,6 +291,4 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 			'The WP Error object did not contain the expected error'
 		);
 	}
-
-	// function test_menu_import
 }
