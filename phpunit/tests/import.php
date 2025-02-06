@@ -22,7 +22,6 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		global $wpdb;
 		// Crude but effective: make sure there's no residual data in the main tables.
 		foreach ( array( 'posts', 'postmeta', 'comments', 'terms', 'term_taxonomy', 'term_relationships', 'users', 'usermeta' ) as $table ) {
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$wpdb->query( "DELETE FROM {$wpdb->$table}" );
 		}
 	}
@@ -33,6 +32,9 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		parent::tear_down();
 	}
 
+	/**
+	 * @covers WP_Import::import
+	 */
 	public function test_small_import() {
 		global $wpdb;
 
@@ -59,8 +61,8 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		$this->assertSame( 'author@example.org', $author->user_email );
 
 		// Check that terms were imported correctly.
-		$this->assertSame( '30', wp_count_terms( 'category' ) );
-		$this->assertSame( '3', wp_count_terms( 'post_tag' ) );
+		$this->assertSame( '30', wp_count_terms( array( 'taxonomy' => 'category' ) ) );
+		$this->assertSame( '3', wp_count_terms( array( 'taxonomy' => 'post_tag' ) ) );
 		$foo = get_term_by( 'slug', 'foo', 'category' );
 		$this->assertSame( 0, $foo->parent );
 		$bar     = get_term_by( 'slug', 'bar', 'category' );
@@ -201,6 +203,9 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		$this->assertCount( 1, $cats );
 	}
 
+	/**
+	 * @covers WP_Import::import
+	 */
 	public function test_double_import() {
 		$authors = array(
 			'admin'  => false,
@@ -224,8 +229,8 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		$this->assertSame( 'author', $author->user_login );
 		$this->assertSame( 'author@example.org', $author->user_email );
 
-		$this->assertSame( '30', wp_count_terms( 'category' ) );
-		$this->assertSame( '3', wp_count_terms( 'post_tag' ) );
+		$this->assertSame( '30', wp_count_terms( array( 'taxonomy' => 'category' ) ) );
+		$this->assertSame( '3', wp_count_terms( array( 'taxonomy' => 'post_tag' ) ) );
 		$foo = get_term_by( 'slug', 'foo', 'category' );
 		$this->assertSame( 0, $foo->parent );
 		$bar     = get_term_by( 'slug', 'bar', 'category' );
@@ -244,6 +249,8 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 
 	/**
 	 * @ticket 21007
+	 *
+	 * @covers WP_Import::import
 	 */
 	public function test_slashes_should_not_be_stripped() {
 		global $wpdb;
@@ -291,6 +298,4 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 			'The WP Error object did not contain the expected error'
 		);
 	}
-
-	// function test_menu_import
 }
