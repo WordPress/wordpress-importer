@@ -26,7 +26,7 @@ else
 		echo "Latest WordPress version could not be found"
 		exit 1
 	fi
-	WP_TESTS_TAG="tags/$LATEST_VERSION"
+	WP_TESTS_TAG="$LATEST_VERSION"
 fi
 
 set -ex
