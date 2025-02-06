@@ -18,6 +18,10 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 		}
 	}
 
+	/**
+	 * @covers WXR_Parser_SimpleXML::parse
+	 * @covers WXR_Parser_XML::parse
+	 */
 	public function test_malformed_wxr() {
 		$file = DIR_TESTDATA_WP_IMPORTER . '/malformed.xml';
 
@@ -30,6 +34,11 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 		}
 	}
 
+	/**
+	 * @covers WXR_Parser_SimpleXML::parse
+	 * @covers WXR_Parser_XML::parse
+	 * @covers WXR_Parser_Regex::parse
+	 */
 	public function test_invalid_wxr() {
 		$f1 = DIR_TESTDATA_WP_IMPORTER . '/missing-version-tag.xml';
 		$f2 = DIR_TESTDATA_WP_IMPORTER . '/invalid-version-tag.xml';
@@ -44,6 +53,11 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 		}
 	}
 
+	/**
+	 * @covers WXR_Parser_SimpleXML::parse
+	 * @covers WXR_Parser_XML::parse
+	 * @covers WXR_Parser_Regex::parse
+	 */
 	public function test_wxr_version_1_1() {
 		$file = DIR_TESTDATA_WP_IMPORTER . '/valid-wxr-1.1.xml';
 
@@ -54,7 +68,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 
 			$this->assertIsArray( $result, $message );
 			$this->assertSame( 'http://localhost/', $result['base_url'], $message );
-			$this->assertEquals(
+			$this->assertEqualSetsWithIndex(
 				array(
 					'author_id'           => 2,
 					'author_login'        => 'john',
@@ -66,7 +80,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 				$result['authors']['john'],
 				$message
 			);
-			$this->assertEquals(
+			$this->assertEqualSetsWithIndex(
 				array(
 					'term_id'              => 3,
 					'category_nicename'    => 'alpha',
@@ -77,7 +91,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 				$result['categories'][0],
 				$message
 			);
-			$this->assertEquals(
+			$this->assertEqualSetsWithIndex(
 				array(
 					'term_id'         => 22,
 					'tag_slug'        => 'clippable',
@@ -87,7 +101,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 				$result['tags'][0],
 				$message
 			);
-			$this->assertEquals(
+			$this->assertEqualSetsWithIndex(
 				array(
 					'term_id'          => 40,
 					'term_taxonomy'    => 'post_tax',
@@ -103,7 +117,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 			$this->assertCount( 2, $result['posts'], $message );
 			$this->assertCount( 19, $result['posts'][0], $message );
 			$this->assertCount( 18, $result['posts'][1], $message );
-			$this->assertEquals(
+			$this->assertEqualSetsWithIndex(
 				array(
 					array(
 						'name'   => 'alpha',
@@ -137,6 +151,11 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 		}
 	}
 
+	/**
+	 * @covers WXR_Parser_SimpleXML::parse
+	 * @covers WXR_Parser_XML::parse
+	 * @covers WXR_Parser_Regex::parse
+	 */
 	public function test_wxr_version_1_0() {
 		$file = DIR_TESTDATA_WP_IMPORTER . '/valid-wxr-1.0.xml';
 
@@ -267,6 +286,10 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 	 * sections that contain escaped closing tags ("]]>" -> "]]]]><![CDATA[>").
 	 *
 	 * @link https://core.trac.wordpress.org/ticket/15203
+	 *
+	 * @covers WXR_Parser_SimpleXML::parse
+	 * @covers WXR_Parser_XML::parse
+	 * @covers WXR_Parser_Regex::parse
 	 */
 	public function test_escaped_cdata_closing_sequence() {
 		$file = DIR_TESTDATA_WP_IMPORTER . '/crazy-cdata-escaped.xml';
@@ -290,7 +313,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 						$value = 'This has <![CDATA[ opening and ]]> closing <![CDATA[ tags like this: ]]>';
 						break;
 					default:
-						$this->fail( 'Unknown postmeta (' . $meta['key'] . ') was parsed out by' . $p );
+						$this->fail( sprintf( 'Unknown postmeta (%1$s) was parsed out by %2$s.', $meta['key'], $p ) );
 				}
 				$this->assertSame( $value, $meta['value'], $message );
 			}
@@ -300,6 +323,8 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 	/**
 	 * Ensure that the regex parser can still parse invalid CDATA blocks (i.e. those
 	 * with "]]>" unescaped within a CDATA section).
+	 *
+	 * @covers WXR_Parser_Regex::parse
 	 */
 	public function test_unescaped_cdata_closing_sequence() {
 		$file = DIR_TESTDATA_WP_IMPORTER . '/crazy-cdata.xml';
@@ -321,7 +346,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 					$value = 'This has <![CDATA[ opening and ]]> closing <![CDATA[ tags like this: ]]>';
 					break;
 				default:
-					$this->fail( 'Unknown postmeta (' . $meta['key'] . ') was parsed out by' . $p );
+					$this->fail( sprintf( 'Unknown postmeta (%1$s) was parsed out by %2$s.', $meta['key'], $p ) );
 			}
 			$this->assertSame( $value, $meta['value'] );
 		}
