@@ -5,6 +5,8 @@ require_once __DIR__ . '/base.php';
 /**
  * @group import
  * @group post-meta
+ *
+ * @covers WP_Import::import
  */
 class Tests_Import_Postmeta extends WP_Import_UnitTestCase {
 	public function set_up() {

@@ -18,6 +18,10 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 		}
 	}
 
+	/**
+	 * @covers WXR_Parser_SimpleXML::parse
+	 * @covers WXR_Parser_XML::parse
+	 */
 	public function test_malformed_wxr() {
 		$file = DIR_TESTDATA_WP_IMPORTER . '/malformed.xml';
 
@@ -30,6 +34,11 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 		}
 	}
 
+	/**
+	 * @covers WXR_Parser_SimpleXML::parse
+	 * @covers WXR_Parser_XML::parse
+	 * @covers WXR_Parser_Regex::parse
+	 */
 	public function test_invalid_wxr() {
 		$f1 = DIR_TESTDATA_WP_IMPORTER . '/missing-version-tag.xml';
 		$f2 = DIR_TESTDATA_WP_IMPORTER . '/invalid-version-tag.xml';
@@ -44,6 +53,11 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 		}
 	}
 
+	/**
+	 * @covers WXR_Parser_SimpleXML::parse
+	 * @covers WXR_Parser_XML::parse
+	 * @covers WXR_Parser_Regex::parse
+	 */
 	public function test_wxr_version_1_1() {
 		$file = DIR_TESTDATA_WP_IMPORTER . '/valid-wxr-1.1.xml';
 
@@ -137,6 +151,11 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 		}
 	}
 
+	/**
+	 * @covers WXR_Parser_SimpleXML::parse
+	 * @covers WXR_Parser_XML::parse
+	 * @covers WXR_Parser_Regex::parse
+	 */
 	public function test_wxr_version_1_0() {
 		$file = DIR_TESTDATA_WP_IMPORTER . '/valid-wxr-1.0.xml';
 
@@ -267,6 +286,10 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 	 * sections that contain escaped closing tags ("]]>" -> "]]]]><![CDATA[>").
 	 *
 	 * @link https://core.trac.wordpress.org/ticket/15203
+	 *
+	 * @covers WXR_Parser_SimpleXML::parse
+	 * @covers WXR_Parser_XML::parse
+	 * @covers WXR_Parser_Regex::parse
 	 */
 	public function test_escaped_cdata_closing_sequence() {
 		$file = DIR_TESTDATA_WP_IMPORTER . '/crazy-cdata-escaped.xml';
@@ -300,6 +323,8 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 	/**
 	 * Ensure that the regex parser can still parse invalid CDATA blocks (i.e. those
 	 * with "]]>" unescaped within a CDATA section).
+	 *
+	 * @covers WXR_Parser_Regex::parse
 	 */
 	public function test_unescaped_cdata_closing_sequence() {
 		$file = DIR_TESTDATA_WP_IMPORTER . '/crazy-cdata.xml';
