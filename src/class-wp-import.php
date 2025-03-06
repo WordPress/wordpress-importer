@@ -599,7 +599,7 @@ class WP_Import extends WP_Importer {
 			}
 
 			// Export gets meta straight from the DB so could have a serialized string
-			$value = maybe_unserialize( $meta['value'] );
+			$value = $this->maybe_unserialize( $meta['value'] );
 
 			add_term_meta( $term_id, wp_slash( $key ), wp_slash_strings_only( $value ) );
 
@@ -854,7 +854,7 @@ class WP_Import extends WP_Importer {
 						do_action( 'wp_import_insert_comment', $inserted_comments[ $key ], $comment, $comment_post_id, $post );
 
 						foreach ( $comment['commentmeta'] as $meta ) {
-							$value = maybe_unserialize( $meta['value'] );
+							$value = $this->maybe_unserialize( $meta['value'] );
 
 							add_comment_meta( $inserted_comments[ $key ], wp_slash( $meta['key'] ), wp_slash_strings_only( $value ) );
 						}
@@ -888,7 +888,7 @@ class WP_Import extends WP_Importer {
 					if ( $key ) {
 						// export gets meta straight from the DB so could have a serialized string
 						if ( ! $value ) {
-							$value = maybe_unserialize( $meta['value'] );
+							$value = $this->maybe_unserialize( $meta['value'] );
 						}
 
 						add_post_meta( $post_id, wp_slash( $key ), wp_slash_strings_only( $value ) );
@@ -1492,5 +1492,22 @@ class WP_Import extends WP_Importer {
 		}
 
 		return isset( $map[ $mime_type ] ) ? $map[ $mime_type ] : null;
+	}
+
+	/**
+	 * Unserializes data only if it was serialized.
+	 *
+	 * @since 0.8.4
+	 *
+	 * @param string $data Data that might be unserialized.
+	 * @return mixed Unserialized data can be any type.
+	 */
+	protected function maybe_unserialize( $data ) {
+		if ( is_serialized( $data ) ) {
+			// Don't attempt to unserialize data that wasn't serialized going in.
+			return @unserialize( $data, array( 'allowed_classes' => false ) );
+		}
+
+		return $data;
 	}
 }
