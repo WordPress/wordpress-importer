@@ -1509,7 +1509,7 @@ class WP_Import extends WP_Importer {
 				return @unserialize( $data );
 			} else {
 				// phpcs:ignore PHPCompatibility.FunctionUse.NewFunctionParameters.unserialize_optionsFound
-				return @unserialize( $data, array( 'allowed_classes' => false ) );
+				return @unserialize( $data, array( 'allowed_classes' => array( 'stdClass' ) ) );
 			}
 		}
 
