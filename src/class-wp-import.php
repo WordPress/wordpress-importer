@@ -1505,12 +1505,7 @@ class WP_Import extends WP_Importer {
 	protected function maybe_unserialize( $data ) {
 		// Don't attempt to unserialize data that wasn't serialized going in.
 		if ( is_serialized( $data ) ) {
-			if ( PHP_VERSION_ID < 70000 ) {
-				return @unserialize( $data );
-			} else {
-				// phpcs:ignore PHPCompatibility.FunctionUse.NewFunctionParameters.unserialize_optionsFound
-				return @unserialize( $data, array( 'allowed_classes' => array( 'stdClass' ) ) );
-			}
+			return @unserialize( $data, array( 'allowed_classes' => array( 'stdClass' ) ) );
 		}
 
 		return $data;

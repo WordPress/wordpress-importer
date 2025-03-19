@@ -4,7 +4,7 @@ Donate link: https://wordpressfoundation.org/donate/
 Tags: importer, wordpress
 Requires at least: 5.2
 Tested up to: 6.7.2
-Requires PHP: 5.6
+Requires PHP: 7.0
 Stable tag: 0.8.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -41,8 +41,9 @@ If you would prefer to do things manually then follow these instructions:
 == Changelog ==
 
 = 0.8.4 =
-* Fix a bug on deserialization of untrusted input during the add of meta
-* Update compatibility tested-up-to to WordPress 6.7.2
+* Fix a bug on deserialization of untrusted input during the add of meta.
+* Update compatibility tested-up-to to WordPress 6.7.2.
+* Update minimum PHP requirement to 7.0.
 
 = 0.8.3 =
 
