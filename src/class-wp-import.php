@@ -1503,9 +1503,13 @@ class WP_Import extends WP_Importer {
 	 * @return mixed Unserialized data can be any type.
 	 */
 	protected function maybe_unserialize( $data ) {
+		// Don't attempt to unserialize data that wasn't serialized going in.
 		if ( is_serialized( $data ) ) {
-			// Don't attempt to unserialize data that wasn't serialized going in.
-			return @unserialize( $data, array( 'allowed_classes' => false ) );
+			if ( PHP_VERSION_ID < 70000 ) {
+				return @unserialize( $data );
+			} else {
+				return @unserialize( $data, array( 'allowed_classes' => false ) );
+			}
 		}
 
 		return $data;
