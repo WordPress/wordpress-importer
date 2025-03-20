@@ -972,7 +972,7 @@ class WP_Import extends WP_Importer {
 		}
 
 		// wp_update_nav_menu_item expects CSS classes as a space separated string
-		$_menu_item_classes = maybe_unserialize( $_menu_item_classes );
+		$_menu_item_classes = $this->maybe_unserialize( $_menu_item_classes );
 		if ( is_array( $_menu_item_classes ) ) {
 			$_menu_item_classes = implode( ' ', $_menu_item_classes );
 		}
