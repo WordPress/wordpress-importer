@@ -43,7 +43,6 @@ If you would prefer to do things manually then follow these instructions:
 = 0.8.4 =
 * Fix a bug on deserialization of untrusted input.
 * Update compatibility tested-up-to to WordPress 6.7.2.
-* Update minimum PHP requirement to 7.0.
 
 = 0.8.3 =
 
