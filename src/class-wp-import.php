@@ -1505,7 +1505,10 @@ class WP_Import extends WP_Importer {
 	protected function maybe_unserialize( $data ) {
 		// Don't attempt to unserialize data that wasn't serialized going in.
 		if ( is_serialized( $data ) ) {
-			return @unserialize( $data, array( 'allowed_classes' => array( 'stdClass' ) ) );
+			// Transform the serialized objects to a stdClass object.
+			$data = preg_replace( '/O:\d+:"[^"]+":/', 'O:8:"stdClass":', $data );
+
+			return maybe_unserialize( $data );
 		}
 
 		return $data;
