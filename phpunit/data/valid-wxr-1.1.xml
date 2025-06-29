@@ -36,6 +36,14 @@
 	<wp:base_blog_url>http://localhost/</wp:base_blog_url>
 
 	<wp:author><wp:author_id>2</wp:author_id><wp:author_login>john</wp:author_login><wp:author_email>johndoe@example.org</wp:author_email><wp:author_display_name><![CDATA[John Doe]]></wp:author_display_name><wp:author_first_name><![CDATA[John]]></wp:author_first_name><wp:author_last_name><![CDATA[Doe]]></wp:author_last_name></wp:author>
+	<wp:author>
+		<wp:author_id>3</wp:author_id>
+		<wp:author_login>jane</wp:author_login>
+		<wp:author_email>janedoe@example.org</wp:author_email>
+		<wp:author_display_name><![CDATA[Jane Doe]]></wp:author_display_name>
+		<wp:author_first_name><![CDATA[Jane]]></wp:author_first_name>
+		<wp:author_last_name><![CDATA[Doe]]></wp:author_last_name>
+	</wp:author>
 
 	<wp:category><wp:term_id>3</wp:term_id><wp:category_nicename>alpha</wp:category_nicename><wp:category_parent></wp:category_parent><wp:cat_name><![CDATA[alpha]]></wp:cat_name><wp:category_description><![CDATA[The alpha category]]></wp:category_description></wp:category>
 	<wp:tag><wp:term_id>22</wp:term_id><wp:tag_slug>clippable</wp:tag_slug><wp:tag_name><![CDATA[Clippable]]></wp:tag_name><wp:tag_description><![CDATA[The Clippable post_tag]]></wp:tag_description></wp:tag>

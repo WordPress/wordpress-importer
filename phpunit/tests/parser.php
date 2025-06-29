@@ -82,6 +82,18 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 			);
 			$this->assertEqualSetsWithIndex(
 				array(
+					'author_id'           => 3,
+					'author_login'        => 'jane',
+					'author_email'        => 'janedoe@example.org',
+					'author_display_name' => 'Jane Doe',
+					'author_first_name'   => 'Jane',
+					'author_last_name'    => 'Doe',
+				),
+				$result['authors']['jane'],
+				$message
+			);
+			$this->assertEqualSetsWithIndex(
+				array(
 					'term_id'              => 3,
 					'category_nicename'    => 'alpha',
 					'category_parent'      => '',

@@ -34,6 +34,7 @@ class WXR_Parser_Regex {
 			'wp:category' => array( 'categories', array( $this, 'process_category' ) ),
 			'wp:tag'      => array( 'tags', array( $this, 'process_tag' ) ),
 			'wp:term'     => array( 'terms', array( $this, 'process_term' ) ),
+			'wp:author'   => array( 'authors', array( $this, 'process_author' ) ),
 		);
 
 		$fp = $this->fopen( $file, 'r' );
@@ -60,20 +61,17 @@ class WXR_Parser_Regex {
 					$this->base_blog_url = $this->base_url;
 				}
 
-				if ( false !== strpos( $importline, '<wp:author>' ) ) {
-					preg_match( '|<wp:author>(.*?)</wp:author>|is', $importline, $author );
-					$a                                   = $this->process_author( $author[1] );
-					$this->authors[ $a['author_login'] ] = $a;
-					continue;
-				}
-
 				foreach ( $multiline_tags as $tag => $handler ) {
 					// Handle multi-line tags on a singular line
 					$pos         = strpos( $importline, "<$tag>" );
 					$pos_closing = strpos( $importline, "</$tag>" );
 					if ( preg_match( '|<' . $tag . '>(.*?)</' . $tag . '>|is', $importline, $matches ) ) {
-						$this->{$handler[0]}[] = call_user_func( $handler[1], $matches[1] );
-
+						$result = call_user_func( $handler[1], $matches[1] );
+						if ( 'wp:author' === $tag && isset( $result['author_login'] ) ) {
+							$this->authors[ $result['author_login'] ] = $result;
+						} else {
+							$this->{$handler[0]}[] = $result;
+						}
 					} elseif ( false !== $pos ) {
 						// Take note of any content after the opening tag
 						$multiline_content = trim( substr( $importline, $pos + strlen( $tag ) + 2 ) );
@@ -86,7 +84,12 @@ class WXR_Parser_Regex {
 						$in_multiline       = false;
 						$multiline_content .= trim( substr( $importline, 0, $pos_closing ) );
 
-						$this->{$handler[0]}[] = call_user_func( $handler[1], $multiline_content );
+						$result = call_user_func( $handler[1], $multiline_content );
+						if ( 'wp:author' === $tag && isset( $result['author_login'] ) ) {
+							$this->authors[ $result['author_login'] ] = $result;
+						} else {
+							$this->{$handler[0]}[] = $result;
+						}
 					}
 				}
 
