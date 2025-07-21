@@ -306,16 +306,22 @@ class WP_Import extends WP_Importer {
 		}
 		echo '</label>';
 
-		echo ' ' . wp_dropdown_users(
-			array(
-				'name'            => "user_map[$n]",
-				'id'              => 'imported_authors_' . $n,
-				'multi'           => true,
-				'show_option_all' => __( '- Select -', 'wordpress-importer' ),
-				'show'            => 'display_name_with_login',
-				'echo'            => 0,
-			)
+		// Build dropdown args with multisite support
+		$dropdown_args = array(
+			'name'            => "user_map[$n]",
+			'id'              => 'imported_authors_' . $n,
+			'multi'           => true,
+			'show_option_all' => __( '- Select -', 'wordpress-importer' ),
+			'show'            => 'display_name_with_login',
+			'echo'            => 0,
 		);
+
+		// In multisite, limit to users of the current site
+		if ( is_multisite() ) {
+			$dropdown_args['blog_id'] = get_current_blog_id();
+		}
+
+		echo ' ' . wp_dropdown_users( $dropdown_args );
 
 		echo '<input type="hidden" name="imported_authors[' . $n . ']" value="' . esc_attr( $author['author_login'] ) . '" />';
 
@@ -344,10 +350,19 @@ class WP_Import extends WP_Importer {
 			if ( ! empty( $_POST['user_map'][ $i ] ) ) {
 				$user = get_userdata( intval( $_POST['user_map'][ $i ] ) );
 				if ( isset( $user->ID ) ) {
-					if ( $old_id ) {
-						$this->processed_authors[ $old_id ] = $user->ID;
+					// In multisite, validate that the user is a member of the current site
+					if ( is_multisite() && ! is_user_member_of_blog( $user->ID, get_current_blog_id() ) ) {
+						printf( 
+							__( 'User %s is not a member of this site. Posts will be attributed to the current user.', 'wordpress-importer' ),
+							esc_html( $user->display_name )
+						);
+						echo '<br />';
+					} else {
+						if ( $old_id ) {
+							$this->processed_authors[ $old_id ] = $user->ID;
+						}
+						$this->author_mapping[ $santized_old_login ] = $user->ID;
 					}
-					$this->author_mapping[ $santized_old_login ] = $user->ID;
 				}
 			} elseif ( $create_users ) {
 				if ( ! empty( $_POST['user_new'][ $i ] ) ) {
@@ -365,6 +380,11 @@ class WP_Import extends WP_Importer {
 				}
 
 				if ( ! is_wp_error( $user_id ) ) {
+					// In multisite, add the newly created user to the current site
+					if ( is_multisite() && ! is_user_member_of_blog( $user_id, get_current_blog_id() ) ) {
+						add_user_to_blog( get_current_blog_id(), $user_id, 'contributor' );
+					}
+					
 					if ( $old_id ) {
 						$this->processed_authors[ $old_id ] = $user_id;
 					}
