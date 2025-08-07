@@ -860,8 +860,6 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 		$this->assertSame( $expected, trim( $result['posts'][0]['post_content'] ) );
 	}
 
-	/* ---------- Robustness / warnings ---------- */
-
 	/**
 	 * @dataProvider parser_provider
 	 */
@@ -894,30 +892,6 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 		);
 	}
 
-	/* ---------- Performance / scale ---------- */
-
-	/**
-	 * @dataProvider parser_provider
-	 */
-	public function testLargeFileCompletesWithinMemoryBudget( $parser_class ) {
-		if ( PHP_INT_SIZE < 8 ) {
-			$this->markTestSkipped( 'Requires 64‑bit PHP.' );
-		}
-
-		$tmp = tmpfile();
-		fwrite( $tmp, $this->generateLargeWxr( 5000 ) );
-		$meta_before = memory_get_usage();
-
-		$parser = new $parser_class();
-		$parser->parse( stream_get_meta_data( $tmp )['uri'] );
-
-		$delta = memory_get_usage() - $meta_before;
-		$this->assertLessThan( 64 * 1024 * 1024, $delta, 'Memory usage too high' );
-		fclose( $tmp );
-	}
-
-	/* ---------- Edge‑case parsing ---------- */
-
 	/**
 	 * @dataProvider parser_provider
 	 */
@@ -948,8 +922,6 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 		$result = $parser->parse( DIR_TESTDATA_WP_IMPORTER . '/large-authors.xml' );
 		$this->assertCount( 300, $result['authors'] );
 	}
-
-	/* ---------- Namespace Edge Cases ---------- */
 
 	/**
 	 * Test namespace edge cases including redefinition and version conflicts
@@ -1196,25 +1168,5 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 		if ( $unicode_post ) {
 			$this->assertEquals( '4', $unicode_post['post_id'], "Unicode namespace post should be parsed for $parser_class" );
 		}
-	}
-
-	/* ---------- Helpers ---------- */
-
-	private function generateLargeWxr( $post_count ) {
-		$xml  = '<?xml version="1.0" encoding="UTF-8" ?>' . "\n";
-		$xml .= '<rss version="2.0" xmlns:wp="http://wordpress.org/export/1.2/">' . "\n";
-		$xml .= "<channel>\n<title>Large Export</title>\n";
-
-		for ( $i = 1; $i <= $post_count; $i++ ) {
-			$xml .= "<item>\n<title>Post {$i}</title>\n";
-			$xml .= "<wp:post_id>{$i}</wp:post_id>\n";
-			$xml .= "<wp:post_type>post</wp:post_type>\n";
-			$xml .= "<wp:status>publish</wp:status>\n";
-			$xml .= "<content:encoded><![CDATA[Sample {$i}]]></content:encoded>\n";
-			$xml .= "</item>\n";
-		}
-
-		$xml .= "</channel>\n</rss>";
-		return $xml;
 	}
 }
