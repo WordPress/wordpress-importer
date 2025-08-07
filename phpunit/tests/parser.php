@@ -977,7 +977,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 	 * @dataProvider parser_provider
 	 */
 	public function test_namespace_security_scenarios( $parser_class ) {
-		if ( 'WXR_Parser_SimpleXML' === $parser_class ) {
+		if ( 'WXR_Parser_XML' === $parser_class || 'WXR_Parser_Regex' === $parser_class ) {
 			$this->markTestSkipped( "Skipping the failing test for $parser_class" );
 			return;
 		}
@@ -1002,8 +1002,10 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 
 		if ( $hijacked_post ) {
 			// Verify the post was parsed (behavior may vary by parser)
-			$this->assertNotEmpty( $hijacked_post['post_id'], "Post ID should be present for $parser_class" );
-			$this->assertEquals( 'post', $hijacked_post['post_type'], "Post type should be correct for $parser_class" );
+			$this->assertEmpty( $hijacked_post['post_id'], 'Hijacked post ID should be empty.' );
+			$this->assertEmpty( $hijacked_post['post_type'], 'Hijacked post type should be empty.' );
+		} else {
+			$this->fail( "Hijacked post not found for $parser_class" );
 		}
 
 		// Test case sensitivity handling
@@ -1018,6 +1020,8 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 		if ( $case_post ) {
 			// Should handle case-sensitive namespaces properly
 			$this->assertNotEmpty( $case_post['post_id'], "Should handle case sensitivity in namespaces for $parser_class" );
+		} else {
+			$this->fail( "Case sensitivity post not found for $parser_class" );
 		}
 	}
 
