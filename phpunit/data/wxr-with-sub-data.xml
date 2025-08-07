@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0"
+    xmlns:excerpt="http://wordpress.org/export/1.1/excerpt/"
+    xmlns:content="http://purl.org/rss/1.0/modules/content/"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:wp="http://wordpress.org/export/1.1/"
+>
+<channel>
+    <wp:wxr_version>1.1</wp:wxr_version>
+
+    <wp:term>
+        <wp:term_id>40</wp:term_id>
+        <wp:term_taxonomy>custom_tax</wp:term_taxonomy>
+        <wp:term_slug>custom-term</wp:term_slug>
+        <wp:term_name><![CDATA[Custom Term]]></wp:term_name>
+        <wp:termmeta>
+            <wp:meta_key><![CDATA[term_meta_key]]></wp:meta_key>
+            <wp:meta_value><![CDATA[term_meta_value]]></wp:meta_value>
+        </wp:termmeta>
+    </wp:term>
+
+    <item>
+        <title>Post with sub data</title>
+        <dc:creator>admin</dc:creator>
+        <wp:post_id>101</wp:post_id>
+        <wp:status>publish</wp:status>
+        <wp:post_type>post</wp:post_type>
+        <category domain="category" nicename="test-cat"><![CDATA[Test Category]]></category>
+        <wp:postmeta>
+            <wp:meta_key>_test_meta_key</wp:meta_key>
+            <wp:meta_value><![CDATA[test_meta_value]]></wp:meta_value>
+        </wp:postmeta>
+        <wp:comment>
+            <wp:comment_id>201</wp:comment_id>
+            <wp:comment_author><![CDATA[Commenter]]></wp:comment_author>
+            <wp:comment_content><![CDATA[This is a comment with meta.]]></wp:comment_content>
+            <wp:commentmeta>
+                <wp:meta_key>_comment_meta_key</wp:meta_key>
+                <wp:meta_value><![CDATA[comment_meta_value]]></wp:meta_value>
+            </wp:commentmeta>
+        </wp:comment>
+    </item>
+</channel>
+</rss>
