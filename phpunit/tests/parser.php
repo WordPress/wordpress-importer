@@ -952,7 +952,8 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 		// Test No Prefix (post_id 2)
 		$no_prefix_post = $result['posts'][1];
 		$this->assertEquals( 'No Prefix', $no_prefix_post['post_title'], "Second post should be 'No Prefix' for $parser_class" );
-		$this->assertEmpty( $no_prefix_post['post_id'] ?? null, "No Prefix post should have post_id 2 for $parser_class" );
+		$post_id = isset( $no_prefix_post['post_id'] ) ? $no_prefix_post['post_id'] : null;
+		$this->assertEmpty( $post_id, "No Prefix post should have post_id 2 for $parser_class" );
 		$this->assertEquals( 'post', $no_prefix_post['post_type'], "No Prefix post should have correct type for $parser_class" );
 
 		// Test Empty Namespace (post_id 3)
