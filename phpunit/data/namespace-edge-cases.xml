@@ -13,35 +13,35 @@
 <title>Namespace Edge Cases</title>
 <wp:wxr_version>1.2</wp:wxr_version>
 
-<!-- Test 1: Default namespace redefinition -->
+<!-- Default namespace redefinition -->
 <wp:author xmlns:wp="http://example.com/fake/">
 <wp:author_id>1</wp:author_id>
 <wp:author_login>fake_ns_user</wp:author_login>
 <wp:author_email>fake@example.com</wp:author_email>
 </wp:author>
 
-<!-- Test 2: Correct namespace after redefinition -->
+<!-- Correct namespace after redefinition -->
 <wp:author xmlns:wp="http://wordpress.org/export/1.2/">
 <wp:author_id>2</wp:author_id>
 <wp:author_login>real_user</wp:author_login>
 <wp:author_email>real@example.com</wp:author_email>
 </wp:author>
 
-<!-- Test 3: Namespace with version conflict -->
+<!-- Namespace with version conflict -->
 <wp2:author>
 <wp2:author_id>3</wp2:author_id>
 <wp2:author_login>version_conflict</wp2:author_login>
 <wp2:author_email>conflict@example.com</wp2:author_email>
 </wp2:author>
 
-<!-- Test 4: Custom namespace interference -->
+<!-- Custom namespace interference -->
 <custom:author>
 <custom:author_id>999</custom:author_id>
 <custom:author_login>custom_user</custom:author_login>
 <custom:author_email>custom@example.com</custom:author_email>
 </custom:author>
 
-<!-- Test 5: Mixed namespace elements -->
+<!-- Mixed namespace elements -->
 <item xmlns:alt="http://wordpress.org/export/1.2/">
 <title>Mixed Namespaces</title>
 <wp:post_id>1</wp:post_id>
@@ -50,7 +50,7 @@
 <wp:status>publish</wp:status>
 <content:encoded><![CDATA[Content with namespace conflicts]]></content:encoded>
 
-<!-- Test 6: Nested namespace redefinition in postmeta -->
+<!-- Nested namespace redefinition in postmeta -->
 <wp:postmeta xmlns:wp="http://example.com/malicious/">
 <wp:meta_key>malicious_key</wp:meta_key>
 <wp:meta_value><![CDATA[malicious_value]]></wp:meta_value>
@@ -62,7 +62,7 @@
 </wp:postmeta>
 </item>
 
-<!-- Test 7: No namespace prefix -->
+<!-- No namespace prefix -->
 <item>
 <title>No Prefix</title>
 <post_id xmlns="http://wordpress.org/export/1.2/">2</post_id>
@@ -71,7 +71,7 @@
 <content:encoded><![CDATA[Testing default namespace]]></content:encoded>
 </item>
 
-<!-- Test 8: Empty namespace -->
+<!-- Empty namespace -->
 <item xmlns="">
 <title>Empty Namespace</title>
 <wp:post_id>3</wp:post_id>
@@ -80,7 +80,7 @@
 <content:encoded><![CDATA[Empty namespace test]]></content:encoded>
 </item>
 
-<!-- Test 9: Unicode in namespace URI -->
+<!-- Unicode in namespace URI -->
 <item xmlns:unicode="http://ëxämplë.com/ünïcödë/">
 <title>Unicode Namespace</title>
 <wp:post_id>4</wp:post_id>
@@ -90,27 +90,29 @@
 <content:encoded><![CDATA[Unicode namespace URI test]]></content:encoded>
 </item>
 
-<!-- Test 10: Very long namespace URI -->
-<item xmlns:long="http://example.com/very/long/namespace/uri/that/might/cause/buffer/overflow/issues/in/parsers/with/limited/buffer/sizes/and/could/potentially/break/parsing/logic/if/not/handled/properly/">
-<title>Long Namespace</title>
+<!-- Namespace hijacking attempt -->
+<item xmlns:wp="http://malicious.example.com/hijack/">
+<title>Hijacked Namespace</title>
 <wp:post_id>5</wp:post_id>
-<long:test>value</long:test>
 <wp:post_type>post</wp:post_type>
 <wp:status>publish</wp:status>
-<content:encoded><![CDATA[Long namespace URI test]]></content:encoded>
+<content:encoded><![CDATA[This attempts to hijack the wp namespace]]></content:encoded>
+<wp:postmeta>
+<wp:meta_key>_malicious</wp:meta_key>
+<wp:meta_value><![CDATA[hijacked_data]]></wp:meta_value>
+</wp:postmeta>
 </item>
 
-<!-- Test 11: Namespace with special characters -->
-<item xmlns:special="http://example.com/sp3c!@l-ch@r$/">
-<title>Special Chars Namespace</title>
+<!-- Billion laughs namespace variant -->
+<item xmlns:lol="http://example.com/lol/">
+<title>Namespace Bomb</title>
 <wp:post_id>6</wp:post_id>
-<special:field>test</special:field>
 <wp:post_type>post</wp:post_type>
 <wp:status>publish</wp:status>
-<content:encoded><![CDATA[Special characters in namespace test]]></content:encoded>
+<content:encoded><![CDATA[&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;]]></content:encoded>
 </item>
 
-<!-- Test 12: Conflicting wp namespace versions in same document -->
+<!-- Related wp namespace versions in same document -->
 <wp:term xmlns:wp="http://wordpress.org/export/1.0/">
 <wp:term_id>100</wp:term_id>
 <wp:term_taxonomy>category</wp:term_taxonomy>
@@ -118,8 +120,16 @@
 <wp:term_name>Old Version</wp:term_name>
 </wp:term>
 
-<wp:term>
+<!-- Conflicting wp namespace versions in same document -->
+<wp:term xmlns:wp="http://different-ns.com/">
 <wp:term_id>101</wp:term_id>
+<wp:term_taxonomy>category</wp:term_taxonomy>
+<wp:term_slug>old-version</wp:term_slug>
+<wp:term_name>Old Version</wp:term_name>
+</wp:term>
+
+<wp:term>
+<wp:term_id>102</wp:term_id>
 <wp:term_taxonomy>category</wp:term_taxonomy>
 <wp:term_slug>new-version</wp:term_slug>
 <wp:term_name>New Version</wp:term_name>

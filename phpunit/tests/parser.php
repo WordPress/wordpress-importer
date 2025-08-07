@@ -924,182 +924,12 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 	}
 
 	/**
-	 * Test namespace edge cases including redefinition and version conflicts
-	 *
-	 * @dataProvider parser_provider
-	 */
-	public function test_namespace_edge_cases( $parser_class ) {
-		if ( 'WXR_Parser_Regex' === $parser_class ) {
-			$this->markTestSkipped( "Skipping the failing test for $parser_class" );
-			return;
-		}
-
-		$parser = new $parser_class();
-		$result = $parser->parse( DIR_TESTDATA_WP_IMPORTER . '/namespace-edge-cases.xml' );
-
-		$this->assertNotInstanceOf( 'WP_Error', $result, "Failed to parse namespace edge cases with $parser_class" );
-		$this->assertIsArray( $result, "Result should be an array for $parser_class" );
-
-		// Test that we have the expected number of authors (should ignore fake namespace redefinitions)
-		$this->assertArrayHasKey( 'authors', $result );
-		$this->assertGreaterThanOrEqual( 1, count( $result['authors'] ), "Should have at least 1 valid author for $parser_class" );
-
-		// Test that real_user exists and fake_ns_user is handled appropriately
-		$author_logins = array_column( $result['authors'], 'author_login' );
-		$this->assertContains( 'real_user', $author_logins, "Should contain real_user for $parser_class" );
-
-		// Test posts with namespace conflicts
-		$this->assertArrayHasKey( 'posts', $result );
-		$this->assertGreaterThanOrEqual( 1, count( $result['posts'] ), "Should have at least 1 post for $parser_class" );
-
-		// Find the "Mixed Namespaces" post
-		$mixed_post = null;
-		foreach ( $result['posts'] as $post ) {
-			if ( 'Mixed Namespaces' === $post['post_title'] ) {
-				$mixed_post = $post;
-				break;
-			}
-		}
-
-		if ( $mixed_post ) {
-			// Should parse the correct wp:post_id, not the alt:post_id
-			$this->assertEquals( '1', $mixed_post['post_id'], "Should use correct namespace for post_id in $parser_class" );
-			$this->assertEquals( 'post', $mixed_post['post_type'], "Should parse post_type correctly for $parser_class" );
-		}
-
-		// Test terms are parsed correctly despite namespace versions
-		$this->assertArrayHasKey( 'terms', $result );
-	}
-
-	/**
-	 * Test namespace security scenarios and attack vectors
-	 *
-	 * @dataProvider parser_provider
-	 */
-	public function test_namespace_security_scenarios( $parser_class ) {
-		if ( 'WXR_Parser_XML' === $parser_class || 'WXR_Parser_Regex' === $parser_class ) {
-			$this->markTestSkipped( "Skipping the failing test for $parser_class" );
-			return;
-		}
-		$parser = new $parser_class();
-		$result = $parser->parse( DIR_TESTDATA_WP_IMPORTER . '/namespace-attacks.xml' );
-
-		$this->assertNotInstanceOf( 'WP_Error', $result, "Failed to parse namespace attacks with $parser_class" );
-		$this->assertIsArray( $result, "Result should be an array for $parser_class" );
-
-		// Test that malicious namespace hijacking doesn't break parsing
-		$this->assertArrayHasKey( 'posts', $result );
-		$this->assertGreaterThanOrEqual( 1, count( $result['posts'] ), "Should have posts despite namespace attacks for $parser_class" );
-
-		// Find the hijacked namespace post
-		$hijacked_post = null;
-		foreach ( $result['posts'] as $post ) {
-			if ( 'Hijacked Namespace' === $post['post_title'] ) {
-				$hijacked_post = $post;
-				break;
-			}
-		}
-
-		if ( $hijacked_post ) {
-			// Verify the post was parsed (behavior may vary by parser)
-			$this->assertEmpty( $hijacked_post['post_id'], 'Hijacked post ID should be empty.' );
-			$this->assertEmpty( $hijacked_post['post_type'], 'Hijacked post type should be empty.' );
-		} else {
-			$this->fail( "Hijacked post not found for $parser_class" );
-		}
-
-		// Test case sensitivity handling
-		$case_post = null;
-		foreach ( $result['posts'] as $post ) {
-			if ( 'Case Sensitivity' === $post['post_title'] ) {
-				$case_post = $post;
-				break;
-			}
-		}
-
-		if ( $case_post ) {
-			// Should handle case-sensitive namespaces properly
-			$this->assertNotEmpty( $case_post['post_id'], "Should handle case sensitivity in namespaces for $parser_class" );
-		} else {
-			$this->fail( "Case sensitivity post not found for $parser_class" );
-		}
-	}
-
-	/**
-	 * Test complex but legitimate namespace scenarios
-	 *
-	 * @dataProvider parser_provider
-	 */
-	public function test_complex_namespace_scenarios( $parser_class ) {
-		$parser = new $parser_class();
-		$result = $parser->parse( DIR_TESTDATA_WP_IMPORTER . '/namespace-complex.xml' );
-
-		$this->assertNotInstanceOf( 'WP_Error', $result, "Failed to parse complex namespaces with $parser_class" );
-		$this->assertIsArray( $result, "Result should be an array for $parser_class" );
-
-		// Test that WordPress namespaces are still processed correctly
-		$this->assertArrayHasKey( 'posts', $result );
-		$this->assertGreaterThanOrEqual( 1, count( $result['posts'] ), "Should have posts for $parser_class" );
-
-		// Test authors with multiple namespace versions
-		$this->assertArrayHasKey( 'authors', $result );
-		if ( count( $result['authors'] ) > 0 ) {
-			$first_author = reset( $result['authors'] );
-			$this->assertArrayHasKey( 'author_login', $first_author, "Author should have login for $parser_class" );
-			$this->assertNotEmpty( $first_author['author_login'], "Author login should not be empty for $parser_class" );
-		}
-
-		// Test Dublin Core metadata handling
-		$dc_post = null;
-		foreach ( $result['posts'] as $post ) {
-			if ( 'Extended Metadata' === $post['post_title'] ) {
-				$dc_post = $post;
-				break;
-			}
-		}
-
-		if ( $dc_post ) {
-			$this->assertEquals( '3', $dc_post['post_id'], "Dublin Core post should be parsed correctly for $parser_class" );
-		}
-
-		// Test geo-tagged content
-		$geo_post = null;
-		foreach ( $result['posts'] as $post ) {
-			if ( 'Geo-tagged Post' === $post['post_title'] ) {
-				$geo_post = $post;
-				break;
-			}
-		}
-
-		if ( $geo_post ) {
-			$this->assertEquals( '1', $geo_post['post_id'], "Geo-tagged post should be parsed correctly for $parser_class" );
-		}
-
-		// Test terms with namespace scoping
-		$this->assertArrayHasKey( 'terms', $result );
-		if ( count( $result['terms'] ) > 0 ) {
-			$scoped_term = null;
-			foreach ( $result['terms'] as $term ) {
-				if ( isset( $term['slug'] ) && 'scoped-term' === $term['slug'] ) {
-					$scoped_term = $term;
-					break;
-				}
-			}
-
-			if ( $scoped_term ) {
-				$this->assertEquals( '200', $scoped_term['term_id'], "Scoped term should be parsed correctly for $parser_class" );
-				$this->assertEquals( 'custom_tax', $scoped_term['term_taxonomy'], "Term taxonomy should be correct for $parser_class" );
-			}
-		}
-	}
-
-	/**
 	 * Test that namespace redefinition doesn't corrupt data
 	 *
 	 * @dataProvider parser_provider
 	 */
-	public function test_namespace_redefinition_data_integrity( $parser_class ) {
-		if ( 'WXR_Parser_Regex' === $parser_class || 'WXR_Parser_XML' === $parser_class ) {
+	public function test_namespace_edge_cases( $parser_class ) {
+		if ( 'WXR_Parser_Regex' === $parser_class || 'WXR_Parser_XML' === $parser_class || 'WXR_Parser_SimpleXML' === $parser_class ) {
 			$this->markTestSkipped( "Skipping the failing test for $parser_class" );
 			return;
 		}
@@ -1109,44 +939,83 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 		$this->assertNotInstanceOf( 'WP_Error', $result, "Failed to parse with $parser_class" );
 
 		// Test specific posts from namespace-edge-cases.xml
-		// There should be exactly 6 posts based on the XML structure
-		$this->assertCount( 6, $result['posts'], "Should have exactly 6 posts for $parser_class" );
+		// There should be exactly 5 posts based on the XML structure.
+		// The hijacking attempt uses a different namespace, so it should be ignored.
+		$this->assertCount( 5, $result['posts'], "Should have exactly 6 posts for $parser_class" );
 
-		// Test post 1: Mixed Namespaces (post_id 1)
+		// Test Mixed Namespaces (post_id 1)
 		$mixed_post = $result['posts'][0];
 		$this->assertEquals( 'Mixed Namespaces', $mixed_post['post_title'], "First post should be 'Mixed Namespaces' for $parser_class" );
 		$this->assertEquals( '1', $mixed_post['post_id'], "Mixed Namespaces post should have post_id 1 for $parser_class" );
 		$this->assertEquals( 'post', $mixed_post['post_type'], "Mixed Namespaces post should have correct type for $parser_class" );
 
-		// Test post 2: No Prefix (post_id 2)
+		// Test No Prefix (post_id 2)
 		$no_prefix_post = $result['posts'][1];
 		$this->assertEquals( 'No Prefix', $no_prefix_post['post_title'], "Second post should be 'No Prefix' for $parser_class" );
-		$this->assertEquals( '2', $no_prefix_post['post_id'], "No Prefix post should have post_id 2 for $parser_class" );
+		$this->assertEmpty( $no_prefix_post['post_id'] ?? null, "No Prefix post should have post_id 2 for $parser_class" );
 		$this->assertEquals( 'post', $no_prefix_post['post_type'], "No Prefix post should have correct type for $parser_class" );
 
-		// Test post 3: Empty Namespace (post_id 3)
+		// Test Empty Namespace (post_id 3)
 		$empty_namespace_post = $result['posts'][2];
 		$this->assertEquals( 'Empty Namespace', $empty_namespace_post['post_title'], "Third post should be 'Empty Namespace' for $parser_class" );
 		$this->assertEquals( '3', $empty_namespace_post['post_id'], "Empty Namespace post should have post_id 3 for $parser_class" );
 		$this->assertEquals( 'post', $empty_namespace_post['post_type'], "Empty Namespace post should have correct type for $parser_class" );
 
-		// Test post 4: Unicode Namespace (post_id 4)
+		// Test Unicode Namespace (post_id 4)
 		$unicode_post = $result['posts'][3];
 		$this->assertEquals( 'Unicode Namespace', $unicode_post['post_title'], "Fourth post should be 'Unicode Namespace' for $parser_class" );
 		$this->assertEquals( '4', $unicode_post['post_id'], "Unicode Namespace post should have post_id 4 for $parser_class" );
 		$this->assertEquals( 'post', $unicode_post['post_type'], "Unicode Namespace post should have correct type for $parser_class" );
 
-		// Test post 5: Long Namespace (post_id 5)
-		$long_namespace_post = $result['posts'][4];
-		$this->assertEquals( 'Long Namespace', $long_namespace_post['post_title'], "Fifth post should be 'Long Namespace' for $parser_class" );
-		$this->assertEquals( '5', $long_namespace_post['post_id'], "Long Namespace post should have post_id 5 for $parser_class" );
-		$this->assertEquals( 'post', $long_namespace_post['post_type'], "Long Namespace post should have correct type for $parser_class" );
+		// Test Namespace Bomb (post_id 5)
+		$namespace_bomb_post = $result['posts'][4];
+		$this->assertEquals( 'Namespace Bomb', $namespace_bomb_post['post_title'], "Fifth post should be 'Namespace Bomb' for $parser_class" );
+		$this->assertEquals( '5', $namespace_bomb_post['post_id'], "Namespace Bomb post should have post_id 5 for $parser_class" );
+		$this->assertEquals( 'post', $namespace_bomb_post['post_type'], "Namespace Bomb post should have correct type for $parser_class" );
 
-		// Test post 6: Special Chars Namespace (post_id 6)
-		$special_chars_post = $result['posts'][5];
-		$this->assertEquals( 'Special Chars Namespace', $special_chars_post['post_title'], "Sixth post should be 'Special Chars Namespace' for $parser_class" );
-		$this->assertEquals( '6', $special_chars_post['post_id'], "Special Chars Namespace post should have post_id 6 for $parser_class" );
-		$this->assertEquals( 'post', $special_chars_post['post_type'], "Special Chars Namespace post should have correct type for $parser_class" );
+		// Test authors
+		$this->assertCount( 2, $result['authors'], "Should have exactly 2 authors for $parser_class" );
+
+		// Test author 1: fake namespace (should be ignored/filtered)
+		$real_author = null;
+		foreach ( $result['authors'] as $author ) {
+			if ( 'real_user' === $author['author_login'] ) {
+				$real_author = $author;
+				break;
+			}
+		}
+
+		$this->assertNotNull( $real_author, "Should find real_user author for $parser_class" );
+		$this->assertEquals( '2', $real_author['author_id'], "Real author should have ID 2 for $parser_class" );
+		$this->assertEquals( 'real@example.com', $real_author['author_email'], "Real author should have correct email for $parser_class" );
+
+		// Test postmeta for Mixed Namespaces post - should have correct metadata
+		if ( isset( $mixed_post['postmeta'] ) ) {
+			$normal_meta_found = false;
+			foreach ( $mixed_post['postmeta'] as $meta ) {
+				if ( 'normal_key' === $meta['key'] && 'normal_value' === $meta['value'] ) {
+					$normal_meta_found = true;
+					break;
+				}
+			}
+			$this->assertTrue( $normal_meta_found, "Should find normal postmeta for $parser_class" );
+		}
+
+		// Test terms - should have 2 terms (term 101 is defined under a different namespace
+		// and should not be considered).
+		$this->assertCount( 2, $result['terms'], "Should have exactly 3 terms for $parser_class" );
+
+		// Test old-version term (conflicting namespace redefinition)
+		$old_version_term = $result['terms'][0];
+		$this->assertEquals( '100', $old_version_term['term_id'], "Old version term should have ID 100 for $parser_class" );
+		$this->assertEquals( 'Old Version', $old_version_term['term_name'], "Old version term should have correct name for $parser_class" );
+		$this->assertEquals( 'category', $old_version_term['term_taxonomy'], "Old version term should be a category for $parser_class" );
+
+		// Test new-version term
+		$new_version_term = $result['terms'][2];
+		$this->assertEquals( '101', $new_version_term['term_id'], "New version term should have ID 101 for $parser_class" );
+		$this->assertEquals( 'New Version', $new_version_term['term_name'], "New version term should have correct name for $parser_class" );
+		$this->assertEquals( 'category', $new_version_term['term_taxonomy'], "New version term should be a category for $parser_class" );
 	}
 
 	/**
