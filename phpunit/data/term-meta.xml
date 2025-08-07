@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0"
+  xmlns:wp="http://wordpress.org/export/1.2/">
+<channel>
+<title>Term Meta</title>
+<wp:wxr_version>1.2</wp:wxr_version>
+
+<wp:term>
+<wp:term_id>100</wp:term_id>
+<wp:term_taxonomy>category</wp:term_taxonomy>
+<wp:term_slug>news</wp:term_slug>
+<wp:term_name>News</wp:term_name>
+<wp:term_parent></wp:term_parent>
+<wp:termmeta>
+<wp:meta_key>legacy_id</wp:meta_key>
+<wp:meta_value><![CDATA[42]]></wp:meta_value>
+</wp:termmeta>
+</wp:term>
+
+</channel>
+</rss>

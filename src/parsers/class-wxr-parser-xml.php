@@ -100,6 +100,7 @@ class WXR_Parser_XML {
 			$error_string   = xml_error_string( $error_code );
 			return new WP_Error( 'XML_parse_error', 'There was an error when reading this WXR file', array( $current_line, $current_column, $error_string ) );
 		}
+		
 		xml_parser_free( $xml );
 
 		if ( ! preg_match( '/^\d+\.\d+$/', $this->wxr_version ) ) {

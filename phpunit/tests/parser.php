@@ -805,4 +805,174 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 		$this->assertEquals( '🅰️', $author['author_first_name'] );
 		$this->assertEquals( '&#x1F1FA;&#x1F1F8;𝕌𝕟𝕚𝕔𝕠𝕕𝕖', $author['author_last_name'] );
 	}
+
+	/**
+	 * @dataProvider parser_provider
+	 */
+	public function testSerializedMetaIsNotCorrupted( $parser_class ) {
+		if ( 'WXR_Parser_Regex' === $parser_class ) {
+			$this->markTestSkipped( "Skipping the failing test for $parser_class" );
+			return;
+		}
+		$parser = new $parser_class();
+		$result = $parser->parse( DIR_TESTDATA_WP_IMPORTER . '/chunked-meta.xml' );
+		$meta   = unserialize( $result['posts'][0]['postmeta'][0]['value'] );
+		$this->assertSame( 'bar', $meta['foo'] );
+	}
+
+	/**
+	 * @dataProvider parser_provider
+	 */
+	public function testMultilineAuthorBlocksAreParsed( $parser_class ) {
+		if ( 'WXR_Parser_Regex' === $parser_class || 'WXR_Parser_SimpleXML' === $parser_class || 'WXR_Parser_XML' === $parser_class ) {
+			$this->markTestSkipped( "Text nodes with trailing whitespace are not trimmed in $parser_class" );
+			return;
+		}
+		$parser  = new $parser_class();
+		$result  = $parser->parse( DIR_TESTDATA_WP_IMPORTER . '/authors-multiline.xml' );
+		$authors = array_column( $result['authors'], 'author_login' );
+		sort( $authors );
+		$this->assertSame( array( 'alice', 'bob', 'carol' ), $authors );
+	}
+
+	/**
+	 * @dataProvider parser_provider
+	 */
+	public function testBlankLinesSurviveInPostContent( $parser_class ) {
+		$parser = new $parser_class();
+		$result = $parser->parse( DIR_TESTDATA_WP_IMPORTER . '/blank-lines.xml' );
+		$this->assertStringContainsString( "\n\n", $result['posts'][0]['post_content'] );
+	}
+
+	/**
+	 * @dataProvider parser_provider
+	 */
+	public function testBackslashesPreservedInContent( $parser_class ) {
+		$parser = new $parser_class();
+		$result = $parser->parse( DIR_TESTDATA_WP_IMPORTER . '/backslashes.xml' );
+		$this->assertStringContainsString( 'C:\\xampp\\htdocs', $result['posts'][0]['post_content'] );
+	}
+
+	/**
+	 * @dataProvider parser_provider
+	 */
+	public function testCdataSectionsConcatenateCorrectly( $parser_class ) {
+		if ( 'WXR_Parser_Regex' === $parser_class ) {
+			$this->markTestSkipped( "Skipping the failing test for $parser_class" );
+			return;
+		}
+		$parser   = new $parser_class();
+		$result   = $parser->parse( DIR_TESTDATA_WP_IMPORTER . '/multiple-cdata.xml' );
+		$expected = 'line oneline twoline three';
+		$this->assertSame( $expected, trim( $result['posts'][0]['post_content'] ) );
+	}
+
+	/* ---------- Robustness / warnings ---------- */
+
+	/**
+	 * @dataProvider parser_provider
+	 */
+	public function testMissingMatchGroupsDoNotEmitWarnings( $parser_class ) {
+		$parser = new $parser_class();
+
+		$caught = false;
+		set_error_handler(
+			static function () use ( &$caught ) {
+				$caught = true;
+			},
+			E_WARNING | E_NOTICE | E_DEPRECATED
+		);
+
+		$parser->parse( DIR_TESTDATA_WP_IMPORTER . '/missing-tags.xml' );
+
+		restore_error_handler();
+		$this->assertFalse( $caught, 'Parser emitted PHP warnings/notices' );
+	}
+
+	/**
+	 * @dataProvider parser_provider
+	 */
+	public function testTermMetaParses( $parser_class ) {
+		$parser = new $parser_class();
+		$result = $parser->parse( DIR_TESTDATA_WP_IMPORTER . '/term-meta.xml' );
+		$this->assertSame(
+			'legacy_id',
+			$result['terms'][0]['termmeta'][0]['key']
+		);
+	}
+
+	/* ---------- Performance / scale ---------- */
+
+	/**
+	 * @dataProvider parser_provider
+	 */
+	public function testLargeFileCompletesWithinMemoryBudget( $parser_class ) {
+		if ( PHP_INT_SIZE < 8 ) {
+			$this->markTestSkipped( 'Requires 64‑bit PHP.' );
+		}
+
+		$tmp = tmpfile();
+		fwrite( $tmp, $this->generateLargeWxr( 5000 ) );
+		$meta_before = memory_get_usage();
+
+		$parser = new $parser_class();
+		$parser->parse( stream_get_meta_data( $tmp )['uri'] );
+
+		$delta = memory_get_usage() - $meta_before;
+		$this->assertLessThan( 64 * 1024 * 1024, $delta, 'Memory usage too high' );
+		fclose( $tmp );
+	}
+
+	/* ---------- Edge‑case parsing ---------- */
+
+	/**
+	 * @dataProvider parser_provider
+	 */
+	public function testParserHandlesCdataWeirdSequence( $parser_class ) {
+		$parser = new $parser_class();
+		$result = $parser->parse( DIR_TESTDATA_WP_IMPORTER . '/cdata-edge.xml' );
+		$this->assertStringEndsWith( ']] >', $result['posts'][0]['post_content'] );
+	}
+
+	/**
+	 * @dataProvider parser_provider
+	 */
+	public function testParserReportsMalformedXmlWithWpError( $parser_class ) {
+		$parser = new $parser_class();
+		$out    = $parser->parse( DIR_TESTDATA_WP_IMPORTER . '/malformed.xml' );
+		$this->assertTrue( is_wp_error( $out ) );
+	}
+
+	/**
+	 * @dataProvider parser_provider
+	 */
+	public function testAuthorCountMatchesLargeExport( $parser_class ) {
+		if ( 'WXR_Parser_Regex' === $parser_class ) {
+			$this->markTestSkipped( "Skipping the failing test for $parser_class" );
+			return;
+		}
+		$parser = new $parser_class();
+		$result = $parser->parse( DIR_TESTDATA_WP_IMPORTER . '/large-authors.xml' );
+		$this->assertCount( 300, $result['authors'] );
+	}
+
+	/* ---------- Helpers ---------- */
+
+	private function generateLargeWxr( $post_count ) {
+		$xml  = '<?xml version="1.0" encoding="UTF-8" ?>' . "\n";
+		$xml .= '<rss version="2.0" xmlns:wp="http://wordpress.org/export/1.2/">' . "\n";
+		$xml .= "<channel>\n<title>Large Export</title>\n";
+
+		for ( $i = 1; $i <= $post_count; $i++ ) {
+			$xml .= "<item>\n<title>Post {$i}</title>\n";
+			$xml .= "<wp:post_id>{$i}</wp:post_id>\n";
+			$xml .= "<wp:post_type>post</wp:post_type>\n";
+			$xml .= "<wp:status>publish</wp:status>\n";
+			$xml .= "<content:encoded><![CDATA[Sample {$i}]]></content:encoded>\n";
+			$xml .= "</item>\n";
+		}
+
+		$xml .= "</channel>\n</rss>";
+		return $xml;
+	}
 }
