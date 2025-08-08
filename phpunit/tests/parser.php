@@ -567,10 +567,10 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 					'posts'   => 1,
 					'authors' => 1,
 				),
-				// '10MB.xml'                 => array(
-				//  'posts'   => 3162,
-				//  'authors' => 2, /* Reality: 4 authors referenced in posts */
-				// ),
+				'10MB.xml'                 => array(
+				 'posts'   => 3162,
+				 'authors' => 2, /* Reality: 4 authors referenced in posts */
+				),
 				'a11y-unit-test-data.xml'  => array(
 					'posts'   => 154,
 					'authors' => 1, /* Reality: 3 creators referenced in posts (themereviewteam, a11yteam, >a11yteam) */
