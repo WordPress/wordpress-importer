@@ -846,10 +846,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 	 * @dataProvider parser_provider
 	 */
 	public function testMultilineAuthorBlocksAreParsed( $parser_class ) {
-		// if ( 'WXR_Parser_Regex' === $parser_class || 'WXR_Parser_SimpleXML' === $parser_class || 'WXR_Parser_XML' === $parser_class ) {
 		$this->markTestSkipped( "Text nodes with trailing whitespace are not yet trimmed in $parser_class" );
-		//	 return;
-		// }
 		$parser  = new $parser_class();
 		$result  = $parser->parse( DIR_TESTDATA_WP_IMPORTER . '/authors-multiline.xml' );
 		$authors = array_column( $result['authors'], 'author_login' );
