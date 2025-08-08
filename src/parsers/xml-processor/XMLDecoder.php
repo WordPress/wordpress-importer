@@ -2,7 +2,7 @@
 
 namespace WordPress\XML;
 
-use WP_HTML_Decoder;
+use function WordPress\Encoding\code_point_to_utf8_bytes;
 
 /**
  * XML API: WP_XML_Decoder class
@@ -144,7 +144,7 @@ class XMLDecoder {
 			}
 
 			$code_point          = intval( substr( $text, $digits_at, $digit_count ), $base );
-			$character_reference = WP_HTML_Decoder::code_point_to_utf8_bytes( $code_point );
+			$character_reference = code_point_to_utf8_bytes( $code_point );
 			if ( '�' === $character_reference && 0xFFFD !== $code_point ) {
 				/*
 				 * Stop processing if we got an invalid character AND the reference does not
@@ -223,4 +223,5 @@ class XMLDecoder {
 
 		return null;
 	}
+
 }
