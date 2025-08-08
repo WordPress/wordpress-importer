@@ -531,7 +531,7 @@ class WXREntityReader implements EntityReader {
 	 * @since WP_VERSION
 	 *
 	 */
-	public function append_bytes( string $bytes ): void {
+	public function append_bytes( $bytes ) {
 		$this->xml->append_bytes( $bytes );
 	}
 
@@ -540,7 +540,7 @@ class WXREntityReader implements EntityReader {
 	 *
 	 * @since WP_VERSION
 	 */
-	public function input_finished(): void {
+	public function input_finished() {
 		$this->xml->input_finished();
 	}
 
@@ -551,7 +551,7 @@ class WXREntityReader implements EntityReader {
 	 * @since WP_VERSION
 	 *
 	 */
-	public function is_finished(): bool {
+	public function is_finished() {
 		return $this->is_finished;
 	}
 
@@ -562,7 +562,7 @@ class WXREntityReader implements EntityReader {
 	 * @since WP_VERSION
 	 *
 	 */
-	public function is_paused_at_incomplete_input(): bool {
+	public function is_paused_at_incomplete_input() {
 		return $this->xml->is_paused_at_incomplete_input();
 	}
 
@@ -573,11 +573,11 @@ class WXREntityReader implements EntityReader {
 	 * @since WP_VERSION
 	 *
 	 */
-	public function get_last_error(): ?string {
+	public function get_last_error() {
 		return $this->xml->get_last_error();
 	}
 
-	public function get_xml_exception(): ?XMLUnsupportedException {
+	public function get_xml_exception() {
 		return $this->xml->get_exception();
 	}
 
@@ -952,7 +952,7 @@ class WXREntityReader implements EntityReader {
 	 * @since WP_VERSION
 	 *
 	 */
-	private function set_entity_tag( string $tag_with_namespace ) {
+	private function set_entity_tag( $tag_with_namespace ) {
 		$this->entity_tag = $tag_with_namespace;
 		if ( array_key_exists( $tag_with_namespace, $this->KNOWN_ENITIES ) ) {
 			$this->entity_type = $this->KNOWN_ENITIES[ $tag_with_namespace ]['type'];

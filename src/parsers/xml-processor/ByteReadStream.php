@@ -19,14 +19,14 @@ interface ByteReadStream {
 	 *
 	 * @return int|null The length of the data stream, or null if the length is unknown.
 	 */
-	public function length(): ?int;
+	public function length();
 
 	/**
 	 * Get the current position in the data stream.
 	 *
 	 * @return int The current byte offset in the data stream.
 	 */
-	public function tell(): int;
+	public function tell();
 
 	/**
 	 * Seek to a specific position in the data stream.
@@ -45,21 +45,21 @@ interface ByteReadStream {
 	 *
 	 * @return bool Whether the end of the data stream has been reached.
 	 */
-	public function reached_end_of_data(): bool;
+	public function reached_end_of_data();
 
 	/**
 	 * Read the next chunk of bytes from the data stream.
 	 *
 	 * @return int how many bytes were pulled
 	 */
-	public function pull( $n, $mode = self::PULL_NO_MORE_THAN ): int;
+	public function pull( $n, $mode = self::PULL_NO_MORE_THAN );
 
 	/**
 	 * Get the next $n bytes without advancing the pointer.
 	 *
 	 * @return string The bytes read.
 	 */
-	public function peek( $n ): string;
+	public function peek( $n );
 
 	/**
 	 * Returns $n bytes and advances the pointer.
@@ -68,19 +68,19 @@ interface ByteReadStream {
 	 *
 	 * @return string
 	 */
-	public function consume( $n ): string;
+	public function consume( $n );
 
 	/**
 	 * Returns all remaining bytes in the stream.
 	 *
 	 * @return string
 	 */
-	public function consume_all(): string;
+	public function consume_all();
 
 	/**
 	 * Close the data stream.
 	 *
 	 * @return void
 	 */
-	public function close_reading(): void;
+	public function close_reading();
 }

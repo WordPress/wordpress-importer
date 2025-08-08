@@ -36,7 +36,7 @@ class FileReadStream extends BaseByteReadStream {
 		$this->expected_length = $expected_length;
 	}
 
-	protected function internal_pull( $n ): string {
+	protected function internal_pull( $n ) {
 		$bytes = fread( $this->file_pointer, $n );
 		/**
 		 * Workaround for a streaming bug in WordPress Playground.
@@ -55,7 +55,7 @@ class FileReadStream extends BaseByteReadStream {
 		return $bytes;
 	}
 
-	protected function seek_outside_of_buffer( int $target_offset ): void {
+	protected function seek_outside_of_buffer( int $target_offset ) {
 		$this->buffer                   = '';
 		$this->offset_in_current_buffer = 0;
 		$this->bytes_already_forgotten  = $target_offset;
@@ -64,7 +64,7 @@ class FileReadStream extends BaseByteReadStream {
 		}
 	}
 
-	public function close_reading(): void {
+	public function close_reading() {
 		if ( $this->is_closed ) {
 			return;
 		}
@@ -76,7 +76,7 @@ class FileReadStream extends BaseByteReadStream {
 		$this->file_pointer = null;
 	}
 
-	protected function internal_reached_end_of_data(): bool {
+	protected function internal_reached_end_of_data() {
 		return ! is_resource( $this->file_pointer ) || feof( $this->file_pointer );
 	}
 }

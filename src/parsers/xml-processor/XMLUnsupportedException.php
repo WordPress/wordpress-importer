@@ -81,7 +81,7 @@ class XMLUnsupportedException extends Exception {
 	 * @param  string[]  $stack_of_open_elements  Stack of open elements when this exception was raised.
 	 * @param  string[]  $active_formatting_elements  List of active formatting elements when this exception was raised.
 	 */
-	public function __construct( string $message, string $token_name, int $token_at, string $token, array $stack_of_open_elements ) {
+	public function __construct( $message, $token_name, $token_at, $token, $stack_of_open_elements ) {
 		parent::__construct( $message );
 
 		$this->token_name = $token_name;

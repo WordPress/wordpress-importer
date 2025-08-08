@@ -46,7 +46,7 @@ if ( ! defined( 'UTF8_DECODER_REJECT' ) ) {
  * @since {WP_VERSION}
  *
  */
-function utf8_is_valid_byte_stream( string $bytes, int $starting_byte = 0, ?int &$first_error_byte_at = null ): bool {
+function utf8_is_valid_byte_stream( $bytes, $starting_byte = 0, &$first_error_byte_at = null ) {
 	$state         = UTF8_DECODER_ACCEPT;
 	$last_start_at = $starting_byte;
 
@@ -82,7 +82,7 @@ function utf8_is_valid_byte_stream( string $bytes, int $starting_byte = 0, ?int 
  * @since {WP_VERSION}
  *
  */
-function utf8_code_point_count( string $bytes, ?int &$first_error_byte_at = null ): int {
+function utf8_code_point_count( $bytes, &$first_error_byte_at = null ) {
 	$state         = UTF8_DECODER_ACCEPT;
 	$last_start_at = 0;
 	$count         = 0;
@@ -130,7 +130,7 @@ function utf8_code_point_count( string $bytes, ?int &$first_error_byte_at = null
  *
  * @return int Next decoder state after processing the current byte.
  */
-function utf8_decoder_apply_byte( string $byte, int $state, int &$code_point = 0 ): int {
+function utf8_decoder_apply_byte( $byte, $state, &$code_point = 0 ) {
 	/**
 	 * State classification and transition table for UTF-8 validation.
 	 *
@@ -181,7 +181,7 @@ function utf8_decoder_apply_byte( string $byte, int $state, int &$code_point = 0
  *
  * @return string Extracted slice of input string.
  */
-function utf8_substr( string $text, int $from = 0, ?int $length = null ): string {
+function utf8_substr( $text, $from = 0, $length = null ) {
 	if ( $from < 0 || ( isset( $length ) && $length < 0 ) ) {
 		return $text;
 	}
@@ -241,7 +241,7 @@ function utf8_substr( string $text, int $from = 0, ?int $length = null ): string
  *
  * @return int Unicode codepoint.
  */
-function utf8_codepoint_at( string $text, int $byte_offset = 0, &$matched_bytes = 0 ) {
+function utf8_codepoint_at( $text, $byte_offset = 0, &$matched_bytes = 0 ) {
 	if ( $byte_offset < 0 ) {
 		return null;
 	}
@@ -280,7 +280,7 @@ function utf8_codepoint_at( string $text, int $byte_offset = 0, &$matched_bytes 
  *
  * @return int Unicode codepoint.
  */
-function utf8_ord( string $character ): int {
+function utf8_ord( $character ) {
 	// Convert the byte sequence to its binary representation
 	$bytes = unpack( 'C*', $character );
 

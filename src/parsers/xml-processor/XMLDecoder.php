@@ -200,7 +200,7 @@ class XMLDecoder {
 	 *
 	 * @return string|null Parsed entity, if parsed, otherwise `null`.
 	 */
-	public static function next_entity( string $text, int $starting_byte_offset, int $ending_byte_offset, ?int &$entity_at = null ): ?string {
+	public static function next_entity( $text, $starting_byte_offset, $ending_byte_offset, &$entity_at = null ) {
 		$at  = $starting_byte_offset;
 		$end = $ending_byte_offset;
 

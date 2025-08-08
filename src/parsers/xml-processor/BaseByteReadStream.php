@@ -17,11 +17,11 @@ abstract class BaseByteReadStream implements ByteReadStream {
 	protected $is_closed = false;
 	protected $expected_length = null;
 
-	public function length(): ?int {
+	public function length() {
 		return $this->expected_length;
 	}
 
-	public function pull( $n = self::CHUNK_SIZE, $mode = self::PULL_NO_MORE_THAN ): int {
+	public function pull( $n = self::CHUNK_SIZE, $mode = self::PULL_NO_MORE_THAN ) {
 		switch ( $mode ) {
 			case self::PULL_NO_MORE_THAN:
 			case self::PULL_EXACTLY:
@@ -60,7 +60,7 @@ abstract class BaseByteReadStream implements ByteReadStream {
 		return $this->pull_exactly( $n );
 	}
 
-	protected function pull_exactly( $n ): int {
+	protected function pull_exactly( $n ) {
 		$empty_pulls = 0;
 		while ( $this->count_consumable_bytes() < $n ) {
 			$consumable_before = $this->count_consumable_bytes();
@@ -82,7 +82,7 @@ abstract class BaseByteReadStream implements ByteReadStream {
 		return $n;
 	}
 
-	protected function pull_no_more_than( $n ): int {
+	protected function pull_no_more_than( $n ) {
 		$this->buffer .= $this->internal_pull( self::CHUNK_SIZE );
 
 		return min( $n, $this->count_consumable_bytes() );
@@ -99,17 +99,17 @@ abstract class BaseByteReadStream implements ByteReadStream {
 		}
 	}
 
-	protected function count_consumable_bytes(): int {
+	protected function count_consumable_bytes() {
 		return strlen( $this->buffer ) - $this->offset_in_current_buffer;
 	}
 
-	abstract protected function internal_pull( $n ): string;
+	abstract protected function internal_pull( $n );
 
-	public function peek( $n ): string {
+	public function peek( $n ) {
 		return substr( $this->buffer, $this->offset_in_current_buffer, $n );
 	}
 
-	public function consume( $n ): string {
+	public function consume( $n ) {
 		if ( strlen( $this->buffer ) < $this->offset_in_current_buffer + $n ) {
 			throw new NotEnoughDataException( 'Cannot consume more bytes than available in the buffer.' );
 		}
@@ -125,7 +125,7 @@ abstract class BaseByteReadStream implements ByteReadStream {
 		return $bytes;
 	}
 
-	public function seek( int $target_offset ): void {
+	public function seek( int $target_offset ) {
 		// We have that offset in the buffer, let's just update the pointer
 		if ( $target_offset >= $this->bytes_already_forgotten && $target_offset <= $this->bytes_already_forgotten + strlen( $this->buffer ) ) {
 			$this->offset_in_current_buffer = $target_offset - $this->bytes_already_forgotten;
@@ -146,15 +146,15 @@ abstract class BaseByteReadStream implements ByteReadStream {
 		$this->seek_outside_of_buffer( $target_offset );
 	}
 
-	protected function seek_outside_of_buffer( int $target_offset ): void {
+	protected function seek_outside_of_buffer( int $target_offset ) {
 		throw new ByteStreamException( 'Cannot seek outside of the buffered range' );
 	}
 
-	public function tell(): int {
+	public function tell() {
 		return $this->bytes_already_forgotten + $this->offset_in_current_buffer;
 	}
 
-	public function reached_end_of_data(): bool {
+	public function reached_end_of_data() {
 		if ( $this->is_closed ) {
 			return true;
 		}
@@ -168,14 +168,14 @@ abstract class BaseByteReadStream implements ByteReadStream {
 		return $this->internal_reached_end_of_data();
 	}
 
-	protected function internal_reached_end_of_data(): bool {
+	protected function internal_reached_end_of_data() {
 		return false;
 	}
 
-	public function close_reading(): void {
+	public function close_reading() {
 		$this->is_closed = true;
 	}
 
-	protected function internal_close_reading(): void {
+	protected function internal_close_reading() {
 	}
 }

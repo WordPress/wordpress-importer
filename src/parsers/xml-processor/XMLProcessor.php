@@ -1363,7 +1363,7 @@ class XMLProcessor {
 	 * @since WP_VERSION
 	 *
 	 */
-	public function is_paused_at_incomplete_input(): bool {
+	public function is_paused_at_incomplete_input() {
 		return self::STATE_INCOMPLETE_INPUT === $this->parser_state;
 	}
 
@@ -1374,7 +1374,7 @@ class XMLProcessor {
 	 * @since WP_VERSION
 	 *
 	 */
-	public function is_finished(): bool {
+	public function is_finished() {
 		return self::STATE_COMPLETE === $this->parser_state;
 	}
 
@@ -1576,7 +1576,7 @@ class XMLProcessor {
 	 * @since WP_VERSION
 	 *
 	 */
-	public function get_last_error(): ?string {
+	public function get_last_error() {
 		return $this->last_error;
 	}
 
