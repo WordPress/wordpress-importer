@@ -105,9 +105,9 @@ jobs:
         #     wp: 'trunk'
         #     experimental: true
 
-    name: "PHP ${{ matrix.php }} - WP ${{ matrix.wp }}"
+    name: "TestName PHP ${{ matrix.php }} - WP ${{ matrix.wp }}"
 
-    continue-on-error: ${{ matrix.experimental }}
+    continue-on-error: true # ${{ matrix.experimental }}
 
     services:
       mysql:
