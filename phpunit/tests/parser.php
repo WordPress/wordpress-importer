@@ -819,7 +819,7 @@ class Tests_Import_Parser extends WP_Import_UnitTestCase {
 
 		// Test author data with challenging UTF-8
 		$this->assertCount( 1, $result['authors'] );
-		$author = $result['authors'][ array_key_first( $result['authors'] ) ];
+		$author = $result['authors'][ current( array_keys( $result['authors'] ) ) ];
 		$this->assertEquals( 'admin‌​‍‎', $author['author_login'] );
 		$this->assertEquals( 'ădmĩn@ℓocalhost.com', $author['author_email'] );
 		$this->assertEquals( 'A̸̰̅d̴̰͝m̵͎̽i̵̱̋n̷̰̎ ​‍‌‎', $author['author_display_name'] );
