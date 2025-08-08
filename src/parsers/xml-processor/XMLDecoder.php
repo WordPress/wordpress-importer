@@ -223,5 +223,4 @@ class XMLDecoder {
 
 		return null;
 	}
-
 }

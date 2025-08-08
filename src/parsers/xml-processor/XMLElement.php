@@ -62,11 +62,11 @@ class XMLElement {
 	 * @param array<string, string> $namespaces_in_scope Namespaces in current element's scope.
 	 */
 	public function __construct( $local_name, $namespace_prefix, $namespace, $namespaces_in_scope ) {
-		$this->local_name = $local_name;
-		$this->namespace_prefix = $namespace_prefix;
-		$this->namespace = $namespace;
+		$this->local_name          = $local_name;
+		$this->namespace_prefix    = $namespace_prefix;
+		$this->namespace           = $namespace;
 		$this->namespaces_in_scope = $namespaces_in_scope;
-		$this->qualified_name = $namespace_prefix ? $namespace_prefix . ':' . $local_name : $local_name;
+		$this->qualified_name      = $namespace_prefix ? $namespace_prefix . ':' . $local_name : $local_name;
 	}
 
 	public function get_full_name() {
@@ -74,12 +74,12 @@ class XMLElement {
 	}
 
 	public function to_array() {
-		return [
-			'local_name' => $this->local_name,
-			'namespace_prefix' => $this->namespace_prefix,
-			'namespace' => $this->namespace,
+		return array(
+			'local_name'          => $this->local_name,
+			'namespace_prefix'    => $this->namespace_prefix,
+			'namespace'           => $this->namespace,
 			'namespaces_in_scope' => $this->namespaces_in_scope,
-		];
+		);
 	}
 
 	public static function from_array( $array_value ) {
@@ -90,5 +90,4 @@ class XMLElement {
 			$array_value['namespaces_in_scope']
 		);
 	}
-	
 }

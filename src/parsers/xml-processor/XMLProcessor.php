@@ -222,14 +222,14 @@ use function WordPress\Encoding\utf8_codepoint_at;
  * exists beforehand.
  *
  * #### Namespaced attribute example
- * 
+ *
  *     $processor = XMLProcessor::from_string( '<root xmlns:wp="http://wordpress.org/export/1.2/"><image /></root>' );
  *
  *     $ns = 'http://wordpress.org/export/1.2/';
  *     if ( $processor->next_tag( 'image' ) ) {
  *         $processor->set_attribute( $ns, 'src', 'cat.jpg' );
  *     }
- * 
+ *
  *     echo $processor->get_modifiable_text();
  *     // <root xmlns:wp="http://wordpress.org/export/1.2/"><image wp:src="cat.jpg" /></root>
  *
@@ -742,7 +742,7 @@ class XMLProcessor {
 	/**
 	 * Tracks open elements and their namespaces while scanning XML.
 	 */
-	private $stack_of_open_elements = [];
+	private $stack_of_open_elements = array();
 
 	public static function create_from_string( $xml, $cursor = null, $known_definite_encoding = 'UTF-8', $document_namespaces = array() ) {
 		$processor = static::create_for_streaming( $xml, $cursor, $known_definite_encoding, $document_namespaces );
@@ -781,7 +781,7 @@ class XMLProcessor {
 	 * `set_bookmark()` and `seek()`.
 	 */
 	public function get_reentrancy_cursor() {
-		$stack_of_open_elements = [];
+		$stack_of_open_elements = array();
 		foreach ( $this->stack_of_open_elements as $element ) {
 			$stack_of_open_elements[] = $element->to_array();
 		}
@@ -794,7 +794,7 @@ class XMLProcessor {
 					'parser_context'           => $this->parser_context,
 					'stack_of_open_elements'   => $stack_of_open_elements,
 					'expecting_more_input'     => $this->expecting_more_input,
-					'document_namespaces'      => $this->document_namespaces
+					'document_namespaces'      => $this->document_namespaces,
 				)
 			)
 		);
@@ -839,7 +839,7 @@ class XMLProcessor {
 		// Assume the input stream will start from the last known byte offset.
 		$this->bytes_already_parsed     = 0;
 		$this->upstream_bytes_forgotten = $cursor['upstream_bytes_forgotten'];
-		$this->stack_of_open_elements   = [];
+		$this->stack_of_open_elements   = array();
 		foreach ( $cursor['stack_of_open_elements'] as $element ) {
 			array_push( $this->stack_of_open_elements, XMLElement::from_array( $element ) );
 		}
@@ -866,7 +866,7 @@ class XMLProcessor {
 	 *
 	 * @see XMLProcessor::create_fragment()
 	 */
-	protected function __construct( $xml, $document_namespaces=[], $use_the_static_create_methods_instead = null ) {
+	protected function __construct( $xml, $document_namespaces = array(), $use_the_static_create_methods_instead = null ) {
 		if ( self::CONSTRUCTOR_UNLOCK_CODE !== $use_the_static_create_methods_instead ) {
 			_doing_it_wrong(
 				__METHOD__,
@@ -878,8 +878,8 @@ class XMLProcessor {
 				'6.4.0'
 			);
 		}
-		$this->xml                    = $xml ?? '';
-		$this->document_namespaces    = array_merge(
+		$this->xml                 = $xml ?? '';
+		$this->document_namespaces = array_merge(
 			$document_namespaces,
 			// These initial namespaces cannot be overridden.
 			array(
@@ -925,7 +925,7 @@ class XMLProcessor {
 	/**
 	 * Forgets the XML bytes that have been processed and are no longer needed to
 	 * avoid high memory usage.
-	 * 
+	 *
 	 * @return string The flushed bytes.
 	 */
 	private function flush_processed_xml() {
@@ -937,11 +937,11 @@ class XMLProcessor {
 			$unreferenced_bytes = min( $unreferenced_bytes, $this->token_starts_at );
 		}
 
-		$flushed_bytes              = substr( $this->xml, 0, $unreferenced_bytes );
-		$this->xml                  = substr( $this->xml, $unreferenced_bytes );
-		$this->bookmarks            = array();
-		$this->lexical_updates      = array();
-		$this->seek_count           = 0;
+		$flushed_bytes               = substr( $this->xml, 0, $unreferenced_bytes );
+		$this->xml                   = substr( $this->xml, $unreferenced_bytes );
+		$this->bookmarks             = array();
+		$this->lexical_updates       = array();
+		$this->seek_count            = 0;
 		$this->bytes_already_parsed -= $unreferenced_bytes;
 		if ( null !== $this->token_starts_at ) {
 			$this->token_starts_at -= $unreferenced_bytes;
@@ -972,7 +972,7 @@ class XMLProcessor {
 	 * Indicates if the processor is expecting more data bytes.
 	 * If not, the processor will expect the remaining XML bytes to form
 	 * a valid document and will not stop on incomplete input.
-	 * 
+	 *
 	 * @return bool Whether the processor is expecting more data bytes.
 	 */
 	public function is_expecting_more_input() {
@@ -1115,7 +1115,7 @@ class XMLProcessor {
 				 * @see https://www.w3.org/TR/2006/REC-xml-names11-20060816/#ns-decl
 				 */
 				if ( 'xmlns' === $attribute->qualified_name ) {
-					$value          = $this->get_qualified_attribute( $attribute->qualified_name );
+					$value = $this->get_qualified_attribute( $attribute->qualified_name );
 					// Update the default namespace.
 					$namespaces[''] = $value;
 					continue;
@@ -1128,8 +1128,10 @@ class XMLProcessor {
 					 * @see https://www.w3.org/TR/2006/REC-xml-names11-20060816/#xmlReserved
 					 */
 					if ( 'xml' === $attribute->local_name && 'http://www.w3.org/XML/1998/namespace' !== $value ) {
-						$this->bail( 'The `xml` namespace prefix is by definition bound to the namespace name http://www.w3.org/XML/1998/namespace and must not be overridden.',
-							self::ERROR_SYNTAX );
+						$this->bail(
+							'The `xml` namespace prefix is by definition bound to the namespace name http://www.w3.org/XML/1998/namespace and must not be overridden.',
+							self::ERROR_SYNTAX
+						);
 
 						return false;
 					}
@@ -1137,7 +1139,7 @@ class XMLProcessor {
 					/**
 					 * @see https://www.w3.org/TR/2006/REC-xml-names11-20060816/#xmlReserved
 					 */
-					if ( 'xmlns' === $attribute->local_name) {
+					if ( 'xmlns' === $attribute->local_name ) {
 						$this->bail( 'The `xmlns` namespace prefix must not be overridden.', self::ERROR_SYNTAX );
 
 						return false;
@@ -1226,12 +1228,12 @@ class XMLProcessor {
 					return false;
 				}
 				$namespaced_attributes[ $attribute_full_name ] = $attribute;
-				$attribute->namespace = $namespace_reference;
+				$attribute->namespace                          = $namespace_reference;
 			}
 
 			// Store attributes with their namespaces and discard the temporary
 			// qualified attributes array.
-			$this->attributes = $namespaced_attributes;
+			$this->attributes           = $namespaced_attributes;
 			$this->qualified_attributes = array();
 
 			$this->element = new XMLElement( $tag_local_name, $tag_namespace_prefix, $namespaces[ $tag_namespace_prefix ], $namespaces );
@@ -1275,13 +1277,13 @@ class XMLProcessor {
 		 * functions that skip the contents have moved all the internal cursors past
 		 * the inner content of the tag.
 		 */
-		$this->token_starts_at    = $was_at;
-		$this->token_length       = $this->bytes_already_parsed - $this->token_starts_at;
-		$this->text_starts_at     = $tag_ends_at;
-		$this->text_length        = $this->tag_name_starts_at - $this->text_starts_at;
-		$this->tag_name_starts_at = $tag_name_starts_at;
-		$this->tag_name_length    = $tag_name_length;
-		$this->qualified_attributes         = $attributes;
+		$this->token_starts_at      = $was_at;
+		$this->token_length         = $this->bytes_already_parsed - $this->token_starts_at;
+		$this->text_starts_at       = $tag_ends_at;
+		$this->text_length          = $this->tag_name_starts_at - $this->text_starts_at;
+		$this->tag_name_starts_at   = $tag_name_starts_at;
+		$this->tag_name_length      = $tag_name_length;
+		$this->qualified_attributes = $attributes;
 
 		return true;
 	}
@@ -1304,9 +1306,9 @@ class XMLProcessor {
 	 *     $p = new XMLProcessor( '<wp:content xmlns:xhtml="http://www.w3.org/1999/xhtml">Test</wp:content>' );
 	 *     $p->next_tag() === true;
 	 *     $p->get_tag_namespace_prefix() === 'xhtml';
-	 * 
+	 *
 	 *     $p = new XMLProcessor( '
-	 *         <wp:content 
+	 *         <wp:content
 	 *             xmlns:xhtml="http://www.w3.org/1999/xhtml"
 	 *             xmlns:wp="http://wordpress.org/export/1.2/"
 	 *         >
@@ -1320,7 +1322,7 @@ class XMLProcessor {
 	 * @param string|null $namespace Fully-qualified namespace to return the prefix for.
 	 * @return string|null The namespace prefix of the matched tag, or null if not available.
 	 */
-	private function get_tag_namespace_prefix($namespace=null) {
+	private function get_tag_namespace_prefix( $namespace = null ) {
 		if ( null === $namespace ) {
 			if ( self::STATE_MATCHED_TAG !== $this->parser_state ) {
 				return null;
@@ -1328,8 +1330,8 @@ class XMLProcessor {
 			return $this->element->namespace_prefix;
 		} else {
 			$namespaces_in_scope = $this->get_tag_namespaces_in_scope();
-			foreach($namespaces_in_scope as $prefix => $uri) {
-				if($uri === $namespace) {
+			foreach ( $namespaces_in_scope as $prefix => $uri ) {
+				if ( $uri === $namespace ) {
 					return $prefix;
 				}
 			}
@@ -1530,8 +1532,8 @@ class XMLProcessor {
 				return false;
 			}
 
-			$at                         += 2 + $tag_length;
-			$at                         += strspn( $this->xml, " \t\f\r\n", $at );
+			$at                        += 2 + $tag_length;
+			$at                        += strspn( $this->xml, " \t\f\r\n", $at );
 			$this->bytes_already_parsed = $at;
 
 			/*
@@ -1647,7 +1649,7 @@ class XMLProcessor {
 	 *      $processor->get_modifiable_text();
 	 *
 	 * @param  string  $element_name  The name of the element to declare as PCDATA.
-	 * 
+	 *
 	 * @TODO: Reconsider whether this method is needed.
 	 *
 	 * @return void
@@ -1724,7 +1726,7 @@ class XMLProcessor {
 			return false;
 		}
 
-		if ( array_keys($query) === array(0, 1) && is_string($query[0]) && is_string($query[1]) ) {
+		if ( array_keys( $query ) === array( 0, 1 ) && is_string( $query[0] ) && is_string( $query[1] ) ) {
 			$query = array( 'breadcrumbs' => array( $query ) );
 		}
 
@@ -1752,13 +1754,12 @@ class XMLProcessor {
 			return false;
 		}
 
-
 		$namespaced_breadcrumbs = array();
-		foreach($query['breadcrumbs'] as $breadcrumb) {
-			if(is_array($breadcrumb) && count($breadcrumb) === 2) {
+		foreach ( $query['breadcrumbs'] as $breadcrumb ) {
+			if ( is_array( $breadcrumb ) && count( $breadcrumb ) === 2 ) {
 				$namespaced_breadcrumbs[] = $breadcrumb;
-			} else if(is_string($breadcrumb)) {
-				$namespaced_breadcrumbs[] = array('', $breadcrumb);
+			} elseif ( is_string( $breadcrumb ) ) {
+				$namespaced_breadcrumbs[] = array( '', $breadcrumb );
 			} else {
 				_doing_it_wrong(
 					__METHOD__,
@@ -1775,7 +1776,7 @@ class XMLProcessor {
 				continue;
 			}
 
-			if ( $this->matches_breadcrumbs( $breadcrumbs ) && 0 === -- $match_offset ) {
+			if ( $this->matches_breadcrumbs( $breadcrumbs ) && 0 === --$match_offset ) {
 				return true;
 			}
 		}
@@ -1824,7 +1825,7 @@ class XMLProcessor {
 
 			if ( $at + 1 < $doc_length && '/' === $this->xml[ $at + 1 ] ) {
 				$this->is_closing_tag = true;
-				++ $at;
+				++$at;
 			} else {
 				$this->is_closing_tag = false;
 			}
@@ -1849,7 +1850,7 @@ class XMLProcessor {
 			}
 
 			if ( $tag_name_length > 0 ) {
-				++ $at;
+				++$at;
 				$this->parser_state         = self::STATE_MATCHED_TAG;
 				$this->tag_name_starts_at   = $at;
 				$this->tag_name_length      = $tag_name_length;
@@ -1893,8 +1894,8 @@ class XMLProcessor {
 					/*
 					 * Comments may only be closed by a --> sequence.
 					 */
-					-- $closer_at; // Pre-increment inside condition below reduces risk of accidental infinite looping.
-					while ( ++ $closer_at < $doc_length ) {
+					--$closer_at; // Pre-increment inside condition below reduces risk of accidental infinite looping.
+					while ( ++$closer_at < $doc_length ) {
 						$closer_at = strpos( $xml, '--', $closer_at );
 						if ( false === $closer_at || $closer_at + 2 === $doc_length ) {
 							$this->mark_incomplete_input( 'Unclosed comment.' );
@@ -1959,11 +1960,11 @@ class XMLProcessor {
 				/*
 				 * Identify DOCTYPE nodes.
 				 *
-				 * doctypedecl	   ::=   	'<!DOCTYPE' S Name (S ExternalID)? S? ('[' intSubset ']' S?)? '>'
-				 * ExternalID	   ::=   	'SYSTEM' S SystemLiteral | 'PUBLIC' S PubidLiteral S SystemLiteral
-				 * SystemLiteral   ::=   	('"' [^"]* '"') | ("'" [^']* "'")
-				 * PubidLiteral	   ::=   	'"' PubidChar* '"' | "'" (PubidChar - "'")* "'"
-				 * PubidChar	   ::=   	#x20 | #xD | #xA | [a-zA-Z0-9] | [-'()+,./:=?;!*#@$_%]
+				 * doctypedecl     ::=      '<!DOCTYPE' S Name (S ExternalID)? S? ('[' intSubset ']' S?)? '>'
+				 * ExternalID      ::=      'SYSTEM' S SystemLiteral | 'PUBLIC' S PubidLiteral S SystemLiteral
+				 * SystemLiteral   ::=      ('"' [^"]* '"') | ("'" [^']* "'")
+				 * PubidLiteral    ::=      '"' PubidChar* '"' | "'" (PubidChar - "'")* "'"
+				 * PubidChar       ::=      #x20 | #xD | #xA | [a-zA-Z0-9] | [-'()+,./:=?;!*#@$_%]
 				 * See https://www.w3.org/TR/xml11.html/#dtd
 				 */
 				if (
@@ -1997,7 +1998,7 @@ class XMLProcessor {
 						$at,
 						$name_length
 					);
-					$at                 += $name_length;
+					$at                += $name_length;
 
 					// Skip whitespace.
 					$at += strspn( $this->xml, " \t\f\r\n", $at );
@@ -2036,7 +2037,7 @@ class XMLProcessor {
 							// Exclude the closing quote.
 							$quoted_string_length - 2
 						);
-						$at                   += $quoted_string_length;
+						$at += $quoted_string_length;
 					} elseif (
 						$doc_length > $at + 6 &&
 						'P' === $this->xml[ $at ] &&
@@ -2051,8 +2052,8 @@ class XMLProcessor {
 						$at += strspn( $this->xml, " \t\f\r\n", $at );
 
 						/*
-						 * PubidLiteral	   ::=  '"' PubidChar* '"' | "'" (PubidChar - "'")* "'"
-						 * PubidChar	   ::=  #x20 | #xD | #xA | [a-zA-Z0-9] | [-'()+,./:=?;!*#@$_%]
+						 * PubidLiteral    ::=  '"' PubidChar* '"' | "'" (PubidChar - "'")* "'"
+						 * PubidChar       ::=  #x20 | #xD | #xA | [a-zA-Z0-9] | [-'()+,./:=?;!*#@$_%]
 						 */
 						$opening_quote_char = $this->xml[ $at ];
 						if ( "'" !== $opening_quote_char && '"' !== $opening_quote_char ) {
@@ -2070,7 +2071,7 @@ class XMLProcessor {
 							$at + 1,
 							$pubid_literal_length
 						);
-						$at                   += $pubid_literal_length + 2;
+						$at                  += $pubid_literal_length + 2;
 
 						// Skip whitespace.
 						$at += strspn( $this->xml, " \t\f\r\n", $at );
@@ -2089,7 +2090,7 @@ class XMLProcessor {
 							// Exclude the closing quote.
 							$quoted_string_length - 2
 						);
-						$at                   += $quoted_string_length;
+						$at += $quoted_string_length;
 					} elseif ( $this->xml[ $at ] === '[' ) {
 						$this->bail( 'Inline entity declarations are not yet supported in DOCTYPE declarations.', self::ERROR_SYNTAX );
 					}
@@ -2099,8 +2100,11 @@ class XMLProcessor {
 
 					if ( $this->xml[ $at ] !== '>' ) {
 						$this->bail(
-							sprintf( 'Syntax error in DOCTYPE declaration. Unexpected character "%s" at position %d.', $this->xml[ $at ],
-								$at ),
+							sprintf(
+								'Syntax error in DOCTYPE declaration. Unexpected character "%s" at position %d.',
+								$this->xml[ $at ],
+								$at
+							),
 							self::ERROR_SYNTAX
 						);
 					}
@@ -2186,14 +2190,14 @@ class XMLProcessor {
 				 * See https://www.w3.org/TR/xml/#sec-predefined-ent.
 				 */
 				if ( null !== $this->get_qualified_attribute( 'encoding' )
-				     && 'UTF-8' !== strtoupper( $this->get_qualified_attribute( 'encoding' ) )
+					&& 'UTF-8' !== strtoupper( $this->get_qualified_attribute( 'encoding' ) )
 				) {
 					$this->bail( 'Unsupported XML encoding declared, only UTF-8 is supported.', self::ERROR_UNSUPPORTED );
 					return false;
 				}
 
 				if ( null !== $this->get_qualified_attribute( 'standalone' )
-				     && 'YES' !== strtoupper( $this->get_qualified_attribute( 'standalone' ) )
+					&& 'YES' !== strtoupper( $this->get_qualified_attribute( 'standalone' ) )
 				) {
 					$this->bail( 'Standalone XML documents are not supported.', self::ERROR_UNSUPPORTED );
 					return false;
@@ -2284,7 +2288,7 @@ class XMLProcessor {
 				return true;
 			}
 
-			++ $at;
+			++$at;
 		}
 
 		// There's no more tag openers and we're not expecting more data –
@@ -2334,7 +2338,7 @@ class XMLProcessor {
 			return false;
 		}
 
-		$attribute_start       = $this->bytes_already_parsed;
+		$attribute_start        = $this->bytes_already_parsed;
 		$attribute_qname_length = $this->parse_name( $this->bytes_already_parsed );
 		if ( 0 === $attribute_qname_length ) {
 			$this->bail( 'Invalid attribute name encountered.', self::ERROR_SYNTAX );
@@ -2344,7 +2348,7 @@ class XMLProcessor {
 		$this->skip_whitespace();
 
 		// Parse attribute value.
-		++ $this->bytes_already_parsed;
+		++$this->bytes_already_parsed;
 		$this->skip_whitespace();
 		if ( $this->bytes_already_parsed >= strlen( $this->xml ) ) {
 			$this->mark_incomplete_input();
@@ -2425,9 +2429,9 @@ class XMLProcessor {
 			$namespace_prefix,
 			$local_name
 			/**
-			 * The full namespace is resolved in parse_next_token() once
-			 * all the attributes have been consumed.
-			 */
+			* The full namespace is resolved in parse_next_token() once
+			* all the attributes have been consumed.
+			*/
 		);
 
 		return true;
@@ -2475,7 +2479,7 @@ class XMLProcessor {
 	 * @return int
 	 */
 	private function parse_name( $offset ) {
-		static $i = 0;
+		static $i         = 0;
 		$name_byte_length = 0;
 		while ( true ) {
 			/**
@@ -2507,7 +2511,7 @@ class XMLProcessor {
 			);
 			if (
 				// Byte sequence is not a valid UTF-8 codepoint.
-				( $codepoint === 0xFFFD && $bytes_parsed === 0) || 
+				( $codepoint === 0xFFFD && $bytes_parsed === 0 ) ||
 				// No codepoint at the given offset.
 				null === $codepoint ||
 				// The codepoint is not a valid part of an XML NameChar or NameStartChar.
@@ -2515,7 +2519,7 @@ class XMLProcessor {
 			) {
 				break;
 			}
-			$codepoint = null;
+			$codepoint         = null;
 			$name_byte_length += $bytes_parsed;
 		}
 
@@ -2622,17 +2626,17 @@ class XMLProcessor {
 			unset( $this->lexical_updates[ $name ] );
 		}
 
-		$this->element            = null;
-		$this->token_starts_at    = null;
-		$this->token_length       = null;
-		$this->tag_name_starts_at = null;
-		$this->tag_name_length    = null;
-		$this->text_starts_at     = null;
-		$this->text_length        = null;
-		$this->is_closing_tag     = null;
-		$this->pubid_literal      = null;
-		$this->system_literal     = null;
-		$this->attributes         = array();
+		$this->element              = null;
+		$this->token_starts_at      = null;
+		$this->token_length         = null;
+		$this->tag_name_starts_at   = null;
+		$this->tag_name_length      = null;
+		$this->text_starts_at       = null;
+		$this->text_length          = null;
+		$this->is_closing_tag       = null;
+		$this->pubid_literal        = null;
+		$this->system_literal       = null;
+		$this->attributes           = array();
 		$this->qualified_attributes = array();
 	}
 
@@ -2679,8 +2683,8 @@ class XMLProcessor {
 				$accumulated_shift_for_given_point += $shift;
 			}
 
-			$output_buffer        .= substr( $this->xml, $bytes_already_copied, $diff->start - $bytes_already_copied );
-			$output_buffer        .= $diff->text;
+			$output_buffer       .= substr( $this->xml, $bytes_already_copied, $diff->start - $bytes_already_copied );
+			$output_buffer       .= $diff->text;
 			$bytes_already_copied = $diff->start + $diff->length;
 		}
 
@@ -2774,7 +2778,7 @@ class XMLProcessor {
 			return false;
 		}
 
-		if ( ++ $this->seek_count > static::MAX_SEEK_OPS ) {
+		if ( ++$this->seek_count > static::MAX_SEEK_OPS ) {
 			_doing_it_wrong(
 				__METHOD__,
 				__( 'Too many calls to seek() - this can lead to performance issues.' ),
@@ -2978,7 +2982,7 @@ class XMLProcessor {
 	 * @return string|null The attribute value, or null if not found.
 	 */
 	private function get_qualified_attribute( $qname ) {
-		if(!isset($this->qualified_attributes[$qname])) {
+		if ( ! isset( $this->qualified_attributes[ $qname ] ) ) {
 			return null;
 		}
 
@@ -3031,7 +3035,7 @@ class XMLProcessor {
 	 *     // Empty string namespace prefix matches all attributes.
 	 *     $p->get_attribute_names_with_prefix( '', 'data-' );
 	 *     // Returns: array( array( 'http://wordpress.org/export/1.2/', 'data-foo' ), array( 'http://wordpress.org/export/1.2/', 'data-bar' ), array( '', 'data-no-namespace' ) )
-	 * 
+	 *
 	 *     // Null namespace prefix matches attributes with no namespace.
 	 *     $p->get_attribute_names_with_prefix( null, 'data-' );
 	 *     // Returns: array( array( '', 'data-no-namespace' ) )
@@ -3057,15 +3061,14 @@ class XMLProcessor {
 
 		$matches = array();
 		foreach ( $this->attributes as $attr ) {
-			if ( 
-				0 === strncmp( $attr->local_name, $local_name_prefix, strlen( $local_name_prefix ) ) && 
+			if ( 0 === strncmp( $attr->local_name, $local_name_prefix, strlen( $local_name_prefix ) ) &&
 				(
-				    // Distinguish between no namespace and empty namespace.
-				    (null === $full_namespace_prefix && '' === $attr->namespace) ||
-					(null !== $full_namespace_prefix && 0 === strncmp( $attr->namespace, $full_namespace_prefix, strlen( $full_namespace_prefix ) ) )
+					// Distinguish between no namespace and empty namespace.
+					( null === $full_namespace_prefix && '' === $attr->namespace ) ||
+					( null !== $full_namespace_prefix && 0 === strncmp( $attr->namespace, $full_namespace_prefix, strlen( $full_namespace_prefix ) ) )
 				)
 			) {
-				$matches[] = [$attr->namespace, $attr->local_name];
+				$matches[] = array( $attr->namespace, $attr->local_name );
 			}
 		}
 
@@ -3080,13 +3083,13 @@ class XMLProcessor {
 	 *     $p = new XMLProcessor( '<content class="test">Test</content>' );
 	 *     $p->next_tag() === true;
 	 *     $p->get_tag_local_name() === 'content';
-	 * 
+	 *
 	 * Example with namespaces:
 	 *
 	 *     $p = new XMLProcessor( '<root xmlns:wp="http://www.w3.org/1999/xhtml"><wp:content>Test</wp:content></root>' );
 	 *     $p->next_tag() === true;
 	 *     $p->get_tag_local_name() === 'content';
-	 * 
+	 *
 	 * @return string|null Name of currently matched tag in input XML, or `null` if none found.
 	 * @since WP_VERSION
 	 */
@@ -3110,17 +3113,17 @@ class XMLProcessor {
 	 * Returns the namespace prefix and the local name of the matched tag.
 	 *
 	 * Example without namespaces:
-	 * 
+	 *
 	 *     $p = new XMLProcessor( '<content>Test</content>' );
 	 *     $p->next_tag() === true;
 	 *     $p->get_tag_name_qualified() === 'content';
-	 * 
+	 *
 	 * Example with namespaces:
-	 * 
+	 *
 	 *     $p = new XMLProcessor( '<root xmlns:wp="http://www.w3.org/1999/xhtml"><wp:content>Test</wp:content></root>' );
 	 *     $p->next_tag() === true;
 	 *     $p->get_tag_name_qualified() === 'wp:content';
-	 * 
+	 *
 	 * @return string|null The namespace prefix and the local name of the matched tag, or null if not available.
 	 */
 	private function get_tag_name_qualified() {
@@ -3573,11 +3576,11 @@ class XMLProcessor {
 			return false;
 		}
 
-		$value             = htmlspecialchars( $value, ENT_XML1, 'UTF-8' );
+		$value = htmlspecialchars( $value, ENT_XML1, 'UTF-8' );
 
-		if($namespace !== '') {
-			$prefix = $this->get_tag_namespace_prefix($namespace);
-			if(false === $prefix) {
+		if ( $namespace !== '' ) {
+			$prefix = $this->get_tag_namespace_prefix( $namespace );
+			if ( false === $prefix ) {
 				$this->bail(
 					__( 'The namespace "%1$s" is not in the current element\'s scope.' ),
 					$namespace
@@ -3831,7 +3834,7 @@ class XMLProcessor {
 			switch ( $this->parser_context ) {
 				case self::IN_PROLOG_CONTEXT:
 					return $this->step_in_prolog( $node_to_process );
-				case self::IN_ELEMENT_CONTEXT:			
+				case self::IN_ELEMENT_CONTEXT:
 					return $this->step_in_element( $node_to_process );
 				case self::IN_MISC_CONTEXT:
 					return $this->step_in_misc( $node_to_process );
@@ -3887,7 +3890,7 @@ class XMLProcessor {
 				$whitespaces = strspn( $text, " \t\n\r" );
 				if ( strlen( $text ) !== $whitespaces ) {
 					// @TODO: Only look for this in the 2 initial bytes of the document:
-					if(substr($text, 0, 2) == "\xFF\xFE") {
+					if ( substr( $text, 0, 2 ) == "\xFF\xFE" ) {
 						$this->bail( 'Unexpected UTF-16 BOM byte sequence (0xFFFE) in the document. XMLProcessor only supports UTF-8.', self::ERROR_SYNTAX );
 					}
 					$this->bail( 'Unexpected non-whitespace text token in prolog stage.', self::ERROR_SYNTAX );
@@ -3945,7 +3948,7 @@ class XMLProcessor {
 				// Update the stack of open elements
 				$tag_qname = $this->get_tag_name_qualified();
 				if ( $this->is_tag_closer() ) {
-					if(!count($this->stack_of_open_elements)) {
+					if ( ! count( $this->stack_of_open_elements ) ) {
 						$this->bail(
 							__( 'The closing tag "%1$s" did not match the opening tag "%2$s".' ),
 							$tag_qname,
@@ -3954,7 +3957,7 @@ class XMLProcessor {
 						return false;
 					}
 					$this->element = array_pop( $this->stack_of_open_elements );
-					$popped_qname = $this->element->qualified_name;
+					$popped_qname  = $this->element->qualified_name;
 					if ( $popped_qname !== $tag_qname ) {
 						$this->bail(
 							sprintf(
@@ -4054,7 +4057,7 @@ class XMLProcessor {
 	 */
 	public function get_breadcrumbs() {
 		return array_map(
-			function( $element ) {
+			function ( $element ) {
 				return array( $element->namespace, $element->local_name );
 			},
 			$this->stack_of_open_elements
@@ -4106,7 +4109,7 @@ class XMLProcessor {
 
 		// Walk backwards through both arrays, matching each crumb to the corresponding open element.
 		for ( $j = 1; $j <= $crumb_count; $j++ ) {
-			$crumb = $breadcrumbs[ $crumb_count - $j ];
+			$crumb   = $breadcrumbs[ $crumb_count - $j ];
 			$element = $open_elements[ $elem_count - $j ] ?? null;
 
 			if ( ! $element ) {
@@ -4116,7 +4119,7 @@ class XMLProcessor {
 			// Normalize crumb to [namespace, local_name]
 			if ( ! is_array( $crumb ) ) {
 				if ( '*' === $crumb ) {
-					$crumb = ['*', '*'];
+					$crumb = array( '*', '*' );
 				} else {
 					$crumb = array( '*', $crumb );
 				}
@@ -4199,8 +4202,10 @@ class XMLProcessor {
 	private function validate_qualified_name( $qualified_name ) {
 		if ( substr_count( $qualified_name, ':' ) > 1 ) {
 			$this->bail(
-				sprintf( 'Invalid identifier "%s" – more than one ":" in tag name. Every tag name must contain either zero or one colon.',
-					$qualified_name ),
+				sprintf(
+					'Invalid identifier "%s" – more than one ":" in tag name. Every tag name must contain either zero or one colon.',
+					$qualified_name
+				),
 				self::ERROR_SYNTAX
 			);
 
