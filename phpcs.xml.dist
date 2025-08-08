@@ -26,7 +26,7 @@
 
 	<!--
 	#############################################################################
-	USE THE WordPress AND PHPCompatibilityWP RULESETS
+	USE THE WordPress RULESET
 	#############################################################################
 	-->
 
@@ -46,6 +46,5 @@
 
 	<!-- Supported PHP versions -->
 	<config name="testVersion" value="7.0-"/>
-	<rule ref="PHPCompatibilityWP"/>
 
 </ruleset>
