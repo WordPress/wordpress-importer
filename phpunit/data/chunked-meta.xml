@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0"
+  xmlns:excerpt="http://wordpress.org/export/1.2/excerpt/"
+  xmlns:content="http://purl.org/rss/1.0/modules/content/"
+  xmlns:dc="http://purl.org/dc/elements/1.1/"
+  xmlns:wp="http://wordpress.org/export/1.2/">
+<channel>
+<title>Chunked Meta</title>
+<wp:wxr_version>1.2</wp:wxr_version>
+
+<item>
+<title>Test Post</title>
+<wp:post_id>1</wp:post_id>
+<wp:post_type>post</wp:post_type>
+<wp:status>publish</wp:status>
+<content:encoded><![CDATA[Hello world]]></content:encoded>
+<wp:postmeta>
+<wp:meta_key>_my_meta</wp:meta_key>
+<wp:meta_value><![CDATA[a:1:{s:3:"foo";s:3:"bar";}]]></wp:meta_value>
+</wp:postmeta>
+</item>
+
+</channel>
+</rss>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0"
+  xmlns:content="http://purl.org/rss/1.0/modules/content/"
+  xmlns:wp="http://wordpress.org/export/1.2/">
+<channel>
+<title>Authors Multiline</title>
+<wp:wxr_version>1.2</wp:wxr_version>
+
+<wp:author>
+<wp:author_id>1
+</wp:author_id>
+<wp:author_login>alice
+</wp:author_login>
+<wp:author_email>alice@example.com</wp:author_email>
+</wp:author>
+
+<wp:author>
+<wp:author_id>2
+</wp:author_id>
+<wp:author_login>bob
+</wp:author_login>
+<wp:author_email>bob@example.com</wp:author_email>
+</wp:author>
+
+<wp:author>
+<wp:author_id>3
+</wp:author_id>
+<wp:author_login>carol
+</wp:author_login>
+<wp:author_email>carol@example.com</wp:author_email>
+</wp:author>
+
+<item>
+<title>Sample</title>
+<wp:post_id>1</wp:post_id>
+<wp:author>alice</wp:author>
+<wp:post_type>post</wp:post_type>
+<wp:status>publish</wp:status>
+<content:encoded><![CDATA[content]]></content:encoded>
+</item>
+
+</channel>
+</rss>
