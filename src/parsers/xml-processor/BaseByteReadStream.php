@@ -88,7 +88,7 @@ abstract class BaseByteReadStream implements ByteReadStream {
 		return min( $n, $this->count_consumable_bytes() );
 	}
 
-	public function consume_all(): string {
+	public function consume_all() {
 		$body = '';
 		while ( true ) {
 			if ( $this->reached_end_of_data() ) {
