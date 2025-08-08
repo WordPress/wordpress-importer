@@ -10,6 +10,7 @@
  * WordPress importer class.
  */
 class WP_Import extends WP_Importer {
+
 	public $max_wxr_version = 1.2; // max. supported WXR version
 
 	public $id; // WXR attachment ID
@@ -231,7 +232,7 @@ class WP_Import extends WP_Importer {
 	 */
 	public function import_options() {
 		$j = 0;
-		// phpcs:disable Generic.WhiteSpace.ScopeIndent.Incorrect
+        // phpcs:disable Generic.WhiteSpace.ScopeIndent.Incorrect
 		?>
 <form action="<?php echo admin_url( 'admin.php?import=wordpress&amp;step=2' ); ?>" method="post">
 	<?php wp_nonce_field( 'import-wordpress' ); ?>
@@ -240,15 +241,15 @@ class WP_Import extends WP_Importer {
 <?php if ( ! empty( $this->authors ) ) : ?>
 	<h3><?php _e( 'Assign Authors', 'wordpress-importer' ); ?></h3>
 	<p><?php _e( 'To make it simpler for you to edit and save the imported content, you may want to reassign the author of the imported item to an existing user of this site, such as your primary administrator account.', 'wordpress-importer' ); ?></p>
-<?php if ( $this->allow_create_users() ) : ?>
+		<?php if ( $this->allow_create_users() ) : ?>
 	<p><?php printf( __( 'If a new user is created by WordPress, a new password will be randomly generated and the new user&#8217;s role will be set as %s. Manually changing the new user&#8217;s details will be necessary.', 'wordpress-importer' ), esc_html( get_option( 'default_role' ) ) ); ?></p>
-<?php endif; ?>
+	<?php endif; ?>
 	<ol id="authors">
-<?php foreach ( $this->authors as $author ) : ?>
+		<?php foreach ( $this->authors as $author ) : ?>
 		<li><?php $this->author_select( $j++, $author ); ?></li>
-<?php endforeach; ?>
+	<?php endforeach; ?>
 	</ol>
-<?php endif; ?>
+		<?php endif; ?>
 
 <?php if ( $this->allow_fetch_attachments() ) : ?>
 	<h3><?php _e( 'Import Attachments', 'wordpress-importer' ); ?></h3>
@@ -256,12 +257,12 @@ class WP_Import extends WP_Importer {
 		<input type="checkbox" value="1" name="fetch_attachments" id="import-attachments" />
 		<label for="import-attachments"><?php _e( 'Download and import file attachments', 'wordpress-importer' ); ?></label>
 	</p>
-<?php endif; ?>
+		<?php endif; ?>
 
 	<p class="submit"><input type="submit" class="button" value="<?php esc_attr_e( 'Submit', 'wordpress-importer' ); ?>" /></p>
 </form>
 		<?php
-		// phpcs:enable Generic.WhiteSpace.ScopeIndent.Incorrect
+        // phpcs:enable Generic.WhiteSpace.ScopeIndent.Incorrect
 	}
 
 	/**
@@ -306,16 +307,22 @@ class WP_Import extends WP_Importer {
 		}
 		echo '</label>';
 
-		echo ' ' . wp_dropdown_users(
-			array(
-				'name'            => "user_map[$n]",
-				'id'              => 'imported_authors_' . $n,
-				'multi'           => true,
-				'show_option_all' => __( '- Select -', 'wordpress-importer' ),
-				'show'            => 'display_name_with_login',
-				'echo'            => 0,
-			)
+		// Build dropdown args with multisite support
+		$dropdown_args = array(
+			'name'            => "user_map[$n]",
+			'id'              => 'imported_authors_' . $n,
+			'multi'           => true,
+			'show_option_all' => __( '- Select -', 'wordpress-importer' ),
+			'show'            => 'display_name_with_login',
+			'echo'            => 0,
 		);
+
+		// In multisite, limit to users of the current site
+		if ( is_multisite() ) {
+			$dropdown_args['blog_id'] = get_current_blog_id();
+		}
+
+		echo ' ' . wp_dropdown_users( $dropdown_args );
 
 		echo '<input type="hidden" name="imported_authors[' . $n . ']" value="' . esc_attr( $author['author_login'] ) . '" />';
 
@@ -344,10 +351,19 @@ class WP_Import extends WP_Importer {
 			if ( ! empty( $_POST['user_map'][ $i ] ) ) {
 				$user = get_userdata( intval( $_POST['user_map'][ $i ] ) );
 				if ( isset( $user->ID ) ) {
-					if ( $old_id ) {
-						$this->processed_authors[ $old_id ] = $user->ID;
+					// In multisite, validate that the user is a member of the current site
+					if ( is_multisite() && ! is_user_member_of_blog( $user->ID, get_current_blog_id() ) ) {
+						printf(
+							__( 'User %s is not a member of this site. Posts will be attributed to the current user.', 'wordpress-importer' ),
+							esc_html( $user->display_name )
+						);
+						echo '<br />';
+					} else {
+						if ( $old_id ) {
+							$this->processed_authors[ $old_id ] = $user->ID;
+						}
+						$this->author_mapping[ $santized_old_login ] = $user->ID;
 					}
-					$this->author_mapping[ $santized_old_login ] = $user->ID;
 				}
 			} elseif ( $create_users ) {
 				if ( ! empty( $_POST['user_new'][ $i ] ) ) {
@@ -365,6 +381,11 @@ class WP_Import extends WP_Importer {
 				}
 
 				if ( ! is_wp_error( $user_id ) ) {
+					// In multisite, add the newly created user to the current site
+					if ( is_multisite() && ! is_user_member_of_blog( $user_id, get_current_blog_id() ) ) {
+						add_user_to_blog( get_current_blog_id(), $user_id, 'contributor' );
+					}
+
 					if ( $old_id ) {
 						$this->processed_authors[ $old_id ] = $user_id;
 					}
@@ -1438,7 +1459,7 @@ class WP_Import extends WP_Importer {
 				continue;
 			}
 
-			list( $type, $attr_parts ) = explode( ';', $value, 2 );
+			list($type, $attr_parts) = explode( ';', $value, 2 );
 
 			$attr_parts = explode( ';', $attr_parts );
 			$attributes = array();
@@ -1448,7 +1469,7 @@ class WP_Import extends WP_Importer {
 					continue;
 				}
 
-				list( $key, $value ) = explode( '=', $part, 2 );
+				list($key, $value) = explode( '=', $part, 2 );
 
 				$attributes[ trim( $key ) ] = trim( $value );
 			}
