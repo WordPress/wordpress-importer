@@ -242,7 +242,7 @@ class WXREntityReader implements EntityReader {
 	 * @since WP_VERSION
 	 * @var array
 	 */
-	private $KNOWN_SITE_OPTIONS = array();
+	private $known_site_options = array();
 
 	/**
 	 * Mapping of WXR tags to their corresponding entity types and field mappings.
@@ -250,9 +250,9 @@ class WXREntityReader implements EntityReader {
 	 * @since WP_VERSION
 	 * @var array
 	 */
-	private $KNOWN_ENITIES = array();
+	private $known_entities = array();
 
-	public static function create( ?ByteReadStream $upstream = null, $cursor = null, $options = array() ) {
+	public static function create( ByteReadStream $upstream = null, $cursor = null, $options = array() ) {
 		$xml_cursor = null;
 		if ( null !== $cursor ) {
 			$cursor = json_decode( $cursor, true );
@@ -303,8 +303,8 @@ class WXREntityReader implements EntityReader {
 		$this->xml = $xml;
 
 		if ( isset( $options['known_site_options'] ) || isset( $options['known_entities'] ) ) {
-			$this->KNOWN_SITE_OPTIONS = isset( $options['known_site_options'] ) ? $options['known_site_options'] : array();
-			$this->KNOWN_ENITIES      = isset( $options['known_entities'] ) ? $options['known_entities'] : array();
+			$this->known_site_options = isset( $options['known_site_options'] ) ? $options['known_site_options'] : array();
+			$this->known_entities     = isset( $options['known_entities'] ) ? $options['known_entities'] : array();
 			return;
 		}
 
@@ -318,7 +318,7 @@ class WXREntityReader implements EntityReader {
 		// Unfortunately, different WXR files defined the `wp` namespace in a different way.
 		// Folks use a mixture of HTTP vs HTTPS protocols and version numbers. We must
 		// account for all possible options to parse these documents correctly.
-		$wxr_namespaces      = array(
+		$wxr_namespaces       = array(
 			'http://wordpress.org/export/1.0/',
 			'https://wordpress.org/export/1.0/',
 			'http://wordpress.org/export/1.1/',
@@ -326,7 +326,7 @@ class WXREntityReader implements EntityReader {
 			'http://wordpress.org/export/1.2/',
 			'https://wordpress.org/export/1.2/',
 		);
-		$this->KNOWN_ENITIES = array(
+		$this->known_entities = array(
 			'item' => array(
 				'type'   => 'post',
 				'fields' => array(
@@ -344,16 +344,16 @@ class WXREntityReader implements EntityReader {
 			),
 		);
 		foreach ( $wxr_namespaces as $wxr_namespace ) {
-			$this->KNOWN_SITE_OPTIONS              = array_merge(
-				$this->KNOWN_SITE_OPTIONS,
+			$this->known_site_options               = array_merge(
+				$this->known_site_options,
 				array(
 					'{' . $wxr_namespace . '}base_blog_url' => 'home',
 					'{' . $wxr_namespace . '}base_site_url' => 'siteurl',
 					'title' => 'blogname',
 				)
 			);
-			$this->KNOWN_ENITIES['item']['fields'] = array_merge(
-				$this->KNOWN_ENITIES['item']['fields'],
+			$this->known_entities['item']['fields'] = array_merge(
+				$this->known_entities['item']['fields'],
 				array(
 					'{' . $wxr_namespace . '}post_id'     => 'post_id',
 					'{' . $wxr_namespace . '}status'      => 'post_status',
@@ -372,8 +372,8 @@ class WXREntityReader implements EntityReader {
 					'{' . $wxr_namespace . '}attachment_url' => 'attachment_url',
 				)
 			);
-			$this->KNOWN_ENITIES                   = array_merge(
-				$this->KNOWN_ENITIES,
+			$this->known_entities                   = array_merge(
+				$this->known_entities,
 				array(
 					'{' . $wxr_namespace . '}comment'     => array(
 						'type'   => 'comment',
@@ -503,11 +503,11 @@ class WXREntityReader implements EntityReader {
 		if ( null === $this->entity_tag ) {
 			return false;
 		}
-		if ( ! array_key_exists( $this->entity_tag, $this->KNOWN_ENITIES ) ) {
+		if ( ! array_key_exists( $this->entity_tag, $this->known_entities ) ) {
 			return false;
 		}
 
-		return $this->KNOWN_ENITIES[ $this->entity_tag ]['type'];
+		return $this->known_entities[ $this->entity_tag ]['type'];
 	}
 
 	/**
@@ -647,7 +647,7 @@ class WXREntityReader implements EntityReader {
 		if ( $this->entity_type && $this->entity_finished ) {
 			$this->after_entity();
 			// If we finished processing the entity on a closing tag, advance the XML processor to
-			// the next token. Otherwise the array_key_exists( $tag, static::KNOWN_ENITIES ) branch
+			// the next token. Otherwise the array_key_exists( $tag, static::known_entities ) branch
 			// below will cause an infinite loop.
 			if ( $this->xml->is_tag_closer() ) {
 				if ( false === $this->xml->next_token() ) {
@@ -665,8 +665,8 @@ class WXREntityReader implements EntityReader {
 			// Don't process anything outside the <rss> <channel> hierarchy.
 			if (
 				count( $breadcrumbs ) < 2 ||
-				$breadcrumbs[0] !== array( '', 'rss' ) ||
-				$breadcrumbs[1] !== array( '', 'channel' )
+				array( '', 'rss' ) !== $breadcrumbs[0] ||
+				array( '', 'channel' ) !== $breadcrumbs[1]
 			) {
 				continue;
 			}
@@ -678,15 +678,15 @@ class WXREntityReader implements EntityReader {
 			 * the entire text content of an element.
 			 */
 			if (
-				$this->xml->get_token_type() === '#text' ||
-				$this->xml->get_token_type() === '#cdata-section'
+				'#text' === $this->xml->get_token_type() ||
+				'#cdata-section' === $this->xml->get_token_type()
 			) {
 				$this->text_buffer .= $this->xml->get_modifiable_text();
 				continue;
 			}
 
 			// We're only interested in tags after this point.
-			if ( $this->xml->get_token_type() !== '#tag' ) {
+			if ( '#tag' !== $this->xml->get_token_type() ) {
 				continue;
 			}
 
@@ -704,7 +704,7 @@ class WXREntityReader implements EntityReader {
 			 *        the regular WXR importer would ignore them? Perhaps a warning
 			 *        and an upstream PR would be a better solution.
 			 */
-			if ( $tag_with_namespace === '{http://wordpress.org/export/1.2/}wp_author' ) {
+			if ( '{http://wordpress.org/export/1.2/}wp_author' === $tag_with_namespace ) {
 				$tag_with_namespace = '{http://wordpress.org/export/1.2/}author';
 			}
 
@@ -713,7 +713,7 @@ class WXREntityReader implements EntityReader {
 			 * finished, emit it, and start processing the new entity the next
 			 * time this function is called.
 			 */
-			if ( array_key_exists( $tag_with_namespace, $this->KNOWN_ENITIES ) ) {
+			if ( array_key_exists( $tag_with_namespace, $this->known_entities ) ) {
 				if ( $this->entity_type && ! $this->entity_finished ) {
 					$this->emit_entity();
 
@@ -775,9 +775,9 @@ class WXREntityReader implements EntityReader {
 				$this->text_buffer = '';
 
 				$is_site_option_opener = (
-					count( $this->xml->get_breadcrumbs() ) === 3 &&
+					3 === count( $this->xml->get_breadcrumbs() ) &&
 					$this->xml->matches_breadcrumbs( array( 'rss', 'channel', '*' ) ) &&
-					array_key_exists( $this->xml->get_tag_namespace_and_local_name(), $this->KNOWN_SITE_OPTIONS )
+					array_key_exists( $this->xml->get_tag_namespace_and_local_name(), $this->known_site_options )
 				);
 				if ( $is_site_option_opener ) {
 					$this->entity_opener_byte_offset = $this->xml->get_token_byte_offset_in_the_input_stream();
@@ -826,8 +826,8 @@ class WXREntityReader implements EntityReader {
 			 *     ]
 			 */
 			if (
-				$this->entity_type === 'post' &&
-				$this->xml->get_tag_local_name() === 'category' &&
+				'post' === $this->entity_type &&
+				'category' === $this->xml->get_tag_local_name() &&
 				array_key_exists( 'domain', $this->last_opener_attributes ) &&
 				array_key_exists( 'nicename', $this->last_opener_attributes )
 			) {
@@ -842,18 +842,18 @@ class WXREntityReader implements EntityReader {
 
 			/**
 			 * Store the text content of known tags as the value of the corresponding
-			 * entity attribute as defined by the $KNOWN_ENITIES mapping.
+			 * entity attribute as defined by the $known_entities mapping.
 			 *
-			 * Ignores tags unlisted in the $KNOWN_ENITIES mapping.
+			 * Ignores tags unlisted in the $known_entities mapping.
 			 *
 			 * The WXR format is extensible so this reader could potentially
 			 * support registering custom handlers for unknown tags in the future.
 			 */
-			if ( ! isset( $this->KNOWN_ENITIES[ $this->entity_tag ]['fields'][ $tag_with_namespace ] ) ) {
+			if ( ! isset( $this->known_entities[ $this->entity_tag ]['fields'][ $tag_with_namespace ] ) ) {
 				continue;
 			}
 
-			$key                       = $this->KNOWN_ENITIES[ $this->entity_tag ]['fields'][ $tag_with_namespace ];
+			$key                       = $this->known_entities[ $this->entity_tag ]['fields'][ $tag_with_namespace ];
 			$this->entity_data[ $key ] = $this->text_buffer;
 			$this->text_buffer         = '';
 		} while ( $this->xml->next_token() );
@@ -885,13 +885,13 @@ class WXREntityReader implements EntityReader {
 	 * @return bool Whether a site_option entity was emitted.
 	 */
 	private function parse_site_option() {
-		if ( ! array_key_exists( $this->xml->get_tag_namespace_and_local_name(), $this->KNOWN_SITE_OPTIONS ) ) {
+		if ( ! array_key_exists( $this->xml->get_tag_namespace_and_local_name(), $this->known_site_options ) ) {
 			return false;
 		}
 
 		$this->entity_type = 'site_option';
 		$this->entity_data = array(
-			'option_name'  => $this->KNOWN_SITE_OPTIONS[ $this->xml->get_tag_namespace_and_local_name() ],
+			'option_name'  => $this->known_site_options[ $this->xml->get_tag_namespace_and_local_name() ],
 			'option_value' => $this->text_buffer,
 		);
 		$this->emit_entity();
@@ -934,19 +934,19 @@ class WXREntityReader implements EntityReader {
 	 * @since WP_VERSION
 	 */
 	private function emit_entity() {
-		if ( $this->entity_type === 'post' ) {
+		if ( 'post' === $this->entity_type ) {
 			// Not all posts have a `<wp:post_id>` tag.
-			$this->last_post_id = $this->entity_data['post_id'] ?? null;
-		} elseif ( $this->entity_type === 'post_meta' ) {
+			$this->last_post_id = isset( $this->entity_data['post_id'] ) ? $this->entity_data['post_id'] : null;
+		} elseif ( 'post_meta' === $this->entity_type ) {
 			$this->entity_data['post_id'] = $this->last_post_id;
-		} elseif ( $this->entity_type === 'comment' ) {
+		} elseif ( 'comment' === $this->entity_type ) {
 			$this->last_comment_id        = $this->entity_data['comment_id'];
 			$this->entity_data['post_id'] = $this->last_post_id;
-		} elseif ( $this->entity_type === 'comment_meta' ) {
+		} elseif ( 'comment_meta' === $this->entity_type ) {
 			$this->entity_data['comment_id'] = $this->last_comment_id;
-		} elseif ( $this->entity_type === 'tag' ) {
+		} elseif ( 'tag' === $this->entity_type ) {
 			$this->entity_data['taxonomy'] = 'post_tag';
-		} elseif ( $this->entity_type === 'category' ) {
+		} elseif ( 'category' === $this->entity_type ) {
 			$this->entity_data['taxonomy'] = 'category';
 		}
 		$this->entity_finished = true;
@@ -963,8 +963,8 @@ class WXREntityReader implements EntityReader {
 	 */
 	private function set_entity_tag( $tag_with_namespace ) {
 		$this->entity_tag = $tag_with_namespace;
-		if ( array_key_exists( $tag_with_namespace, $this->KNOWN_ENITIES ) ) {
-			$this->entity_type = $this->KNOWN_ENITIES[ $tag_with_namespace ]['type'];
+		if ( array_key_exists( $tag_with_namespace, $this->known_entities ) ) {
+			$this->entity_type = $this->known_entities[ $tag_with_namespace ]['type'];
 		}
 	}
 

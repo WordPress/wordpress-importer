@@ -137,7 +137,7 @@ class XMLDecoder {
 			$digit_count = strspn( $text, $digit_chars, $digits_at, $max_digits );
 			$semi_at     = $digits_at + $digit_count;
 
-			if ( $digit_count === 0 || $semi_at >= $end || ';' !== $text[ $semi_at ] ) {
+			if ( 0 === $digit_count || $semi_at >= $end || ';' !== $text[ $semi_at ] ) {
 				// @todo This is an error. Treat as plaintext and move on.
 				++$at;
 				continue;

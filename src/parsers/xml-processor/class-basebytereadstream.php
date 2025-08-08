@@ -33,7 +33,7 @@ abstract class BaseByteReadStream implements ByteReadStream {
 			throw new ByteStreamException( 'Cannot pull() on a closed producer' );
 		}
 
-		if ( $n === 0 ) {
+		if ( 0 === $n ) {
 			return 0;
 		}
 
@@ -46,14 +46,14 @@ abstract class BaseByteReadStream implements ByteReadStream {
 		}
 
 		if ( $this->reached_end_of_data() ) {
-			if ( $mode === ByteReadStream::PULL_EXACTLY ) {
+			if ( ByteReadStream::PULL_EXACTLY === $mode ) {
 				throw new NotEnoughDataException( 'End of data reached while pulling' );
 			}
 
 			return 0;
 		}
 
-		if ( $mode === ByteReadStream::PULL_NO_MORE_THAN ) {
+		if ( ByteReadStream::PULL_NO_MORE_THAN === $mode ) {
 			return $this->pull_no_more_than( $n );
 		}
 
@@ -125,7 +125,7 @@ abstract class BaseByteReadStream implements ByteReadStream {
 		return $bytes;
 	}
 
-	public function seek( int $target_offset ) {
+	public function seek( $target_offset ) {
 		// We have that offset in the buffer, let's just update the pointer
 		if ( $target_offset >= $this->bytes_already_forgotten && $target_offset <= $this->bytes_already_forgotten + strlen( $this->buffer ) ) {
 			$this->offset_in_current_buffer = $target_offset - $this->bytes_already_forgotten;
@@ -151,7 +151,7 @@ abstract class BaseByteReadStream implements ByteReadStream {
 		$this->seek_outside_of_buffer( $target_offset );
 	}
 
-	protected function seek_outside_of_buffer( int $target_offset ) {
+	protected function seek_outside_of_buffer( $target_offset ) {
 		throw new ByteStreamException( 'Cannot seek outside of the buffered range' );
 	}
 

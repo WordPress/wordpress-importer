@@ -102,14 +102,14 @@ class XMLAttributeToken {
 	 * @param  string  $namespace  Namespace.
 	 *
 	 */
-	public function __construct( $value_start, $value_length, $start, $length, $namespace_prefix = null, $local_name = null, $namespace = null ) {
+	public function __construct( $value_start, $value_length, $start, $length, $namespace_prefix = null, $local_name = null, $namespace_name = null ) {
 		$this->value_starts_at  = $value_start;
 		$this->value_length     = $value_length;
 		$this->start            = $start;
 		$this->length           = $length;
 		$this->namespace_prefix = $namespace_prefix;
 		$this->local_name       = $local_name;
-		$this->namespace        = $namespace;
+		$this->namespace        = $namespace_name;
 		$this->qualified_name   = $namespace_prefix ? $namespace_prefix . ':' . $local_name : $local_name;
 	}
 }

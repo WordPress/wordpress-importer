@@ -36,7 +36,7 @@ interface ByteReadStream {
 	 * @return void
 	 * @throws ByteStreamException If the offset is invalid.
 	 */
-	public function seek( int $offset );
+	public function seek( $offset );
 
 	/**
 	 * Check if the end of the data stream has been reached.

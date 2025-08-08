@@ -55,7 +55,7 @@ class FileReadStream extends BaseByteReadStream {
 		return $bytes;
 	}
 
-	protected function seek_outside_of_buffer( int $target_offset ) {
+	protected function seek_outside_of_buffer( $target_offset ) {
 		$this->buffer                   = '';
 		$this->offset_in_current_buffer = 0;
 		$this->bytes_already_forgotten  = $target_offset;

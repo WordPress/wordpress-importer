@@ -2,7 +2,7 @@
 
 namespace WordPress\Encoding;
 
-/**
+/*
  * UTF-8 decoding pipeline by Dennis Snell (@dmsnell), originally
  * proposed in https://github.com/WordPress/wordpress-develop/pull/6883.
  *
@@ -209,7 +209,8 @@ function utf8_substr( $text, $from = 0, $length = null ) {
 			++$seen_code_points;
 			$code_point_at = $position_in_input;
 		} elseif ( UTF8_DECODER_REJECT === $decoder_state ) {
-			$buffer .= "\u{FFFD}";
+			// "\u{FFFD}" is not supported in PHP 5.6.
+			$buffer .= "\xEF\xBF\xBD";
 
 			// Skip to the start of the next code point.
 			while ( UTF8_DECODER_REJECT === $decoder_state && $position_in_input < $end_byte ) {
@@ -261,7 +262,8 @@ function utf8_codepoint_at( $text, $byte_offset = 0, &$matched_bytes = 0 ) {
 			$codepoint = utf8_ord( substr( $text, $code_point_at, $position_in_input - $code_point_at ) );
 			break;
 		} elseif ( UTF8_DECODER_REJECT === $decoder_state ) {
-			$codepoint = utf8_ord( "\u{FFFD}" );
+			// "\u{FFFD}" is not supported in PHP 5.6.
+			$codepoint = utf8_ord( "\xEF\xBF\xBD" );
 			break;
 		} else {
 			++$position_in_input;

@@ -57,16 +57,16 @@ class XMLElement {
 	 * Constructor.
 	 *
 	 * @param string $local_name Local name.
-	 * @param string $namespace_prefix Namespace prefix.
-	 * @param string $namespace Full XML namespace name.
+	 * @param string $xml_namespace_prefix Namespace prefix.
+	 * @param string $xml_namespace Full XML namespace name.
 	 * @param array<string, string> $namespaces_in_scope Namespaces in current element's scope.
 	 */
-	public function __construct( $local_name, $namespace_prefix, $namespace, $namespaces_in_scope ) {
+	public function __construct( $local_name, $xml_namespace_prefix, $xml_namespace, $namespaces_in_scope ) {
 		$this->local_name          = $local_name;
-		$this->namespace_prefix    = $namespace_prefix;
-		$this->namespace           = $namespace;
+		$this->namespace_prefix    = $xml_namespace_prefix;
+		$this->namespace           = $xml_namespace;
 		$this->namespaces_in_scope = $namespaces_in_scope;
-		$this->qualified_name      = $namespace_prefix ? $namespace_prefix . ':' . $local_name : $local_name;
+		$this->qualified_name      = $xml_namespace_prefix ? $xml_namespace_prefix . ':' . $local_name : $local_name;
 	}
 
 	public function get_full_name() {
