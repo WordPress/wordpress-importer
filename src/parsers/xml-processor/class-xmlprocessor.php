@@ -21,40 +21,26 @@ use function WordPress\Encoding\utf8_codepoint_at;
  * * Well-formed
  * * UTF-8 encoded
  * * Not standalone (so can use external entities)
- * * No DTD, DOCTYPE, ATTLIST, ENTITY, or conditional sections
+ * * No DTD, DOCTYPE, ATTLIST, ENTITY, or conditional sections (will fail on them)
  *
  * ### Possible future direction for this module
  *
- * The final goal is to support both 1.0 and 1.1 depending on the
- * initial processing instruction (<?xml version="1.0" ?>). We're
- * starting with 1.0, however, because most that's what most WXR
- * files declare.
+ * XMLProcessor only aims to support XML 1.0, which is mostly well-defined and
+ * supported across the web. There are no plans to extend the parsing logic to XML 1.1,
+ * which is a more complex specification and not so widely supported.
  *
  * @TODO: Include the cursor string in internal bookmarks and use it for seeking.
  *
  * @TODO: Track specific error states, expose informative messages, line
  *        numbers, indexes, and other debugging info.
  *
- * @TODO: Skip over the following syntax elements:
+ * @TODO: Skip over the following syntax elements instead of failing:
  *        * <!DOCTYPE, see https://www.w3.org/TR/xml/#sec-prolog-dtd
  *        * <!ATTLIST, see https://www.w3.org/TR/xml/#attdecls
  *        * <!ENTITY, see https://www.w3.org/TR/xml/#sec-entity-decl
  *        * <!NOTATION, see https://www.w3.org/TR/xml/#sec-entity-decl
  *        * Conditional sections, see https://www.w3.org/TR/xml/#sec-condition-sect
  *
- * @TODO Explore declaring elements as PCdata directly in the XML document,
- *       for example as follows:
- *
- *       <!ELEMENT p (#PCDATA|emph)* >
- *
- *       or
- *
- *       <!DOCTYPE test [
- *           <!ELEMENT test (#PCDATA) >
- *           <!ENTITY % xx '&#37;zz;'>
- *           <!ENTITY % zz '&#60;!ENTITY tricky "error-prone" >' >
- *           %xx;
- *       ]>
  *
  * @TODO: Support XML 1.1.
  *
@@ -187,19 +173,6 @@ use function WordPress\Encoding\utf8_codepoint_at;
  *     $processor = XMLProcessor::create_from_string( '<style>// this is everything</style><content>' );
  *     true === $processor->next_tag( 'content' );
  *
- * #### Special elements
- *
- * All XML elements are handled in the same way, except when you mark
- * them as PCData elements. These are special because their contents
- * are treated as text, even if it looks like XML tags.
- *
- * Example:
- *
- *    $processor = XMLProcessor::create_from_string( '<root><post-content>Text inside</input></post-content></root>' );
- *    $processor->declare_element_as_pcdata('post-content');
- *    $processor->next_tag('post-content');
- *    $processor->next_token();
- *    echo $processor->get_modifiable_text(); // Text inside</input>
  *
  * ### Modifying XML attributes for a found tag
  *
@@ -342,6 +315,31 @@ use function WordPress\Encoding\utf8_codepoint_at;
  *
  * The XMLProcessor assumes that the input XML document is encoded with a
  * UTF-8 encoding and will refuse to process documents that declare other encodings.
+ *
+ * ### Namespaces
+ *
+ * Namespaces are first-class citizens in the XMLProcessor. Methods such as `set_attribute()` and `remove_attribute()`
+ * require the full namespace URI, not just the local name. The XML specification treats the local
+ * name as a mere syntax sugar. The actual matching is always done on the fully qualified namespace name.
+ *
+ * Example:
+ *
+ *     $processor = XMLProcessor::from_string( '<root xmlns:wp="http://wordpress.org/export/1.2/"><wp:image src="cat.jpg" /></root>' );
+ *     $processor->next_tag( 'image' );
+ *     $local_name = $processor->get_tag_local_name(); // 'image'
+ *     $ns = $processor->get_tag_namespace(); // 'http://wordpress.org/export/1.2/'
+ *     echo $processor->get_tag_namespace_and_local_name(); // '{http://wordpress.org/export/1.2/}image'
+ *
+ * #### Internal representation of names
+ *
+ * Internally, the XMLProcessor stores names using the following format:
+ *
+ *     {namespace}local_name
+ *
+ * It's safe, because the "{" and "}" bytes cannot be used in tag names or attribute names:
+ *
+ *     [4]      NameStartChar  ::=      ":" | [A-Z] | "_" | [a-z] | [#xC0-#xD6] | [#xD8-#xF6] | [#xF8-#x2FF] | [#x370-#x37D] | [#x37F-#x1FFF] | [#x200C-#x200D] | [#x2070-#x218F] | [#x2C00-#x2FEF] | [#x3001-#xD7FF] | [#xF900-#xFDCF] | [#xFDF0-#xFFFD] | [#x10000-#xEFFFF]
+ *     [4a]     NameChar       ::=      NameStartChar | "-" | "." | [0-9] | #xB7 | [#x0300-#x036F] | [#x203F-#x2040]
  *
  * @since WP_VERSION
  */
@@ -1242,14 +1240,6 @@ class XMLProcessor {
 		}
 
 		/*
-		 * If we are in a PCData element, everything until the closer
-		 * is considered text.
-		 */
-		if ( ! $this->is_pcdata_element() ) {
-			return true;
-		}
-
-		/*
 		 * Preserve the opening tag pointers, as these will be overwritten
 		 * when finding the closing tag. They will be reset after finding
 		 * the closing to tag to point to the opening of the special atomic
@@ -1259,16 +1249,6 @@ class XMLProcessor {
 		$tag_name_length    = $this->tag_name_length;
 		$tag_ends_at        = $this->token_starts_at + $this->token_length;
 		$attributes         = $this->qualified_attributes;
-
-		$found_closer = $this->skip_pcdata( $this->get_tag_local_name() );
-
-		// Closer not found, the document is incomplete.
-		if ( false === $found_closer ) {
-			$this->mark_incomplete_input( 'Closing tag missing.' );
-			$this->bytes_already_parsed = $was_at;
-
-			return false;
-		}
 
 		/*
 		 * The values here look like they reference the opening tag but they reference
@@ -1507,55 +1487,6 @@ class XMLProcessor {
 	}
 
 	/**
-	 * Skips contents of PCDATA element.
-	 *
-	 * @param  string  $tag_name  The tag name which will close the PCDATA region.
-	 *
-	 * @return false|int Byte offset of the closing tag, or false if not found.
-	 * @since WP_VERSION
-	 *
-	 * @see https://www.w3.org/TR/xml/#sec-mixed-content
-	 *
-	 */
-	private function skip_pcdata( $tag_name ) {
-		$xml        = $this->xml;
-		$doc_length = strlen( $xml );
-		$tag_length = strlen( $tag_name );
-
-		$at = $this->bytes_already_parsed;
-		while ( false !== $at && $at < $doc_length ) {
-			$at                       = strpos( $this->xml, '</' . $tag_name, $at );
-			$this->tag_name_starts_at = $at;
-
-			// Fail if there is no possible tag closer.
-			if ( false === $at ) {
-				return false;
-			}
-
-			$at                        += 2 + $tag_length;
-			$at                        += strspn( $this->xml, " \t\f\r\n", $at );
-			$this->bytes_already_parsed = $at;
-
-			/*
-			 * Ensure that the tag name terminates to avoid matching on
-			 * substrings of a longer tag name. For example, the sequence
-			 * "</contentrug" should not match for "</content" even
-			 * though "content" is found within the text.
-			 */
-			if ( $at >= strlen( $xml ) ) {
-				return false;
-			}
-			if ( '>' === $xml[ $at ] ) {
-				$this->bytes_already_parsed = $at + 1;
-
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
 	 * Returns the last error, if any.
 	 *
 	 * Various situations lead to parsing failure but this class will
@@ -1581,94 +1512,6 @@ class XMLProcessor {
 	public function get_last_error() {
 		return $this->last_error;
 	}
-
-	/**
-	 * Tag names declared as PCDATA elements.
-	 *
-	 * PCDATA elements are elements in which everything is treated as
-	 * text, even syntax that may look like other elements, closers,
-	 * processing instructions, etc.
-	 *
-	 * Example:
-	 *
-	 *     <root>
-	 *         <my-pcdata>
-	 *             This text contains syntax that seems
-	 *             like XML nodes:
-	 *
-	 *             <input />
-	 *             </seemingly invalid element --/>
-	 *             <!-- is this a comment? -->
-	 *             <?xml version="1.0" ?>
-	 *
-	 *             &amp;&lt;&gt;&quot;&apos;
-	 *
-	 *             But! It's all treated as text.
-	 *         </my-pcdata>
-	 *    </root>
-	 *
-	 * @var array
-	 */
-	private $pcdata_elements = array();
-
-	/**
-	 * Declares an element as PCDATA.
-	 *
-	 * PCDATA elements are elements in which everything is treated as
-	 * text, even syntax that may look like other elements, closers,
-	 * processing instructions, etc.
-	 *
-	 * For example:
-	 *
-	 *      $processor = new XMLProcessor(
-	 *      <<<XML
-	 *          <root>
-	 *              <my-pcdata>
-	 *                  This text uses syntax that may seem
-	 *                  like XML nodes:
-	 *
-	 *                  <input />
-	 *                  </seemingly invalid element --/>
-	 *                  <!-- is this a comment? -->
-	 *                  <?xml version="1.0" ?>
-	 *
-	 *                  &amp;&lt;&gt;&quot;&apos;
-	 *
-	 *                  But! It's all treated as text.
-	 *              </my-pcdata>
-	 *         </root>
-	 *      XML
-	 *      );
-	 *
-	 *      $processor->declare_element_as_pcdata('my-pcdata');
-	 *      $processor->next_tag('my-pcdata');
-	 *      $processor->next_token();
-	 *
-	 *      // Returns everything inside the <my-pcdata>
-	 *      // element as text:
-	 *      $processor->get_modifiable_text();
-	 *
-	 * @param  string  $element_name  The name of the element to declare as PCDATA.
-	 *
-	 * @TODO: Reconsider whether this method is needed.
-	 *
-	 * @return void
-	 */
-	public function declare_element_as_pcdata( $element_name ) {
-		$this->pcdata_elements[ $element_name ] = true;
-	}
-
-	/**
-	 * Indicates if the currently matched tag is a PCDATA element.
-	 *
-	 * @return bool Whether the currently matched tag is a PCDATA element.
-	 * @since WP_VERSION
-	 *
-	 */
-	public function is_pcdata_element() {
-		return array_key_exists( $this->get_tag_local_name(), $this->pcdata_elements );
-	}
-
 
 	/**
 	 * Finds the next element matching the $query.
@@ -3427,8 +3270,6 @@ class XMLProcessor {
 	 * changing the XML structure of the document around it. This includes
 	 * the contents of `#text` and `#cdata-section` nodes in the XML as well
 	 * as the inner contents of XML comments, Processing Instructions, and others.
-	 * They also contain of PCdata tags any other section in an XML document which
-	 * cannot contain XML markup (DATA).
 	 *
 	 * If a token has no modifiable text then an empty string is returned to
 	 * avoid needless crashing or type errors. An empty string does not mean
@@ -3456,11 +3297,10 @@ class XMLProcessor {
 		 */
 		$text = str_replace( array( "\r\n", "\r" ), "\n", $text );
 
-		// Comment data, CDATA sections, and PCData tags contents are not decoded any further.
+		// Comment data and CDATA sections contents are not decoded any further.
 		if (
 			self::STATE_CDATA_NODE === $this->parser_state ||
-			self::STATE_COMMENT === $this->parser_state ||
-			$this->is_pcdata_element()
+			self::STATE_COMMENT === $this->parser_state
 		) {
 			return $text;
 		}
@@ -3494,8 +3334,6 @@ class XMLProcessor {
 	 * changing the XML structure of the document around it. This includes
 	 * the contents of `#text` and `#cdata-section` nodes in the XML as well
 	 * as the inner contents of XML comments, Processing Instructions, and others.
-	 * They also contain of PCdata tags any other section in an XML document which
-	 * cannot contain XML markup (DATA).
 	 *
 	 * If a token has no modifiable text then false is returned to avoid needless
 	 * crashing or type errors.
