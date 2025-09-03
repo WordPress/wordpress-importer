@@ -20,6 +20,9 @@
         "yoast/phpunit-polyfills": "^1.0.1",
         "phpunit/phpunit": "^5.7.21 || ^6.5 || ^7.5"
     },
+    "scripts": {
+        "e2e": "npx -y playwright test"
+    },
     "config": {
         "allow-plugins": {
             "dealerdirect/phpcodesniffer-composer-installer": true
