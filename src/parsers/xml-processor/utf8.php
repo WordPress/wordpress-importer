@@ -86,7 +86,7 @@ function utf8_codepoint_count( $bytes, &$first_error_byte_at = null ) {
 	$state         = UTF8_DECODER_ACCEPT;
 	$last_start_at = 0;
 	$count         = 0;
-	$codepoint    = 0;
+	$codepoint     = 0;
 
 	for ( $at = 0, $end = strlen( $bytes ); $at < $end && UTF8_DECODER_REJECT !== $state; $at++ ) {
 		if ( UTF8_DECODER_ACCEPT === $state ) {
@@ -159,8 +159,8 @@ function utf8_decoder_apply_byte( $byte, $state, &$codepoint = 0 ) {
 		"\x01\x03\x01\x01\x01\x01\x01\x03\x01\x03\x01\x01\x01\x01\x01\x01\x01\x03\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01"
 	);
 
-	$byte       = ord( $byte );
-	$type       = ord( $state_table[ $byte ] );
+	$byte      = ord( $byte );
+	$type      = ord( $state_table[ $byte ] );
 	$codepoint = ( UTF8_DECODER_ACCEPT === $state )
 		? ( ( 0xFF >> $type ) & $byte )
 		: ( ( $byte & 0x3F ) | ( $codepoint << 6 ) );
@@ -186,13 +186,13 @@ function utf8_substr( $text, $from = 0, $length = null ) {
 		return $text;
 	}
 
-	$position_in_input  = 0;
+	$position_in_input = 0;
 	$codepoint_at      = 0;
-	$end_byte           = strlen( $text );
-	$buffer             = '';
+	$end_byte          = strlen( $text );
+	$buffer            = '';
 	$seen_codepoints   = 0;
 	$sliced_codepoints = 0;
-	$decoder_state      = UTF8_DECODER_ACCEPT;
+	$decoder_state     = UTF8_DECODER_ACCEPT;
 
 	// Get to the start of the string.
 	while ( $position_in_input < $end_byte && $seen_codepoints < $length ) {
@@ -218,7 +218,7 @@ function utf8_substr( $text, $from = 0, $length = null ) {
 			}
 
 			++$seen_codepoints;
-			$codepoint_at = $position_in_input;
+			$codepoint_at  = $position_in_input;
 			$decoder_state = UTF8_DECODER_ACCEPT;
 		} else {
 			++$position_in_input;
@@ -248,7 +248,7 @@ function utf8_codepoint_at( $text, $byte_offset = 0, &$matched_bytes = 0 ) {
 	}
 
 	$position_in_input = $byte_offset;
-	$codepoint_at     = $byte_offset;
+	$codepoint_at      = $byte_offset;
 	$end_byte          = strlen( $text );
 	$codepoint         = null;
 	$decoder_state     = UTF8_DECODER_ACCEPT;
@@ -339,7 +339,7 @@ function codepoint_to_utf8_bytes( $codepoint ) {
 	}
 
 	if ( $codepoint <= 0x7FF ) {
-		$byte1 = chr( ( $codepoint >> 6 ) | 0xC0 );
+		$byte1 = chr( ( 0xC0 | ( ( $codepoint >> 6 ) & 0x1F ) ) );
 		$byte2 = chr( $codepoint & 0x3F | 0x80 );
 
 		return "{$byte1}{$byte2}";

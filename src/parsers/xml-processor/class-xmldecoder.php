@@ -143,7 +143,7 @@ class XMLDecoder {
 				continue;
 			}
 
-			$codepoint          = intval( substr( $text, $digits_at, $digit_count ), $base );
+			$codepoint           = intval( substr( $text, $digits_at, $digit_count ), $base );
 			$character_reference = codepoint_to_utf8_bytes( $codepoint );
 			if ( '�' === $character_reference && 0xFFFD !== $codepoint ) {
 				/*
