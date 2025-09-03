@@ -10,15 +10,8 @@ module.exports = defineConfig({
 	fullyParallel: false,
 	reporter: [['list']],
 	use: {
-		baseURL: 'http://127.0.0.1:9400',
-		headless: false,
+		// Base URL is provided per-test by the Playground fixture
+		headless: true,
 	},
-	webServer: {
-		command: 'npx -y @wp-playground/cli@latest server --mount=./src:/wordpress/wp-content/plugins/wordpress-importer --blueprint=playground.blueprint.json --blueprint-may-read-adjacent-files --port 9400 --site-url=http://127.0.0.1:9400',
-		port: 9400,
-		reuseExistingServer: !process.env.CI,
-		timeout: 180000,
-	},
+	// Server is started per-test via @wp-playground/cli runCLI()
 });
-
-
