@@ -13,7 +13,7 @@ use Exception;
  *
  * This class is designed for internal use by the XML processor.
  *
- * The XML API aims to operate in compliance with the XML5
+ * The XML API aims to operate in compliance with the XML 1.0
  * specification, but does not implement the full specification.
  * In cases where it lacks support it should not cause breakage
  * or unexpected behavior. In the cases where it recognizes that

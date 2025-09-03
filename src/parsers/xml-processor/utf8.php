@@ -169,7 +169,7 @@ function utf8_decoder_apply_byte( $byte, $state, &$codepoint = 0 ) {
 }
 
 /**
- * Extract a slice of a text by code point, where invalid byte seuqences count
+ * Extract a slice of a text by code point, where invalid byte sequences count
  * as a single code point, U+FFFD (the Unicode replacement character `�`).
  *
  * This function does not permit passing negative indices and will return
