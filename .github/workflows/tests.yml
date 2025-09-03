@@ -26,7 +26,7 @@ jobs:
         experimental: [false]
 
         include:
-          # Complement the builds run via the matrix with high/low WP builds for PHP 5.6 and PHP 7.4 up to 8.3.
+          # Complement the builds run via the matrix with high/low WP builds for PHP 7.4 up to 8.3.
           # PHP 8.4 is beta-supported since WP 6.7.
           - php: '8.4'
             wp: 'latest'
@@ -71,27 +71,7 @@ jobs:
           - php: '7.4'
             wp: '5.4'
             experimental: false
-          # PHP 5.6 was supported up to WP 6.2.
-          - php: '5.6'
-            wp: '6.2'
-            experimental: false
-          - php: '5.6'
-            wp: '5.2'
-            experimental: false
-          # PHP 7.0 was supported up to WP 6.5.
-          - php: '7.0'
-            wp: '5.2'
-            experimental: false
-          - php: '7.0'
-            wp: '6.5'
-            experimental: false
-          # PHP 7.1 was supported up to WP 6.5.
-          - php: '7.1'
-            wp: '5.2'
-            experimental: false
-          - php: '7.1'
-            wp: '6.5'
-            experimental: false
+          # Removed PHP 5.6, 7.0 and 7.1 as minimum supported version is 7.2.
 
           # Complement the builds run via the matrix with some additional builds against specific WP versions.
           - php: '7.3'
@@ -99,9 +79,6 @@ jobs:
             experimental: false
           - php: '7.2'
             wp: '5.7'
-            experimental: false
-          - php: '7.0'
-            wp: '5.8'
             experimental: false
           - php: '7.4'
             wp: '6.3'
