@@ -47,7 +47,8 @@ async function getAvailablePort() {
 
 async function startPlayground(port) {
 	const pluginSrc = path.resolve(__dirname, '../src');
-	const blueprint = path.resolve(__dirname, '../playground.blueprint.json');
+	const muPluginsSrc = path.resolve(__dirname, './helpers/mu-plugins');
+	const blueprint = path.resolve(__dirname, './playground.blueprint.json');
 	const siteUrl = `http://127.0.0.1:${port}`;
 
 	const { server } = await runCLI({
@@ -58,6 +59,10 @@ async function startPlayground(port) {
 			{
 				hostPath: pluginSrc,
 				vfsPath: '/wordpress/wp-content/plugins/wordpress-importer',
+			},
+			{
+				hostPath: muPluginsSrc,
+				vfsPath: '/wordpress/wp-content/mu-plugins',
 			},
 		],
 		port,
@@ -324,7 +329,16 @@ async function verifyImportedData(page, request, { expectAuthorSlug = 'admin' } 
 	const commentsRes = await request.get(abs(`/wp-json/wp/v2/comments?post=${post.id}`));
 	expect(commentsRes.ok()).toBeTruthy();
 	const comments = await commentsRes.json();
-	expect(comments.some((c) => (c.content?.rendered || '').includes('Great post'))).toBeTruthy();
+	const targetComment =
+		comments.find((c) => (c.content?.rendered || '').includes('Great post')) || comments[0];
+	expect(targetComment).toBeTruthy();
+	// Assert comment meta exposed by our MU plugin is present
+	expect(targetComment).toMatchObject({
+		meta: expect.objectContaining({
+			rating: 5,
+			note: 'vip',
+		}),
+	});
 
 	// Verify page exists
 	const pageRes = await request.get(

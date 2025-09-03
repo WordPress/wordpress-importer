@@ -112,7 +112,15 @@
         <wp:comment_approved>1</wp:comment_approved>
         <wp:comment_type></wp:comment_type>
         <wp:comment_parent>0</wp:comment_parent>
-        <wp:comment_user_id>0</wp:comment_user_id>
+      <wp:comment_user_id>0</wp:comment_user_id>
+      <wp:commentmeta>
+        <wp:meta_key><![CDATA[rating]]></wp:meta_key>
+        <wp:meta_value><![CDATA[5]]></wp:meta_value>
+      </wp:commentmeta>
+      <wp:commentmeta>
+        <wp:meta_key><![CDATA[note]]></wp:meta_key>
+        <wp:meta_value><![CDATA[vip]]></wp:meta_value>
+      </wp:commentmeta>
       </wp:comment>
     </item>
 
@@ -144,4 +152,3 @@
 
   </channel>
 </rss>
-
