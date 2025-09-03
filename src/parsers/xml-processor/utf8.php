@@ -82,18 +82,18 @@ function utf8_is_valid_byte_stream( $bytes, $starting_byte = 0, &$first_error_by
  * @since {WP_VERSION}
  *
  */
-function utf8_code_point_count( $bytes, &$first_error_byte_at = null ) {
+function utf8_codepoint_count( $bytes, &$first_error_byte_at = null ) {
 	$state         = UTF8_DECODER_ACCEPT;
 	$last_start_at = 0;
 	$count         = 0;
-	$code_point    = 0;
+	$codepoint    = 0;
 
 	for ( $at = 0, $end = strlen( $bytes ); $at < $end && UTF8_DECODER_REJECT !== $state; $at++ ) {
 		if ( UTF8_DECODER_ACCEPT === $state ) {
 			$last_start_at = $at;
 		}
 
-		$state = utf8_decoder_apply_byte( $bytes[ $at ], $state, $code_point );
+		$state = utf8_decoder_apply_byte( $bytes[ $at ], $state, $codepoint );
 
 		if ( UTF8_DECODER_ACCEPT === $state ) {
 			++$count;
@@ -124,13 +124,13 @@ function utf8_code_point_count( $bytes, &$first_error_byte_at = null ) {
  *                             <li>`UTF8_DECODER_ACCEPT`: Decoder is ready for a new code point.<br>
  *                             <li>`UTF8_DECODER_REJECT`: An error has occurred.<br>
  *                             Any other positive value: Decoder is waiting for additional bytes.
- * @param  int|null  $code_point  Optional. If provided, will accumulate the decoded code point as
+ * @param  int|null  $codepoint  Optional. If provided, will accumulate the decoded code point as
  *                             each byte is processed. If not provided or unable to decode, will
  *                             not be set, or will be set to invalid and unusable data.
  *
  * @return int Next decoder state after processing the current byte.
  */
-function utf8_decoder_apply_byte( $byte, $state, &$code_point = 0 ) {
+function utf8_decoder_apply_byte( $byte, $state, &$codepoint = 0 ) {
 	/**
 	 * State classification and transition table for UTF-8 validation.
 	 *
@@ -161,9 +161,9 @@ function utf8_decoder_apply_byte( $byte, $state, &$code_point = 0 ) {
 
 	$byte       = ord( $byte );
 	$type       = ord( $state_table[ $byte ] );
-	$code_point = ( UTF8_DECODER_ACCEPT === $state )
+	$codepoint = ( UTF8_DECODER_ACCEPT === $state )
 		? ( ( 0xFF >> $type ) & $byte )
-		: ( ( $byte & 0x3F ) | ( $code_point << 6 ) );
+		: ( ( $byte & 0x3F ) | ( $codepoint << 6 ) );
 
 	return ord( $state_table[ 256 + ( $state * 16 ) + $type ] );
 }
@@ -187,27 +187,27 @@ function utf8_substr( $text, $from = 0, $length = null ) {
 	}
 
 	$position_in_input  = 0;
-	$code_point_at      = 0;
+	$codepoint_at      = 0;
 	$end_byte           = strlen( $text );
 	$buffer             = '';
-	$seen_code_points   = 0;
-	$sliced_code_points = 0;
+	$seen_codepoints   = 0;
+	$sliced_codepoints = 0;
 	$decoder_state      = UTF8_DECODER_ACCEPT;
 
 	// Get to the start of the string.
-	while ( $position_in_input < $end_byte && $seen_code_points < $length ) {
+	while ( $position_in_input < $end_byte && $seen_codepoints < $length ) {
 		$decoder_state = utf8_decoder_apply_byte( $text[ $position_in_input ], $decoder_state );
 
 		if ( UTF8_DECODER_ACCEPT === $decoder_state ) {
 			++$position_in_input;
 
-			if ( $seen_code_points >= $from ) {
-				++$sliced_code_points;
-				$buffer .= substr( $text, $code_point_at, $position_in_input - $code_point_at );
+			if ( $seen_codepoints >= $from ) {
+				++$sliced_codepoints;
+				$buffer .= substr( $text, $codepoint_at, $position_in_input - $codepoint_at );
 			}
 
-			++$seen_code_points;
-			$code_point_at = $position_in_input;
+			++$seen_codepoints;
+			$codepoint_at = $position_in_input;
 		} elseif ( UTF8_DECODER_REJECT === $decoder_state ) {
 			// "\u{FFFD}" is not supported in PHP 5.6.
 			$buffer .= "\xEF\xBF\xBD";
@@ -217,8 +217,8 @@ function utf8_substr( $text, $from = 0, $length = null ) {
 				$decoder_state = utf8_decoder_apply_byte( $text[ ++$position_in_input ], UTF8_DECODER_ACCEPT );
 			}
 
-			++$seen_code_points;
-			$code_point_at = $position_in_input;
+			++$seen_codepoints;
+			$codepoint_at = $position_in_input;
 			$decoder_state = UTF8_DECODER_ACCEPT;
 		} else {
 			++$position_in_input;
@@ -248,7 +248,7 @@ function utf8_codepoint_at( $text, $byte_offset = 0, &$matched_bytes = 0 ) {
 	}
 
 	$position_in_input = $byte_offset;
-	$code_point_at     = $byte_offset;
+	$codepoint_at     = $byte_offset;
 	$end_byte          = strlen( $text );
 	$codepoint         = null;
 	$decoder_state     = UTF8_DECODER_ACCEPT;
@@ -259,7 +259,7 @@ function utf8_codepoint_at( $text, $byte_offset = 0, &$matched_bytes = 0 ) {
 
 		if ( UTF8_DECODER_ACCEPT === $decoder_state ) {
 			++$position_in_input;
-			$codepoint = utf8_ord( substr( $text, $code_point_at, $position_in_input - $code_point_at ) );
+			$codepoint = utf8_ord( substr( $text, $codepoint_at, $position_in_input - $codepoint_at ) );
 			break;
 		} elseif ( UTF8_DECODER_REJECT === $decoder_state ) {
 			// "\u{FFFD}" is not supported in PHP 5.6.
@@ -312,52 +312,52 @@ function utf8_ord( $character ) {
  *
  * Example:
  *
- *     '🅰' === WP_HTML_Decoder::code_point_to_utf8_bytes( 0x1f170 );
+ *     '🅰' === WP_HTML_Decoder::codepoint_to_utf8_bytes( 0x1f170 );
  *
  *     // Half of a surrogate pair is an invalid code point.
- *     '�' === WP_HTML_Decoder::code_point_to_utf8_bytes( 0xd83c );
+ *     '�' === WP_HTML_Decoder::codepoint_to_utf8_bytes( 0xd83c );
  *
  * @since 6.6.0
  *
  * @see https://www.rfc-editor.org/rfc/rfc3629 For the UTF-8 standard.
  *
- * @param int $code_point Which code point to convert.
+ * @param int $codepoint Which code point to convert.
  * @return string Converted code point, or `�` if invalid.
  */
-function code_point_to_utf8_bytes( $code_point ) {
+function codepoint_to_utf8_bytes( $codepoint ) {
 	// Pre-check to ensure a valid code point.
 	if (
-		$code_point <= 0 ||
-		( $code_point >= 0xD800 && $code_point <= 0xDFFF ) ||
-		$code_point > 0x10FFFF
+		$codepoint <= 0 ||
+		( $codepoint >= 0xD800 && $codepoint <= 0xDFFF ) ||
+		$codepoint > 0x10FFFF
 	) {
 		return '�';
 	}
 
-	if ( $code_point <= 0x7F ) {
-		return chr( $code_point );
+	if ( $codepoint <= 0x7F ) {
+		return chr( $codepoint );
 	}
 
-	if ( $code_point <= 0x7FF ) {
-		$byte1 = chr( ( $code_point >> 6 ) | 0xC0 );
-		$byte2 = chr( $code_point & 0x3F | 0x80 );
+	if ( $codepoint <= 0x7FF ) {
+		$byte1 = chr( ( $codepoint >> 6 ) | 0xC0 );
+		$byte2 = chr( $codepoint & 0x3F | 0x80 );
 
 		return "{$byte1}{$byte2}";
 	}
 
-	if ( $code_point <= 0xFFFF ) {
-		$byte1 = chr( ( $code_point >> 12 ) | 0xE0 );
-		$byte2 = chr( ( $code_point >> 6 ) & 0x3F | 0x80 );
-		$byte3 = chr( $code_point & 0x3F | 0x80 );
+	if ( $codepoint <= 0xFFFF ) {
+		$byte1 = chr( ( $codepoint >> 12 ) | 0xE0 );
+		$byte2 = chr( ( $codepoint >> 6 ) & 0x3F | 0x80 );
+		$byte3 = chr( $codepoint & 0x3F | 0x80 );
 
 		return "{$byte1}{$byte2}{$byte3}";
 	}
 
 	// Any values above U+10FFFF are eliminated above in the pre-check.
-	$byte1 = chr( ( $code_point >> 18 ) | 0xF0 );
-	$byte2 = chr( ( $code_point >> 12 ) & 0x3F | 0x80 );
-	$byte3 = chr( ( $code_point >> 6 ) & 0x3F | 0x80 );
-	$byte4 = chr( $code_point & 0x3F | 0x80 );
+	$byte1 = chr( ( $codepoint >> 18 ) | 0xF0 );
+	$byte2 = chr( ( $codepoint >> 12 ) & 0x3F | 0x80 );
+	$byte3 = chr( ( $codepoint >> 6 ) & 0x3F | 0x80 );
+	$byte4 = chr( $codepoint & 0x3F | 0x80 );
 
 	return "{$byte1}{$byte2}{$byte3}{$byte4}";
 }
