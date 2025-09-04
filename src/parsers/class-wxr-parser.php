@@ -47,7 +47,7 @@ class WXR_Parser {
 		}
 
 		// use regular expressions if nothing else available or this is bad XML
-		$parser = new WXR_Parser_Regex();
+		$parser = new WXR_Parser_XML_Processor();
 		return $parser->parse( $file );
 	}
 }
