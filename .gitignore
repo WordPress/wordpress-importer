@@ -5,3 +5,5 @@
 .cache/phpcs.cache
 /phpunit.xml
 /.phpunit.result.cache
+node_modules
+test-results

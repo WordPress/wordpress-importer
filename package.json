@@ -1,0 +1,9 @@
+{
+  "name": "wordpress-importer-e2e",
+  "private": true,
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@wp-playground/cli": "^2.0.15",
+    "playwright": "^1.55.0"
+  }
+}
