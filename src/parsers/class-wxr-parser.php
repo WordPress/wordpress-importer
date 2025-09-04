@@ -24,7 +24,7 @@ class WXR_Parser {
 				$parser = new $available_parsers[ $preferred_parser ]();
 				$result = $parser->parse( $file );
 			} else {
-				_doing_it_wrong( __FUNCTION__, sprintf( __( 'Invalid parser specified: %s', 'wordpress-importer' ), $preferred_parser ), '0.7.0' );
+				_doing_it_wrong( __FUNCTION__, sprintf( __( 'Invalid parser specified: %s', 'wordpress-importer' ), $preferred_parser ), '0.9.0' );
 				$result = new WP_Error( 'invalid_parser', sprintf( __( 'Invalid parser specified: %s', 'wordpress-importer' ), $preferred_parser ) );
 			}
 
