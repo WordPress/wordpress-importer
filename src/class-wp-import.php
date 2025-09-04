@@ -704,8 +704,8 @@ class WP_Import extends WP_Importer {
 					'post_author'    => $author,
 					'post_date'      => $post['post_date'],
 					'post_date_gmt'  => $post['post_date_gmt'],
-					'post_content'   => $post['post_content'],
-					'post_excerpt'   => $post['post_excerpt'],
+					'post_content'   => $this->rewrite_base_url( $post['post_content'] ),
+					'post_excerpt'   => $this->rewrite_base_url( $post['post_excerpt'] ),
 					'post_title'     => $post['post_title'],
 					'post_status'    => $post['status'],
 					'post_name'      => $post['post_name'],
@@ -905,6 +905,38 @@ class WP_Import extends WP_Importer {
 		}
 
 		unset( $this->posts );
+	}
+
+	private function rewrite_base_url( $content ) {
+		$base_url = $this->base_url;
+		$p        = new WordPress\DataLiberation\BlockMarkup\BlockMarkupUrlProcessor( $content, $base_url );
+		while ( $p->next_url() ) {
+			// Relative URLs are okay at this stage.
+			if ( ! $p->get_raw_url() ) {
+				continue;
+			}
+
+			// No need to rewrite anchor links.
+			if ( substr( $p->get_raw_url(), 0, 1 ) === '#' ) {
+				continue;
+			}
+
+			// Absolute URLs are required at this stage.
+			if ( ! $p->get_parsed_url() ) {
+				continue;
+			}
+
+			$url_detected_in_content = $p->get_parsed_url();
+			if ( ! WordPress\DataLiberation\URL\is_child_url_of( $url_detected_in_content, $this->base_url ) ) {
+				return $content;
+			}
+			// @TODO: Parse just once, not every time
+			$p->replace_base_url( 
+				WordPress\DataLiberation\URL\WPURL::parse( $this->base_url ), 
+				WordPress\DataLiberation\URL\WPURL::parse( get_site_url() )
+			);
+		}
+		return $p->get_updated_html();
 	}
 
 	/**

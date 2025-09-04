@@ -11,6 +11,7 @@
 
 	<file>.</file>
 	<exclude-pattern>*/vendor/</exclude-pattern>
+	<exclude-pattern>*/vendor-patched/</exclude-pattern>
 
 	<!-- Only check PHP files. -->
 	<arg name="extensions" value="php"/>
