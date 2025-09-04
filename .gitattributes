@@ -12,6 +12,11 @@
 /phpunit.xml.dist export-ignore
 /phpunit/ export-ignore
 /composer.json export-ignore
+/e2e export-ignore
+/package.json export-ignore
+/package-lock.json export-ignore
+/playwright.config.js export-ignore
+/.prettierrc.json export-ignore
 
 #
 # Auto detect text files and perform LF normalization
