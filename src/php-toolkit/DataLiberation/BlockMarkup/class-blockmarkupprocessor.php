@@ -97,7 +97,8 @@ class BlockMarkupProcessor extends WP_HTML_Tag_Processor {
 	 * @return string|null The token type or null if no token
 	 */
 	public function get_token_type(): ?string {
-		switch ( $this->parser_state ) {
+		$token_type = parent::get_token_type();
+		switch ( $token_type ) {
 			case self::STATE_COMMENT:
 				if ( null !== $this->block_name ) {
 					return '#block-comment';
@@ -106,7 +107,7 @@ class BlockMarkupProcessor extends WP_HTML_Tag_Processor {
 				return '#comment';
 
 			default:
-				return parent::get_token_type();
+				return $token_type;
 		}
 	}
 

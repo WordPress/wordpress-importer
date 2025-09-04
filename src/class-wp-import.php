@@ -6,6 +6,9 @@
  * @subpackage Importer
  */
 
+use WordPress\DataLiberation\BlockMarkup\BlockMarkupUrlProcessor;
+use function WordPress\DataLiberation\URL\is_child_url_of;
+
 /**
  * WordPress importer class.
  */
@@ -22,6 +25,8 @@ class WP_Import extends WP_Importer {
 	public $categories = array();
 	public $tags       = array();
 	public $base_url   = '';
+	public $base_url_parsed = null;
+	public $site_url_parsed = null;
 
 	// mappings from old information to new
 	public $processed_authors    = array();
@@ -126,6 +131,8 @@ class WP_Import extends WP_Importer {
 		$this->categories = $import_data['categories'];
 		$this->tags       = $import_data['tags'];
 		$this->base_url   = esc_url( $import_data['base_url'] );
+		$this->base_url_parsed = WordPress\DataLiberation\URL\WPURL::parse( $import_data['base_url'] );
+		$this->site_url_parsed = WordPress\DataLiberation\URL\WPURL::parse( get_site_url() );
 
 		wp_defer_term_counting( true );
 		wp_defer_comment_counting( true );
@@ -907,33 +914,60 @@ class WP_Import extends WP_Importer {
 		unset( $this->posts );
 	}
 
+	/**
+	 * Replaces URLs in the imported content. Rewrites the original
+	 * site's base URL to the current site's base URL.
+	 * 
+	 * For example, if the imported WXR file has the following tag:
+	 * 
+	 *     <wp:base_site_url>https://playground.internal/path</wp:base_site_url>
+	 * 
+	 * and the current site's base URL is https://mynewsite.com,
+	 * then the following post content:
+	 * 
+	 *     <p>
+	 *         <a href="https://playground.internal/path/work-with-us">Work with us</a>
+	 *         <a href="/path/contact-us">Contact us</a>
+	 *     </p>
+	 * 
+	 * will be rewritten as:
+	 * 
+	 *     <p>
+	 *         <a href="https://mynewsite.com/work-with-us">Work with us</a>
+	 *         <a href="/contact-us">Contact us</a>
+	 *     </p>
+	 * 
+	 * This takes into account punycode, relative and absolute URLs, unicode normalization,
+	 * and other typical gotchas.
+	 * 
+	 * @param string $content The content to rewrite.
+	 * @return string The rewritten content.
+	 */
 	private function rewrite_base_url( $content ) {
-		$base_url = $this->base_url;
-		$p        = new WordPress\DataLiberation\BlockMarkup\BlockMarkupUrlProcessor( $content, $base_url );
+		$p = new BlockMarkupUrlProcessor( $content, $this->base_url );
 		while ( $p->next_url() ) {
-			// Relative URLs are okay at this stage.
-			if ( ! $p->get_raw_url() ) {
-				continue;
-			}
-
 			// No need to rewrite anchor links.
 			if ( substr( $p->get_raw_url(), 0, 1 ) === '#' ) {
 				continue;
 			}
 
-			// Absolute URLs are required at this stage.
+			// If the URL cannot be parsed, there's nothing to rewrite.
 			if ( ! $p->get_parsed_url() ) {
 				continue;
 			}
 
 			$url_detected_in_content = $p->get_parsed_url();
-			if ( ! WordPress\DataLiberation\URL\is_child_url_of( $url_detected_in_content, $this->base_url ) ) {
-				return $content;
+			$is_child_url = is_child_url_of(
+				$url_detected_in_content,
+				$this->base_url_parsed
+			);
+			if ( ! $is_child_url ) {
+				continue;
 			}
-			// @TODO: Parse just once, not every time
-			$p->replace_base_url( 
-				WordPress\DataLiberation\URL\WPURL::parse( $this->base_url ), 
-				WordPress\DataLiberation\URL\WPURL::parse( get_site_url() )
+
+			$p->replace_base_url(
+				$this->site_url_parsed,
+				$this->base_url_parsed
 			);
 		}
 		return $p->get_updated_html();
