@@ -6,8 +6,7 @@
  * @subpackage Importer
  */
 
-use WordPress\DataLiberation\BlockMarkup\BlockMarkupUrlProcessor;
-use function WordPress\DataLiberation\URL\is_child_url_of;
+use function WordPress\DataLiberation\URL\wp_rewrite_urls;
 
 /**
  * WordPress importer class.
@@ -131,8 +130,29 @@ class WP_Import extends WP_Importer {
 		$this->categories = $import_data['categories'];
 		$this->tags       = $import_data['tags'];
 		$this->base_url   = esc_url( $import_data['base_url'] );
-		$this->base_url_parsed = WordPress\DataLiberation\URL\WPURL::parse( $import_data['base_url'] );
-		$this->site_url_parsed = WordPress\DataLiberation\URL\WPURL::parse( get_site_url() );
+
+		/**
+		 * Add trailing slash to base URL and site URL. Without the trailing slashes,
+		 * the WHATWG URL spec tells us compare the parent pathname. For example:
+		 * 
+		 * > is_child_url_of("https://example.com/path", "https://example.com/path-2") 
+		 * true
+		 * 
+		 * The example above actually ignores the `/path` and `/path-2` parts and only
+		 * compares the `example.com` parts.
+		 * 
+		 * With the trailing slashes, the result is false:
+		 * 
+		 * > is_child_url_of("https://example.com/path/", "https://example.com/path-2/") 
+		 * false
+		 * 
+		 * In this scenario, `/path/` and `/path-2/` are considered in the comparison.
+		 */
+		$base_url_with_trailing_slash = rtrim( $import_data['base_url'], '/' ) . '/';
+		$this->base_url_parsed = WordPress\DataLiberation\URL\WPURL::parse( $base_url_with_trailing_slash );
+
+		$site_url_with_trailing_slash = rtrim( get_site_url(), '/' ) . '/';
+		$this->site_url_parsed = WordPress\DataLiberation\URL\WPURL::parse( $site_url_with_trailing_slash );
 
 		wp_defer_term_counting( true );
 		wp_defer_comment_counting( true );
@@ -706,13 +726,16 @@ class WP_Import extends WP_Importer {
 					$author = (int) get_current_user_id();
 				}
 
+				$url_mapping = [
+					$this->base_url_parsed->toString() => $this->site_url_parsed
+				];
 				$postdata = array(
 					'import_id'      => $post['post_id'],
 					'post_author'    => $author,
 					'post_date'      => $post['post_date'],
 					'post_date_gmt'  => $post['post_date_gmt'],
-					'post_content'   => $this->rewrite_base_url( $post['post_content'] ),
-					'post_excerpt'   => $this->rewrite_base_url( $post['post_excerpt'] ),
+					'post_content'   => wp_rewrite_urls( [ 'block_markup' => $post['post_content'], 'url-mapping' => $url_mapping ] ),
+					'post_excerpt'   => wp_rewrite_urls( [ 'block_markup' => $post['post_excerpt'], 'url-mapping' => $url_mapping ] ),
 					'post_title'     => $post['post_title'],
 					'post_status'    => $post['status'],
 					'post_name'      => $post['post_name'],
@@ -912,65 +935,6 @@ class WP_Import extends WP_Importer {
 		}
 
 		unset( $this->posts );
-	}
-
-	/**
-	 * Replaces URLs in the imported content. Rewrites the original
-	 * site's base URL to the current site's base URL.
-	 * 
-	 * For example, if the imported WXR file has the following tag:
-	 * 
-	 *     <wp:base_site_url>https://playground.internal/path</wp:base_site_url>
-	 * 
-	 * and the current site's base URL is https://mynewsite.com,
-	 * then the following post content:
-	 * 
-	 *     <p>
-	 *         <a href="https://playground.internal/path/work-with-us">Work with us</a>
-	 *         <a href="/path/contact-us">Contact us</a>
-	 *     </p>
-	 * 
-	 * will be rewritten as:
-	 * 
-	 *     <p>
-	 *         <a href="https://mynewsite.com/work-with-us">Work with us</a>
-	 *         <a href="/contact-us">Contact us</a>
-	 *     </p>
-	 * 
-	 * This takes into account punycode, relative and absolute URLs, unicode normalization,
-	 * and other typical gotchas.
-	 * 
-	 * @param string $content The content to rewrite.
-	 * @return string The rewritten content.
-	 */
-	private function rewrite_base_url( $content ) {
-		$p = new BlockMarkupUrlProcessor( $content, $this->base_url );
-		while ( $p->next_url() ) {
-			// No need to rewrite anchor links.
-			if ( substr( $p->get_raw_url(), 0, 1 ) === '#' ) {
-				continue;
-			}
-
-			// If the URL cannot be parsed, there's nothing to rewrite.
-			if ( ! $p->get_parsed_url() ) {
-				continue;
-			}
-
-			$url_detected_in_content = $p->get_parsed_url();
-			$is_child_url = is_child_url_of(
-				$url_detected_in_content,
-				$this->base_url_parsed
-			);
-			if ( ! $is_child_url ) {
-				continue;
-			}
-
-			$p->replace_base_url(
-				$this->site_url_parsed,
-				$this->base_url_parsed
-			);
-		}
-		return $p->get_updated_html();
 	}
 
 	/**

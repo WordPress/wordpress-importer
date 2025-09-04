@@ -5,9 +5,9 @@ const { runCLI } = require('@wp-playground/cli');
 const path = require('path');
 const net = require('net');
 const http = require('http');
+const fs = require('fs');
 
 let PLAYGROUND_URL = '';
-let stopPlayground = async () => {};
 
 function sleep(ms) {
 	return new Promise((r) => setTimeout(r, ms));
@@ -45,13 +45,16 @@ async function getAvailablePort() {
 	});
 }
 
-async function startPlayground(port) {
+async function startPlayground(port, parser = null) {
 	const pluginSrc = path.resolve(__dirname, '../src');
 	const muPluginsSrc = path.resolve(__dirname, './helpers/mu-plugins');
-	const blueprint = path.resolve(__dirname, './playground.blueprint.json');
+	const blueprint = JSON.parse(
+		fs.readFileSync(path.resolve(__dirname, './playground.blueprint.json'), 'utf8')
+	);
 	const siteUrl = `http://127.0.0.1:${port}`;
 
-	const { server } = await runCLI({
+	// Create blueprint config with optional parser constant
+	const blueprintConfig = {
 		command: 'server',
 		blueprint,
 		blueprintMayReadAdjacentFiles: true,
@@ -68,7 +71,17 @@ async function startPlayground(port) {
 		port,
 		siteUrl,
 		quiet: true,
-	});
+	};
+
+	// Add constants if parser is specified
+	if (parser) {
+		blueprintConfig.blueprint.constants = {
+			...(blueprintConfig.blueprint?.constants || {}),
+			PREFERRED_WXR_PARSER: parser,
+		};
+	}
+
+	const { server } = await runCLI(blueprintConfig);
 
 	await waitUntilAlive(`${siteUrl}/wp-admin/`);
 
@@ -83,18 +96,8 @@ function abs(u) {
 	return `${PLAYGROUND_URL}${u}`;
 }
 
-test.beforeEach(async () => {
-	const port = await getAvailablePort();
-	const server = await startPlayground(port);
-	PLAYGROUND_URL = server.url;
-	stopPlayground = server.stop;
-});
-
-test.afterEach(async () => {
-	await stopPlayground();
-});
-
-test('imports a simple WXR file', async ({ page, request }) => {
+// Generic test function for WXR import
+async function testWXRImport({ page, request, filename, expectations }) {
 	// Extra time for CI/Playground
 	test.setTimeout(240000);
 	// Navigate to wp-admin (Playground --login flag should pre-authenticate)
@@ -120,8 +123,8 @@ test('imports a simple WXR file', async ({ page, request }) => {
 		await page.goto(abs('/wp-admin/admin.php?import=wordpress'));
 	}
 
-	// Upload the WXR file using existing fixture
-	const wxrPath = path.resolve(__dirname, './fixtures/wxr-simple.xml');
+	// Upload the WXR file using provided filename
+	const wxrPath = path.resolve(__dirname, `./fixtures/${filename}`);
 	// WP uses id="upload" and name="import"; target either one.
 	const fileInput = page.locator('#upload, input[type="file"][name="import"]');
 	await fileInput.waitFor({ state: 'visible' });
@@ -145,19 +148,18 @@ test('imports a simple WXR file', async ({ page, request }) => {
 
 	// Verify imported content thoroughly via REST API
 	const res = await request.get(
-		abs('/wp-json/wp/v2/posts?_embed=1&search=Road%20Not%20Taken&per_page=10')
+		abs(
+			`/wp-json/wp/v2/posts?_embed=1&search=${encodeURIComponent(
+				expectations.searchTerm
+			)}&per_page=10`
+		)
 	);
 	expect(res.ok()).toBeTruthy();
 	const posts = await res.json();
 	expect(Array.isArray(posts) && posts.length > 0).toBeTruthy();
 
 	// Find the specific imported post by unique title/content markers
-	const post = posts.find(
-		(p) =>
-			p?.title?.rendered?.includes('The Road Not Taken') &&
-			p?.title?.rendered?.includes('Robert Frost') &&
-			p?.content?.rendered?.includes('Two roads diverged in a yellow wood')
-	);
+	const post = posts.find((p) => p?.title?.rendered?.includes(expectations.titleContains));
 	expect(post, 'Imported post not found by title/content').toBeTruthy();
 
 	// Single-statement comparison with normalized snapshot
@@ -174,11 +176,7 @@ test('imports a simple WXR file', async ({ page, request }) => {
 		content: post.content?.rendered || '',
 		authorSlug: author?.slug,
 		categories: categories.map((t) => (t.slug || t.name || '').toString().toLowerCase()),
-		linksPresent: [
-			'https://playground.internal/path/one',
-			'https://playground.internal/path-not-taken',
-			'https://w.org',
-		].every((href) => (post.content?.rendered || '').includes(`href="${href}"`)),
+		linksPresent: true,
 		comment_status: post.comment_status,
 		ping_status: post.ping_status,
 	};
@@ -187,10 +185,10 @@ test('imports a simple WXR file', async ({ page, request }) => {
 		status: 'publish',
 		type: 'post',
 		sticky: false,
-		title: expect.stringContaining('The Road Not Taken'),
+		title: expect.stringContaining(expectations.titleContains),
 		slug: expect.stringMatching(/^hello-world/),
 		datePrefix: '2024-06-05',
-		content: expect.stringContaining('Two roads diverged in a yellow wood'),
+		content: expect.stringContaining(expectations.contentContains),
 		authorSlug: 'admin',
 		categories: expect.arrayContaining(['uncategorized']),
 		linksPresent: true,
@@ -201,9 +199,12 @@ test('imports a simple WXR file', async ({ page, request }) => {
 	// Public single view renders expected content
 	expect(typeof post.link).toBe('string');
 	await page.goto(post.link);
-	await expect(page.getByText('Two roads diverged in a yellow wood')).toBeVisible();
-	await expect(page.getByRole('link', { name: 'One' })).toBeVisible();
-	await expect(page.locator('a[href="https://w.org"]')).toBeVisible();
+	await expect(page.getByText(expectations.contentContains)).toBeVisible();
+
+	// Run additional expectations if provided
+	if (expectations.additionalChecks) {
+		await expectations.additionalChecks(page, post);
+	}
 
 	// Admin list shows the imported post and author
 	await page.goto(abs('/wp-admin/edit.php'));
@@ -214,11 +215,13 @@ test('imports a simple WXR file', async ({ page, request }) => {
 		await page.waitForURL('**/wp-admin/**');
 		await page.goto(abs('/wp-admin/edit.php'));
 	}
-	const row = page.locator('table.wp-list-table tbody tr', { hasText: 'Road Not Taken' });
+	const row = page.locator('table.wp-list-table tbody tr', {
+		hasText: expectations.titleContains,
+	});
 	await expect(row).toHaveCount(1);
-	await expect(row.locator('.row-title')).toContainText('Road Not Taken');
+	await expect(row.locator('.row-title')).toContainText(expectations.titleContains);
 	await expect(row).toContainText('admin');
-});
+}
 
 async function loginIfNeeded(page) {
 	if (page.url().includes('wp-login.php')) {
@@ -353,16 +356,113 @@ async function verifyImportedData(page, request, { expectAuthorSlug = 'admin' } 
 	await expect(page.getByText('comprehensive post body')).toBeVisible();
 }
 
-test.describe('Comprehensive WXR import', () => {
-	test('imports with explicit author mapping to admin', async ({ page, request }) => {
-		test.setTimeout(300000);
-		await performImport(page, { mapAuthorsToAdmin: true });
-		await verifyImportedData(page, request, { expectAuthorSlug: 'admin' });
-	});
+// Define available parsers
+const PARSERS = ['simplexml']; //], 'xml', 'regex', 'xmlprocessor'];
 
-	test('imports with default author mapping (current user)', async ({ page, request }) => {
-		test.setTimeout(300000);
-		await performImport(page, { mapAuthorsToAdmin: false });
-		await verifyImportedData(page, request, { expectAuthorSlug: 'alice' });
+// Run tests for each parser
+PARSERS.forEach((parser) => {
+	test.describe(`WXR Import with ${parser} parser`, () => {
+		let stopPlayground;
+		test.beforeEach(async () => {
+			const port = await getAvailablePort();
+			const server = await startPlayground(port, parser);
+			PLAYGROUND_URL = server.url;
+			stopPlayground = server.stop;
+		});
+
+		test.afterEach(async () => {
+			await stopPlayground();
+		});
+
+		test(`imports a simple WXR file using ${parser} parser`, async ({ page, request }) => {
+			await testWXRImport({
+				page,
+				request,
+				filename: 'wxr-simple.xml',
+				expectations: {
+					searchTerm: 'Road Not Taken',
+					titleContains: 'The Road Not Taken',
+					contentContains: `<p>Two roads diverged in a yellow wood,<br>And sorry I could not travel both</p>
+
+
+					
+<p>
+<a href="${PLAYGROUND_URL}/one">One</a> seemed great, but <a href="https://playground.internal/path-not-taken">the other</a> seemed great too.
+There was also a <a href="https://w.org">third</a> option, but it was not as great.
+
+${PLAYGROUND_URL.substring('http://'.length)}/one was the best choice.
+https://playground.internal/path-not-taken was the second best choice.
+</p>`,
+					additionalChecks: async (page, post) => {
+						await expect(page.getByRole('link', { name: 'One' })).toBeVisible();
+						await expect(page.locator('a[href="https://w.org"]')).toBeVisible();
+					},
+				},
+			});
+		});
+
+		test(`imports a base URL rewriting WXR file using ${parser} parser`, async ({
+			page,
+			request,
+		}) => {
+			await testWXRImport({
+				page,
+				request,
+				filename: 'wxr-base-url-rewriting.xml',
+				expectations: {
+					searchTerm: 'Road Not Taken',
+					titleContains: 'The Road Not Taken',
+					contentContains: `<p>
+    <!-- Rewrites URLs that match the base URL -->
+    URLs to rewrite:
+
+    ${PLAYGROUND_URL}
+    ${PLAYGROUND_URL}
+    ${PLAYGROUND_URL}
+    ${PLAYGROUND_URL}/
+    <a href="${PLAYGROUND_URL}/wp-content/image.png">Test</a>
+
+    <!-- Correctly ignores URLs that are similar to the base URL but do not match it -->
+    This isn&#8217;t migrated: https://🚀-science.comcast/science <br>
+    Or this: super-🚀-science.com/science
+</p>
+
+
+
+<img decoding=\"async\" src=\"${PLAYGROUND_URL}/wp-content/image.png\">`,
+					additionalChecks: async (page, post) => {
+						// Verify that the content contains the expected text from the base URL rewriting test file
+						const content = post.content?.rendered || '';
+						expect(content).toContain('URLs to rewrite');
+						expect(content).toContain('science');
+						// Check that URLs that shouldn't be migrated are mentioned
+						expect(content).toContain("This isn't migrated");
+						// Verify the post contains the specific content from the XML
+						await expect(page.getByText('URLs to rewrite')).toBeVisible();
+					},
+				},
+			});
+		});
+
+		test.describe('Comprehensive WXR import', () => {
+			test('imports with explicit author mapping to admin', async ({ page, request }) => {
+				test.setTimeout(300000);
+				await performImport(page, { mapAuthorsToAdmin: true });
+				await verifyImportedData(page, request, { expectAuthorSlug: 'admin' });
+			});
+
+			test('imports with default author mapping (current user)', async ({
+				page,
+				request,
+			}) => {
+				if (parser === 'regex') {
+					test.skip('WP_Regex_Parser has troubles with mapping authors');
+					return;
+				}
+				test.setTimeout(300000);
+				await performImport(page, { mapAuthorsToAdmin: false });
+				await verifyImportedData(page, request, { expectAuthorSlug: 'alice' });
+			});
+		});
 	});
 });

@@ -5,13 +5,31 @@ namespace WordPress\DataLiberation\URL;
 use Rowbot\URL\URL;
 use WordPress\DataLiberation\BlockMarkup\BlockMarkupUrlProcessor;
 
-
 /**
- * Migrate URLs in post content. See WPRewriteUrlsTests for
- * specific examples. TODO: A better description.
- *
- * Example:
- *
+ * Replaces URLs in the imported content. Rewrites the original
+ * site's base URL to the current site's base URL.
+ * 
+ * For example, if the imported WXR file has the following tag:
+ * 
+ *     <wp:base_site_url>https://playground.internal/path</wp:base_site_url>
+ * 
+ * and the current site's base URL is https://mynewsite.com,
+ * then the following post content:
+ * 
+ *     <p>
+ *         <a href="https://playground.internal/path/work-with-us">Work with us</a>
+ *         <a href="/path/contact-us">Contact us</a>
+ *     </p>
+ * 
+ * will be rewritten as:
+ * 
+ *     <p>
+ *         <a href="https://mynewsite.com/work-with-us">Work with us</a>
+ *         <a href="/contact-us">Contact us</a>
+ *     </p>
+ * 
+ * Here's another example:
+ * 
  * ```php
  * php > wp_rewrite_urls([
  *   'block_markup' => '<!-- wp:image {"src": "http://legacy-blog.com/image.jpg"} -->',
@@ -21,6 +39,9 @@ use WordPress\DataLiberation\BlockMarkup\BlockMarkupUrlProcessor;
  * ])
  * <!-- wp:image {"src":"https:\/\/modern-webstore.org\/image.jpg"} -->
  * ```
+ * 
+ * This takes into account punycode, relative and absolute URLs, unicode normalization,
+ * and other typical gotchas.
  *
  * @TODO Use a proper JSON parser and encoder to:
  * * Support UTF-16 characters
@@ -45,7 +66,17 @@ function wp_rewrite_urls( $options ) {
 
 	$p = new BlockMarkupUrlProcessor( $options['block_markup'], $options['base_url'] );
 	while ( $p->next_url() ) {
+		// No need to rewrite anchor links.
+		if ( substr( $p->get_raw_url(), 0, 1 ) === '#' ) {
+			continue;
+		}
+
+		// If the URL cannot be parsed, there's nothing to rewrite.
 		$parsed_url = $p->get_parsed_url();
+		if ( ! $parsed_url ) {
+			continue;
+		}
+
 		foreach ( $url_mapping as $mapping ) {
 			if ( is_child_url_of( $parsed_url, $mapping['from_url'] ) ) {
 				$p->replace_base_url( $mapping['to_url'] );
