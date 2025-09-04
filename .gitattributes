@@ -16,7 +16,7 @@
 /package.json export-ignore
 /package-lock.json export-ignore
 /playwright.config.js export-ignore
-/.prettierrc.json export-ignore
+/.prettierrc export-ignore
 
 #
 # Auto detect text files and perform LF normalization
