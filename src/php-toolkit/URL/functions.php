@@ -113,7 +113,7 @@ function urldecode_n( $input, $decode_n ) {
 		}
 
 		$last_at = $at;
-		$at      += strcspn( $input, '%', $at );
+		$at     += strcspn( $input, '%', $at );
 		// Consume bytes except for the percent sign.
 		$result .= substr( $input, $last_at, $at - $last_at );
 
@@ -122,7 +122,7 @@ function urldecode_n( $input, $decode_n ) {
 			break;
 		}
 
-		++ $at;
+		++$at;
 		if ( $at > strlen( $input ) ) {
 			break;
 		}

@@ -123,7 +123,7 @@ class BlockMarkupUrlProcessor extends BlockMarkupProcessor {
 			return false;
 		}
 
-		while ( ++ $this->inspected_url_attribute_idx < count( self::URL_ATTRIBUTES[ $tag ] ) ) {
+		while ( ++$this->inspected_url_attribute_idx < count( self::URL_ATTRIBUTES[ $tag ] ) ) {
 			$attr = self::URL_ATTRIBUTES[ $tag ][ $this->inspected_url_attribute_idx ];
 			if ( false === $attr ) {
 				return false;

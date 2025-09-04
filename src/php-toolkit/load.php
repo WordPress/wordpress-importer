@@ -29,6 +29,23 @@ if ( ! class_exists( 'WordPress\XML\XMLProcessor' ) ) {
 		require_once __DIR__ . '/BlockParser/class-wpblockparser.php';
 	}
 
+	if ( ! class_exists( 'WP_HTML_Tag_Processor' ) ) {
+		require_once __DIR__ . '/HTML/class-wphtmlactiveformattingelements.php';
+		require_once __DIR__ . '/HTML/class-wphtmlattributetoken.php';
+		require_once __DIR__ . '/HTML/class-wphtmldecoder.php';
+		require_once __DIR__ . '/HTML/class-wphtmldoctypeinfo.php';
+		require_once __DIR__ . '/HTML/class-wphtmlopenelements.php';
+		require_once __DIR__ . '/HTML/class-wphtmlprocessorstate.php';
+		require_once __DIR__ . '/HTML/class-wphtmlspan.php';
+		require_once __DIR__ . '/HTML/class-wphtmlstackevent.php';
+		require_once __DIR__ . '/HTML/class-wphtmltextreplacement.php';
+		require_once __DIR__ . '/HTML/class-wphtmltoken.php';
+		require_once __DIR__ . '/HTML/class-wphtmlunsupportedexception.php';
+		require_once __DIR__ . '/HTML/class-wptokenmap.php';
+		require_once __DIR__ . '/HTML/class-wphtmltagprocessor.php';
+		require_once __DIR__ . '/HTML/class-wphtmlprocessor.php';
+	}
+
 	// URL helpers and processors
 	require_once __DIR__ . '/URL/class-wpurl.php';
 	require_once __DIR__ . '/URL/functions.php';

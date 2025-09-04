@@ -294,13 +294,13 @@ class BlockMarkupProcessor extends WP_HTML_Tag_Processor {
 		}
 		$this->get_updated_html();
 
-		$this->block_name                = null;
-		$this->block_attributes          = null;
-		$this->block_attribute_paths     = null;
-		$this->block_attribute_index     = -1;
-		$this->block_closer              = false;
-		$this->self_closing_flag         = false;
-		$this->block_attributes_updated  = false;
+		$this->block_name               = null;
+		$this->block_attributes         = null;
+		$this->block_attribute_paths    = null;
+		$this->block_attribute_index    = -1;
+		$this->block_closer             = false;
+		$this->self_closing_flag        = false;
+		$this->block_attributes_updated = false;
 
 		while ( true ) {
 			if ( parent::next_token() === false ) {
@@ -340,7 +340,7 @@ class BlockMarkupProcessor extends WP_HTML_Tag_Processor {
 		// Blocks closers start with the solidus character (`/`).
 		if ( '/' === $text[ $at ] ) {
 			$this->block_closer = true;
-			++ $at;
+			++$at;
 		}
 
 		// Blocks start with wp.
@@ -370,7 +370,7 @@ class BlockMarkupProcessor extends WP_HTML_Tag_Processor {
 			return true;
 		}
 		$name = substr( $text, $name_starts_at, $name_length + 3 );
-		$at   += $name_length;
+		$at  += $name_length;
 
 		// Assume no attributes by default.
 		$attributes = array();
@@ -522,7 +522,7 @@ class BlockMarkupProcessor extends WP_HTML_Tag_Processor {
 			$this->block_attribute_index = -1;
 		}
 
-		$this->block_attribute_index++;
+		++$this->block_attribute_index;
 
 		return isset( $this->block_attribute_paths[ $this->block_attribute_index ] );
 	}
@@ -579,9 +579,9 @@ class BlockMarkupProcessor extends WP_HTML_Tag_Processor {
 
 		$path = $this->block_attribute_paths[ $this->block_attribute_index ];
 
-		$ref =& $this->block_attributes;
+		$ref   =& $this->block_attributes;
 		$depth = count( $path );
-		for ( $i = 0; $i < $depth - 1; $i ++ ) {
+		for ( $i = 0; $i < $depth - 1; $i++ ) {
 			$segment = $path[ $i ];
 			if ( ! is_array( $ref ) || ! array_key_exists( $segment, $ref ) ) {
 				return false; // Path is invalid.
@@ -589,8 +589,8 @@ class BlockMarkupProcessor extends WP_HTML_Tag_Processor {
 			$ref =& $ref[ $segment ];
 		}
 
-		$last_key            = $path[ $depth - 1 ];
-		$ref[ $last_key ]    = $new_value;
+		$last_key                       = $path[ $depth - 1 ];
+		$ref[ $last_key ]               = $new_value;
 		$this->block_attributes_updated = true;
 
 		return true;
@@ -608,8 +608,8 @@ class BlockMarkupProcessor extends WP_HTML_Tag_Processor {
 		$paths = array();
 
 		foreach ( $attributes as $key => $value ) {
-			$current_path   = array_merge( $base_path, array( $key ) );
-			$paths[]        = $current_path; // SELF_FIRST: include parent before children.
+			$current_path = array_merge( $base_path, array( $key ) );
+			$paths[]      = $current_path; // SELF_FIRST: include parent before children.
 
 			if ( is_array( $value ) ) {
 				$paths = array_merge( $paths, $this->build_block_attribute_paths( $value, $current_path ) );

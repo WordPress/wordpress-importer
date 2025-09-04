@@ -320,7 +320,7 @@ class URLInTextProcessor {
 				$this->url_starts_at = strlen( $output_buffer );
 				$this->url_length    = strlen( $diff->text );
 			}
-			$output_buffer        .= $diff->text;
+			$output_buffer       .= $diff->text;
 			$bytes_already_copied = $diff->start + $diff->length;
 		}
 

@@ -12,8 +12,8 @@ class WP_Block_Parser_Error extends Exception {
 	private $type;
 
 	const TYPE_SUSPICIOUS_DELIMITER = 'suspicious-delimiter';
-	const TYPE_MISMATCHED_CLOSER = 'mismatched-block-closer';
-	const TYPE_PARSE_ERROR = 'parse-error';
+	const TYPE_MISMATCHED_CLOSER    = 'mismatched-block-closer';
+	const TYPE_PARSE_ERROR          = 'parse-error';
 
 	public function __construct( $message, $type = self::TYPE_PARSE_ERROR, ?Exception $previous = null ) {
 		$this->type = $type;
