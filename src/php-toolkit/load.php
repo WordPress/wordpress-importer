@@ -22,10 +22,12 @@ if ( ! class_exists( 'WordPress\XML\XMLProcessor' ) ) {
 	require_once __DIR__ . '/XML/class-xmlprocessor.php';
 
 	// Block Serialization Parser (used by some DataLiberation processors)
-	require_once __DIR__ . '/BlockParser/class-wpblockparsererror.php';
-	require_once __DIR__ . '/BlockParser/class-wpblockparserblock.php';
-	require_once __DIR__ . '/BlockParser/class-wpblockparserframe.php';
-	require_once __DIR__ . '/BlockParser/class-wpblockparser.php';
+	if ( ! class_exists( 'WP_Block_Parser' ) ) {
+		require_once __DIR__ . '/BlockParser/class-wpblockparsererror.php';
+		require_once __DIR__ . '/BlockParser/class-wpblockparserblock.php';
+		require_once __DIR__ . '/BlockParser/class-wpblockparserframe.php';
+		require_once __DIR__ . '/BlockParser/class-wpblockparser.php';
+	}
 
 	// URL helpers and processors
 	require_once __DIR__ . '/URL/class-wpurl.php';
