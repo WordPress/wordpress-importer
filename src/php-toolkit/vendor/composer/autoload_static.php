@@ -17,6 +17,7 @@ class ComposerStaticInit9801abce1960fa4b71d115bb31b779c7
         array (
             'Rowbot\\URL\\' => 11,
             'Rowbot\\Punycode\\' => 16,
+            'Rowbot\\Idna\\Resource\\' => 21,
             'Rowbot\\Idna\\' => 12,
         ),
         'P' => 
@@ -33,39 +34,43 @@ class ComposerStaticInit9801abce1960fa4b71d115bb31b779c7
     public static $prefixDirsPsr4 = array (
         'Symfony\\Polyfill\\Php80\\' => 
         array (
-            0 => __DIR__ . '/../..' . '/vendor-patched/symfony/polyfill-php80/src',
+            0 => __DIR__ . '/../..' . '/DataLiberation/vendor-patched/symfony/polyfill-php80/src',
         ),
         'Symfony\\Polyfill\\Intl\\Normalizer\\' => 
         array (
-            0 => __DIR__ . '/../..' . '/vendor-patched/symfony/polyfill-intl-normalizer/src',
+            0 => __DIR__ . '/../..' . '/DataLiberation/vendor-patched/symfony/polyfill-intl-normalizer/src',
         ),
         'Symfony\\Polyfill\\Ctype\\' => 
         array (
-            0 => __DIR__ . '/../..' . '/vendor-patched/symfony/polyfill-ctype/src',
+            0 => __DIR__ . '/../..' . '/DataLiberation/vendor-patched/symfony/polyfill-ctype/src',
         ),
         'Rowbot\\URL\\' => 
         array (
-            0 => __DIR__ . '/../..' . '/vendor-patched/rowbot/url/src',
+            0 => __DIR__ . '/../..' . '/DataLiberation/vendor-patched/rowbot/url/src',
         ),
         'Rowbot\\Punycode\\' => 
         array (
-            0 => __DIR__ . '/../..' . '/vendor-patched/rowbot/punycode/src',
+            0 => __DIR__ . '/../..' . '/DataLiberation/vendor-patched/rowbot/punycode/src',
+        ),
+        'Rowbot\\Idna\\Resource\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/DataLiberation/vendor-patched/rowbot/idna/resources',
         ),
         'Rowbot\\Idna\\' => 
         array (
-            0 => __DIR__ . '/../..' . '/vendor-patched/rowbot/idna/src',
+            0 => __DIR__ . '/../..' . '/DataLiberation/vendor-patched/rowbot/idna/src',
         ),
         'Psr\\Log\\' => 
         array (
-            0 => __DIR__ . '/../..' . '/vendor-patched/psr/log/src',
+            0 => __DIR__ . '/../..' . '/DataLiberation/vendor-patched/psr/log/src',
         ),
         'Psr\\EventDispatcher\\' => 
         array (
-            0 => __DIR__ . '/../..' . '/vendor-patched/psr/event-dispatcher/src',
+            0 => __DIR__ . '/../..' . '/DataLiberation/vendor-patched/psr/event-dispatcher/src',
         ),
         'Brick\\Math\\' => 
         array (
-            0 => __DIR__ . '/../..' . '/vendor-patched/brick/math/src',
+            0 => __DIR__ . '/../..' . '/DataLiberation/vendor-patched/brick/math/src',
         ),
     );
 
