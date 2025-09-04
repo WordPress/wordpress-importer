@@ -1,0 +1,22 @@
+{
+    "name": "wordpress/php-toolkit",
+    "autoload": {
+        "classmap": [
+            "."
+        ],
+        "exclude-from-classmap": [
+            "./DataLiberation/vendor-patched/"
+        ],
+        "psr-4": {
+            "Brick\\Math\\": "vendor-patched/brick/math/src/",
+            "Psr\\Log\\": "vendor-patched/psr/log/src/",
+            "Psr\\EventDispatcher\\": "vendor-patched/psr/event-dispatcher/src/",
+            "Rowbot\\Idna\\": "vendor-patched/rowbot/idna/src/",
+            "Rowbot\\Punycode\\": "vendor-patched/rowbot/punycode/src/",
+            "Rowbot\\URL\\": "vendor-patched/rowbot/url/src/",
+            "Symfony\\Polyfill\\Php80\\": "vendor-patched/symfony/polyfill-php80/src/",
+            "Symfony\\Polyfill\\Intl\\Normalizer\\": "vendor-patched/symfony/polyfill-intl-normalizer/src/",
+            "Symfony\\Polyfill\\Ctype\\": "vendor-patched/symfony/polyfill-ctype/src/"
+        }
+    }
+}
