@@ -8,10 +8,6 @@
 
 use WordPress\ByteStream\ReadStream\FileReadStream;
 
-if ( ! class_exists( 'WordPress\XML\XMLProcessor' ) ) {
-	require_once __DIR__ . '/xml-processor/load.php';
-}
-
 /**
  * WXR Parser that uses the XMLProcessor component.
  */
