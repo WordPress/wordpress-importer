@@ -422,10 +422,10 @@ PARSERS.forEach((parser) => {
 
 <!-- wp:paragraph -->
 <p>
-<a href="https://playground.internal/path/one">One</a> seemed great, but <a href="https://playground.internal/path-not-taken">the other</a> seemed great too.
+<a href="${PLAYGROUND_URL}/one">One</a> seemed great, but <a href="${PLAYGROUND_URL}/path-not-taken">the other</a> seemed great too.
 There was also a <a href="https://w.org">third</a> option, but it was not as great.
 
-playground.internal/path/one was the best choice.
+${PLAYGROUND_URL.slice('http://'.length)}/one was the best choice.
 https://playground.internal/path-not-taken was the second best choice.
 </p>
 <!-- /wp:paragraph -->`;
@@ -473,11 +473,11 @@ https://playground.internal/path-not-taken was the second best choice.
     <!-- Rewrites URLs that match the base URL -->
     URLs to rewrite:
 
-    https://🚀-science.com/science
-    https://🚀-science.com/%73%63ience
-    https://xn---science-7f85g.com/science
-    &#104;ttps://xn---&#115;&#99;ience-7f85g.com/%73%63ience/
-    <a href="&#104;ttps://xn---&#115;&#99;ience-7f85g.com/science/wp-content/image.png">Test</a>
+    ${PLAYGROUND_URL}
+    ${PLAYGROUND_URL}
+    ${PLAYGROUND_URL}
+    ${PLAYGROUND_URL}/
+    <a href=\"${PLAYGROUND_URL}/wp-content/image.png\">Test</a>
 
     <!-- Correctly ignores URLs that are similar to the base URL but do not match it -->
     This isn't migrated: https://🚀-science.comcast/science <br>
@@ -485,8 +485,8 @@ https://playground.internal/path-not-taken was the second best choice.
 </p>
 <!-- /wp:paragraph -->
 
-<!-- wp:image {"src":"https://🚀-science.com/%73%63ience/wp-content/image.png"} -->
-<img src="&#104;ttps://xn---&#115;&#99;ience-7f85g.com/science/wp-content/image.png">
+<!-- wp:image {"src":"https://🚀-science.com/science/wp-content/image.png"} -->
+<img src="${PLAYGROUND_URL}/wp-content/image.png">
 <!-- /wp:image -->`;
 			expect(normalizeBlockMarkup(normalized.rawContent)).toContain(
 				normalizeBlockMarkup(baseUrlExpected)

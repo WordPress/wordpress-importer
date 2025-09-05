@@ -746,7 +746,7 @@ class WP_Import extends WP_Importer {
 				);
 
 				if ( 
-					$this->base_url_parsed && 
+					$this->base_url_parsed 
 					/**
 					 * WordPress 6.7 introduced WP_HTML_Tag_Processor::set_modifiable_text
 					 * required for wp_rewrite_urls to work. We could also offer a graceful
@@ -757,13 +757,13 @@ class WP_Import extends WP_Importer {
 					 * polyfill shipped with this plugin and make URL rewriting work in any
 					 * WordPress version.
 					 */
-					version_compare( get_bloginfo( 'version' ), '6.7', '>=' )
+					&& version_compare( get_bloginfo( 'version' ), '6.7', '>=' )
 				) {
 					$url_mapping = [
 						$this->base_url_parsed->toString() => $this->site_url_parsed
 					];
-					$post['post_content'] = wp_rewrite_urls( [ 'block_markup' => $post['post_content'], 'url-mapping' => $url_mapping ] );
-					$post['post_excerpt'] = wp_rewrite_urls( [ 'block_markup' => $post['post_excerpt'], 'url-mapping' => $url_mapping ] );
+					$postdata['post_content'] = wp_rewrite_urls( [ 'block_markup' => $postdata['post_content'], 'url-mapping' => $url_mapping ] );
+					$postdata['post_excerpt'] = wp_rewrite_urls( [ 'block_markup' => $postdata['post_excerpt'], 'url-mapping' => $url_mapping ] );
 				}
 				
 				$original_post_id = $post['post_id'];
