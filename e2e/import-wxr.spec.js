@@ -145,6 +145,39 @@ async function getPosts(request, searchTerm = '', perPage = 10) {
 	return posts;
 }
 
+// Helper: Get posts via REST API with context=edit (raw content)
+async function getPostsEdit(page, searchTerm = '', perPage = 10) {
+	// Ensure we're on admin to access a REST nonce
+	await page.goto(abs('/wp-admin/'));
+	await loginIfNeeded(page);
+
+	// Try to read REST API nonce from the admin page
+	const nonce = await page.evaluate(() => {
+		return (
+			(window && window.wpApiSettings && window.wpApiSettings.nonce) ||
+			(document.querySelector('meta[name="_wpnonce"]') &&
+				document.querySelector('meta[name="_wpnonce"]').getAttribute('content')) ||
+			(document.querySelector('meta[name="x-wp-nonce"]') &&
+				document.querySelector('meta[name="x-wp-nonce"]').getAttribute('content')) ||
+			(document.querySelector('meta[name="wp-rest-nonce"]') &&
+				document.querySelector('meta[name="wp-rest-nonce"]').getAttribute('content')) ||
+			''
+		);
+	});
+
+	const searchParam = searchTerm ? `&search=${encodeURIComponent(searchTerm)}` : '';
+	const url = abs(`/wp-json/wp/v2/posts?_embed=1${searchParam}&per_page=${perPage}&context=edit`);
+	const headers = nonce ? { 'X-WP-Nonce': nonce } : {};
+	const res = await page.request.get(url, { headers });
+	if (!res.ok()) {
+		const bodyText = await res.text();
+		throw new Error(`Failed to fetch posts with context=edit: ${res.status()} ${bodyText}`);
+	}
+	const posts = await res.json();
+	expect(Array.isArray(posts)).toBeTruthy();
+	return posts;
+}
+
 // Helper: Find post by title
 function findPostByTitle(posts, titleContains) {
 	const post = posts.find((p) => p?.title?.rendered?.includes(titleContains));
@@ -166,6 +199,7 @@ function normalizePostData(post) {
 		slug: post.slug || '',
 		datePrefix: (post.date_gmt || '').slice(0, 10),
 		content: post.content?.rendered || '',
+		rawContent: post.content?.raw ?? post.content?.rendered ?? '',
 		authorSlug: author?.slug,
 		categories: categories.map((t) => (t.slug || t.name || '').toString().toLowerCase()),
 		comment_status: post.comment_status,
@@ -347,8 +381,8 @@ PARSERS.forEach((parser) => {
 			// Run the import
 			await runWxrImport(page, 'wxr-simple.xml');
 
-			// Get posts and find the imported one
-			const posts = await getPosts(request, 'Road Not Taken');
+			// Get posts (edit context to access raw block markup) and find the imported one
+			const posts = await getPostsEdit(page, 'Road Not Taken');
 			expect(posts.length).toBeGreaterThan(0);
 			const post = findPostByTitle(posts, 'The Road Not Taken');
 
@@ -367,16 +401,21 @@ PARSERS.forEach((parser) => {
 				ping_status: expect.stringMatching(/^(open|closed)$/),
 			});
 
-			expect(normalized.content).toContain(
-				`<p>Two roads diverged in a yellow wood,<br>And sorry I could not travel both</p>`
-			);
-			expect(normalized.content).toContain(`<p>
-<a href="${PLAYGROUND_URL}/one">One</a> seemed great, but <a href="https://playground.internal/path-not-taken">the other</a> seemed great too.
+			// Snapshot the exact raw block markup for stability across whitespace/encoding quirks
+			expect(normalized.rawContent).toEqual(`<!-- wp:paragraph -->
+<p>Two roads diverged in a yellow wood,<br>And sorry I could not travel both</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>
+<a href="https://playground.internal/path/one">One</a> seemed great, but <a href="https://playground.internal/path-not-taken">the other</a> seemed great too.
 There was also a <a href="https://w.org">third</a> option, but it was not as great.
 
-${PLAYGROUND_URL.substring('http://'.length)}/one was the best choice.
+playground.internal/path/one was the best choice.
 https://playground.internal/path-not-taken was the second best choice.
-</p>`);
+</p>
+<!-- /wp:paragraph -->
+`);
 
 			// Verify frontend rendering
 			await goToPostFrontend(page, post);
@@ -393,7 +432,7 @@ https://playground.internal/path-not-taken was the second best choice.
 			await runWxrImport(page, 'wxr-base-url-rewriting.xml');
 
 			// Get posts and find the imported one
-			const posts = await getPosts(request, 'Road Not Taken');
+			const posts = await getPostsEdit(page, 'Road Not Taken');
 			expect(posts.length).toBeGreaterThan(0);
 			const post = findPostByTitle(posts, 'The Road Not Taken');
 
@@ -412,22 +451,28 @@ https://playground.internal/path-not-taken was the second best choice.
 				ping_status: expect.stringMatching(/^(open|closed)$/),
 			});
 
-			// Verify content contains expected URL rewriting test content
-			const content = post.content?.rendered || '';
-			expect(content).toContain(`<p>
+			// Snapshot the exact raw block markup for stability across whitespace/encoding quirks
+			expect(normalized.rawContent).toEqual(`<!-- wp:paragraph -->
+<p>
     <!-- Rewrites URLs that match the base URL -->
     URLs to rewrite:
 
-    ${PLAYGROUND_URL}
-    ${PLAYGROUND_URL}
-    ${PLAYGROUND_URL}
-    ${PLAYGROUND_URL}/
-    <a href="${PLAYGROUND_URL}/wp-content/image.png">Test</a>
+    https://🚀-science.com/science
+    https://🚀-science.com/%73%63ience
+    https://xn---science-7f85g.com/science
+    &#104;ttps://xn---&#115;&#99;ience-7f85g.com/%73%63ience/
+    <a href="&#104;ttps://xn---&#115;&#99;ience-7f85g.com/science/wp-content/image.png">Test</a>
 
     <!-- Correctly ignores URLs that are similar to the base URL but do not match it -->
-    This isn&#8217;t migrated: https://🚀-science.comcast/science <br>
+    This isn't migrated: https://🚀-science.comcast/science <br>
     Or this: super-🚀-science.com/science
-</p>`);
+</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:image {"src":"https://🚀-science.com/%73%63ience/wp-content/image.png"} -->
+<img src="&#104;ttps://xn---&#115;&#99;ience-7f85g.com/science/wp-content/image.png">
+<!-- /wp:image -->
+`);
 
 			// Verify frontend rendering
 			await goToPostFrontend(page, post);
