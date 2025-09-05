@@ -5,7 +5,7 @@ Tags: importer, wordpress
 Requires at least: 5.2
 Tested up to: 6.7.2
 Requires PHP: 5.6
-Stable tag: 0.8.4
+Stable tag: 0.9.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -39,6 +39,11 @@ If you would prefer to do things manually then follow these instructions:
 1. Go to the Tools -> Import screen, click on WordPress
 
 == Changelog ==
+
+= 0.9.0 =
+
+* Introduce a new XML parser class `WXR_Parser_XML_Processor` that replaces the
+  deprecated `WXR_Parser_Regex` class.
 
 = 0.8.4 =
 * Fix a bug on deserialization of untrusted input.
