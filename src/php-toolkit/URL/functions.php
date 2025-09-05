@@ -8,28 +8,28 @@ use WordPress\DataLiberation\BlockMarkup\BlockMarkupUrlProcessor;
 /**
  * Replaces URLs in the imported content. Rewrites the original
  * site's base URL to the current site's base URL.
- * 
+ *
  * For example, if the imported WXR file has the following tag:
- * 
+ *
  *     <wp:base_site_url>https://playground.internal/path</wp:base_site_url>
- * 
+ *
  * and the current site's base URL is https://mynewsite.com,
  * then the following post content:
- * 
+ *
  *     <p>
  *         <a href="https://playground.internal/path/work-with-us">Work with us</a>
  *         <a href="/path/contact-us">Contact us</a>
  *     </p>
- * 
+ *
  * will be rewritten as:
- * 
+ *
  *     <p>
  *         <a href="https://mynewsite.com/work-with-us">Work with us</a>
  *         <a href="/contact-us">Contact us</a>
  *     </p>
- * 
+ *
  * Here's another example:
- * 
+ *
  * ```php
  * php > wp_rewrite_urls([
  *   'block_markup' => '<!-- wp:image {"src": "http://legacy-blog.com/image.jpg"} -->',
@@ -39,7 +39,7 @@ use WordPress\DataLiberation\BlockMarkup\BlockMarkupUrlProcessor;
  * ])
  * <!-- wp:image {"src":"https:\/\/modern-webstore.org\/image.jpg"} -->
  * ```
- * 
+ *
  * This takes into account punycode, relative and absolute URLs, unicode normalization,
  * and other typical gotchas.
  *

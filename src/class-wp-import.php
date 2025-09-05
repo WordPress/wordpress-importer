@@ -745,7 +745,20 @@ class WP_Import extends WP_Importer {
 					'post_password'  => $post['post_password'],
 				);
 
-				if ( $this->base_url_parsed ) {
+				if ( 
+					$this->base_url_parsed && 
+					/**
+					 * WordPress 6.7 introduced WP_HTML_Tag_Processor::set_modifiable_text
+					 * required for wp_rewrite_urls to work. We could also offer a graceful
+					 * downgrade and support versions down to WordPress 6.5 where the required
+					 * WP_HTML_Tag_Processor::get_token_type() method was introduced.
+					 * 
+					 * Alternatively, it might be possible to just rely on the HTML Processor
+					 * polyfill shipped with this plugin and make URL rewriting work in any
+					 * WordPress version.
+					 */
+					version_compare( get_bloginfo( 'version' ), '6.7', '>=' )
+				) {
 					$url_mapping = [
 						$this->base_url_parsed->toString() => $this->site_url_parsed
 					];
