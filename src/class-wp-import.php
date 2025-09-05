@@ -726,16 +726,13 @@ class WP_Import extends WP_Importer {
 					$author = (int) get_current_user_id();
 				}
 
-				$url_mapping = [
-					$this->base_url_parsed->toString() => $this->site_url_parsed
-				];
 				$postdata = array(
 					'import_id'      => $post['post_id'],
 					'post_author'    => $author,
 					'post_date'      => $post['post_date'],
 					'post_date_gmt'  => $post['post_date_gmt'],
-					'post_content'   => wp_rewrite_urls( [ 'block_markup' => $post['post_content'], 'url-mapping' => $url_mapping ] ),
-					'post_excerpt'   => wp_rewrite_urls( [ 'block_markup' => $post['post_excerpt'], 'url-mapping' => $url_mapping ] ),
+					'post_content'   => $post['post_content'],
+					'post_excerpt'   => $post['post_excerpt'],
 					'post_title'     => $post['post_title'],
 					'post_status'    => $post['status'],
 					'post_name'      => $post['post_name'],
@@ -748,6 +745,14 @@ class WP_Import extends WP_Importer {
 					'post_password'  => $post['post_password'],
 				);
 
+				if ( $this->base_url_parsed ) {
+					$url_mapping = [
+						$this->base_url_parsed->toString() => $this->site_url_parsed
+					];
+					$post['post_content'] = wp_rewrite_urls( [ 'block_markup' => $post['post_content'], 'url-mapping' => $url_mapping ] );
+					$post['post_excerpt'] = wp_rewrite_urls( [ 'block_markup' => $post['post_excerpt'], 'url-mapping' => $url_mapping ] );
+				}
+				
 				$original_post_id = $post['post_id'];
 				$postdata         = apply_filters( 'wp_import_post_data_processed', $postdata, $post );
 
