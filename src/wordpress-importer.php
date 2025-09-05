@@ -6,7 +6,7 @@
  * Description:       Import posts, pages, comments, custom fields, categories, tags and more from a WordPress export file.
  * Author:            wordpressdotorg
  * Author URI:        https://wordpress.org/
- * Version:           0.8.4
+ * Version:           0.9.0
  * Requires at least: 5.2
  * Requires PHP:      7.2
  * Text Domain:       wordpress-importer
@@ -45,7 +45,13 @@ require_once __DIR__ . '/parsers/class-wxr-parser-simplexml.php';
 /** WXR_Parser_XML class */
 require_once __DIR__ . '/parsers/class-wxr-parser-xml.php';
 
-/** WXR_Parser_Regex class */
+/**
+ * WXR_Parser_Regex class
+ * @deprecated 0.9.0 Use WXR_Parser_XML_Processor instead. The WXR_Parser_Regex class
+ *             is no longer used by the importer or maintained with bug fixes. The only
+ *             reason it is still included in the codebase is for backwards compatibility
+ *             with plugins that directly reference it.
+ */
 require_once __DIR__ . '/parsers/class-wxr-parser-regex.php';
 
 /** WXR_Parser_XML_Processor class */

@@ -1,0 +1,19 @@
+{
+	"$schema": "https://playground.wordpress.net/blueprint-schema.json",
+    "landingPage": "/wp-admin/",
+    "preferredVersions": {
+        "php": "8.3",
+        "wp": "latest"
+    },
+    "steps": [
+        {
+            "step": "login"
+        },
+        {
+            "step": "activatePlugin",
+            "pluginPath": "wordpress-importer/wordpress-importer.php"
+        }
+    ]
+}
+
+
