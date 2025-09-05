@@ -36,6 +36,10 @@ if ( ! class_exists( 'WP_Importer' ) ) {
 /** Functions missing in older WordPress versions. */
 require_once __DIR__ . '/compat.php';
 
+if ( ! class_exists( 'WordPress\XML\XMLProcessor' ) ) {
+	require_once __DIR__ . '/php-toolkit/load.php';
+}
+
 /** WXR_Parser class */
 require_once __DIR__ . '/parsers/class-wxr-parser.php';
 

@@ -6,6 +6,8 @@
  * @subpackage Importer
  */
 
+use function WordPress\DataLiberation\URL\wp_rewrite_urls;
+
 /**
  * WordPress importer class.
  */
@@ -22,6 +24,8 @@ class WP_Import extends WP_Importer {
 	public $categories = array();
 	public $tags       = array();
 	public $base_url   = '';
+	public $base_url_parsed = null;
+	public $site_url_parsed = null;
 
 	// mappings from old information to new
 	public $processed_authors    = array();
@@ -126,6 +130,29 @@ class WP_Import extends WP_Importer {
 		$this->categories = $import_data['categories'];
 		$this->tags       = $import_data['tags'];
 		$this->base_url   = esc_url( $import_data['base_url'] );
+
+		/**
+		 * Add trailing slash to base URL and site URL. Without the trailing slashes,
+		 * the WHATWG URL spec tells us compare the parent pathname. For example:
+		 * 
+		 * > is_child_url_of("https://example.com/path", "https://example.com/path-2") 
+		 * true
+		 * 
+		 * The example above actually ignores the `/path` and `/path-2` parts and only
+		 * compares the `example.com` parts.
+		 * 
+		 * With the trailing slashes, the result is false:
+		 * 
+		 * > is_child_url_of("https://example.com/path/", "https://example.com/path-2/") 
+		 * false
+		 * 
+		 * In this scenario, `/path/` and `/path-2/` are considered in the comparison.
+		 */
+		$base_url_with_trailing_slash = rtrim( $import_data['base_url'], '/' ) . '/';
+		$this->base_url_parsed = WordPress\DataLiberation\URL\WPURL::parse( $base_url_with_trailing_slash );
+
+		$site_url_with_trailing_slash = rtrim( get_site_url(), '/' ) . '/';
+		$this->site_url_parsed = WordPress\DataLiberation\URL\WPURL::parse( $site_url_with_trailing_slash );
 
 		wp_defer_term_counting( true );
 		wp_defer_comment_counting( true );
@@ -718,6 +745,27 @@ class WP_Import extends WP_Importer {
 					'post_password'  => $post['post_password'],
 				);
 
+				if ( 
+					$this->base_url_parsed && 
+					/**
+					 * WordPress 6.7 introduced WP_HTML_Tag_Processor::set_modifiable_text
+					 * required for wp_rewrite_urls to work. We could also offer a graceful
+					 * downgrade and support versions down to WordPress 6.5 where the required
+					 * WP_HTML_Tag_Processor::get_token_type() method was introduced.
+					 * 
+					 * Alternatively, it might be possible to just rely on the HTML Processor
+					 * polyfill shipped with this plugin and make URL rewriting work in any
+					 * WordPress version.
+					 */
+					version_compare( get_bloginfo( 'version' ), '6.7', '>=' )
+				) {
+					$url_mapping = [
+						$this->base_url_parsed->toString() => $this->site_url_parsed
+					];
+					$post['post_content'] = wp_rewrite_urls( [ 'block_markup' => $post['post_content'], 'url-mapping' => $url_mapping ] );
+					$post['post_excerpt'] = wp_rewrite_urls( [ 'block_markup' => $post['post_excerpt'], 'url-mapping' => $url_mapping ] );
+				}
+				
 				$original_post_id = $post['post_id'];
 				$postdata         = apply_filters( 'wp_import_post_data_processed', $postdata, $post );
 
