@@ -56,9 +56,9 @@ class XMLElement {
 	/**
 	 * Constructor.
 	 *
-	 * @param string $local_name Local name.
-	 * @param string $xml_namespace_prefix Namespace prefix.
-	 * @param string $xml_namespace Full XML namespace name.
+	 * @param string                $local_name Local name.
+	 * @param string                $xml_namespace_prefix Namespace prefix.
+	 * @param string                $xml_namespace Full XML namespace name.
 	 * @param array<string, string> $namespaces_in_scope Namespaces in current element's scope.
 	 */
 	public function __construct( $local_name, $xml_namespace_prefix, $xml_namespace, $namespaces_in_scope ) {

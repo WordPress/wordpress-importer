@@ -54,7 +54,7 @@ class BlockMarkupUrlProcessor extends BlockMarkupProcessor {
 		$this->parsed_url                  = null;
 		$this->inspected_url_attribute_idx = - 1;
 		$this->url_in_text_processor       = null;
-		// Do not reset url_in_text_node_updated – it's reset in get_updated_html() which
+		// Do not reset url_in_text_node_updated – it's reset in get_updated_html() which.
 		// is called in parent::next_token().
 
 		return parent::next_token();
@@ -65,7 +65,7 @@ class BlockMarkupUrlProcessor extends BlockMarkupProcessor {
 			if ( $this->next_url_in_current_token() ) {
 				return true;
 			}
-		} while ( $this->next_token() !== false );
+		} while ( false !== $this->next_token() );
 
 		return false;
 	}
@@ -85,7 +85,7 @@ class BlockMarkupUrlProcessor extends BlockMarkupProcessor {
 	}
 
 	private function next_url_in_text_node() {
-		if ( $this->get_token_type() !== '#text' ) {
+		if ( '#text' !== $this->get_token_type() ) {
 			return false;
 		}
 
@@ -118,7 +118,7 @@ class BlockMarkupUrlProcessor extends BlockMarkupProcessor {
 		$tag = $this->get_tag();
 		if (
 			! array_key_exists( $tag, self::URL_ATTRIBUTES ) &&
-			$tag !== 'INPUT' // type=image => src,
+			'INPUT' !== $tag // type=image => src,.
 		) {
 			return false;
 		}
@@ -181,10 +181,10 @@ class BlockMarkupUrlProcessor extends BlockMarkupProcessor {
 	/**
 	 * Replaces the currently matched URL with a new one.
 	 *
-	 * @param  string  $raw_url  The raw URL.
-	 * @param  URL  $parsed_url  The parsed version of the raw URL. It is required
-	 *                           as $raw_url might be a relative URL pointing to a different
-	 *                           host than this processor's base URL.
+	 * @param  string $raw_url  The raw URL.
+	 * @param  URL    $parsed_url  The parsed version of the raw URL. It is required
+	 *                             as $raw_url might be a relative URL pointing to a different
+	 *                             host than this processor's base URL.
 	 *
 	 * @return bool True if the URL was set, false otherwise.
 	 */
@@ -265,15 +265,15 @@ class BlockMarkupUrlProcessor extends BlockMarkupProcessor {
 		 */
 		$new_raw_url = $updated_url->toString();
 		if (
-			$from_url->pathname[ strlen( $from_url->pathname ) - 1 ] !== '/' &&
-			$from_url->pathname !== '/' &&
-			$from_url->search === '' &&
-			$from_url->hash === ''
+			'/' !== $from_url->pathname[ strlen( $from_url->pathname ) - 1 ] &&
+			'/' !== $from_url->pathname &&
+			'' === $from_url->search &&
+			'' === $from_url->hash
 		) {
 			$new_raw_url = rtrim( $new_raw_url, '/' );
 		}
 		if ( ! $new_raw_url ) {
-			// @TODO: When does this happen? Let's add the test coverage and
+			// @TODO: When does this happen? Let's add the test coverage and.
 			// doubly verify the logic.
 			return false;
 		}
@@ -285,10 +285,10 @@ class BlockMarkupUrlProcessor extends BlockMarkupProcessor {
 		}
 
 		$new_relative_url = $updated_url->pathname;
-		if ( $updated_url->search !== '' ) {
+		if ( '' !== $updated_url->search ) {
 			$new_relative_url .= $updated_url->search;
 		}
-		if ( $updated_url->hash !== '' ) {
+		if ( '' !== $updated_url->hash ) {
 			$new_relative_url .= $updated_url->hash;
 		}
 
@@ -364,7 +364,7 @@ class BlockMarkupUrlProcessor extends BlockMarkupProcessor {
 		'HEAD'       => array( 'profile' ),
 		'HTML'       => array( 'manifest' ),
 		'IFRAME'     => array( 'longdesc', 'src' ),
-		// SVG <image> element
+		// SVG <image> element.
 		'IMAGE'      => array( 'href' ),
 		'IMG'        => array( 'longdesc', 'src', 'usemap', 'lowsrc', 'highsrc' ),
 		'INPUT'      => array( 'src', 'usemap', 'formaction' ),
@@ -383,7 +383,7 @@ class BlockMarkupUrlProcessor extends BlockMarkupProcessor {
 	 *        handling their subsyntax. A generic URL matcher might be good enough.
 	 */
 	public const URL_ATTRIBUTES_WITH_SUBSYNTAX = array(
-		'*'      => array( 'style' ), // background(), background-image()
+		'*'      => array( 'style' ), // background(), background-image().
 		'APPLET' => array( 'archive' ),
 		'IMG'    => array( 'srcset' ),
 		'META'   => array( 'content' ),
