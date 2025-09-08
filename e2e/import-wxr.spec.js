@@ -422,7 +422,7 @@ PARSERS.forEach((parser) => {
 
 <!-- wp:paragraph -->
 <p>
-<a href="${PLAYGROUND_URL}/one">One</a> seemed great, but <a href="${PLAYGROUND_URL}/path-not-taken">the other</a> seemed great too.
+<a href="${PLAYGROUND_URL}/one">One</a> seemed great, but <a href="https://playground.internal/path-not-taken">the other</a> seemed great too.
 There was also a <a href="https://w.org">third</a> option, but it was not as great.
 
 ${PLAYGROUND_URL.slice('http://'.length)}/one was the best choice.
@@ -485,7 +485,7 @@ https://playground.internal/path-not-taken was the second best choice.
 </p>
 <!-- /wp:paragraph -->
 
-<!-- wp:image {"src":"https://🚀-science.com/science/wp-content/image.png"} -->
+<!-- wp:image {"src":"${PLAYGROUND_URL}/wp-content/image.png"} -->
 <img src="${PLAYGROUND_URL}/wp-content/image.png">
 <!-- /wp:image -->`;
 			expect(normalizeBlockMarkup(normalized.rawContent)).toContain(
