@@ -49,4 +49,9 @@
 	<config name="testVersion" value="7.2-"/>
 	<rule ref="PHPCompatibilityWP"/>
 
+	<!-- Disable DiscourageGoto for the HTML toolkit directory only -->
+	<rule ref="Generic.PHP.DiscourageGoto">
+		<exclude-pattern>*/src/php-toolkit/HTML/*</exclude-pattern>
+	</rule>
+
 </ruleset>

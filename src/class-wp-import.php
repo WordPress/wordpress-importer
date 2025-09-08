@@ -18,12 +18,12 @@ class WP_Import extends WP_Importer {
 
 	// information to import from WXR file
 	public $version;
-	public $authors    = array();
-	public $posts      = array();
-	public $terms      = array();
-	public $categories = array();
-	public $tags       = array();
-	public $base_url   = '';
+	public $authors         = array();
+	public $posts           = array();
+	public $terms           = array();
+	public $categories      = array();
+	public $tags            = array();
+	public $base_url        = '';
 	public $base_url_parsed = null;
 	public $site_url_parsed = null;
 
@@ -134,25 +134,25 @@ class WP_Import extends WP_Importer {
 		/**
 		 * Add trailing slash to base URL and site URL. Without the trailing slashes,
 		 * the WHATWG URL spec tells us compare the parent pathname. For example:
-		 * 
-		 * > is_child_url_of("https://example.com/path", "https://example.com/path-2") 
+		 *
+		 * > is_child_url_of("https://example.com/path", "https://example.com/path-2")
 		 * true
-		 * 
+		 *
 		 * The example above actually ignores the `/path` and `/path-2` parts and only
 		 * compares the `example.com` parts.
-		 * 
+		 *
 		 * With the trailing slashes, the result is false:
-		 * 
-		 * > is_child_url_of("https://example.com/path/", "https://example.com/path-2/") 
+		 *
+		 * > is_child_url_of("https://example.com/path/", "https://example.com/path-2/")
 		 * false
-		 * 
+		 *
 		 * In this scenario, `/path/` and `/path-2/` are considered in the comparison.
 		 */
 		$base_url_with_trailing_slash = rtrim( $import_data['base_url'], '/' ) . '/';
-		$this->base_url_parsed = WordPress\DataLiberation\URL\WPURL::parse( $base_url_with_trailing_slash );
+		$this->base_url_parsed        = WordPress\DataLiberation\URL\WPURL::parse( $base_url_with_trailing_slash );
 
 		$site_url_with_trailing_slash = rtrim( get_site_url(), '/' ) . '/';
-		$this->site_url_parsed = WordPress\DataLiberation\URL\WPURL::parse( $site_url_with_trailing_slash );
+		$this->site_url_parsed        = WordPress\DataLiberation\URL\WPURL::parse( $site_url_with_trailing_slash );
 
 		wp_defer_term_counting( true );
 		wp_defer_comment_counting( true );
@@ -267,15 +267,15 @@ class WP_Import extends WP_Importer {
 <?php if ( ! empty( $this->authors ) ) : ?>
 	<h3><?php _e( 'Assign Authors', 'wordpress-importer' ); ?></h3>
 	<p><?php _e( 'To make it simpler for you to edit and save the imported content, you may want to reassign the author of the imported item to an existing user of this site, such as your primary administrator account.', 'wordpress-importer' ); ?></p>
-<?php if ( $this->allow_create_users() ) : ?>
+		<?php if ( $this->allow_create_users() ) : ?>
 	<p><?php printf( __( 'If a new user is created by WordPress, a new password will be randomly generated and the new user&#8217;s role will be set as %s. Manually changing the new user&#8217;s details will be necessary.', 'wordpress-importer' ), esc_html( get_option( 'default_role' ) ) ); ?></p>
-<?php endif; ?>
+	<?php endif; ?>
 	<ol id="authors">
-<?php foreach ( $this->authors as $author ) : ?>
+		<?php foreach ( $this->authors as $author ) : ?>
 		<li><?php $this->author_select( $j++, $author ); ?></li>
-<?php endforeach; ?>
+	<?php endforeach; ?>
 	</ol>
-<?php endif; ?>
+		<?php endif; ?>
 
 <?php if ( $this->allow_fetch_attachments() ) : ?>
 	<h3><?php _e( 'Import Attachments', 'wordpress-importer' ); ?></h3>
@@ -283,7 +283,7 @@ class WP_Import extends WP_Importer {
 		<input type="checkbox" value="1" name="fetch_attachments" id="import-attachments" />
 		<label for="import-attachments"><?php _e( 'Download and import file attachments', 'wordpress-importer' ); ?></label>
 	</p>
-<?php endif; ?>
+		<?php endif; ?>
 
 	<p class="submit"><input type="submit" class="button" value="<?php esc_attr_e( 'Submit', 'wordpress-importer' ); ?>" /></p>
 </form>
@@ -745,27 +745,36 @@ class WP_Import extends WP_Importer {
 					'post_password'  => $post['post_password'],
 				);
 
-				if ( 
-					$this->base_url_parsed 
+				if ( $this->base_url_parsed
 					/**
 					 * WordPress 6.7 introduced WP_HTML_Tag_Processor::set_modifiable_text
 					 * required for wp_rewrite_urls to work. We could also offer a graceful
 					 * downgrade and support versions down to WordPress 6.5 where the required
 					 * WP_HTML_Tag_Processor::get_token_type() method was introduced.
-					 * 
+					 *
 					 * Alternatively, it might be possible to just rely on the HTML Processor
 					 * polyfill shipped with this plugin and make URL rewriting work in any
 					 * WordPress version.
 					 */
 					&& version_compare( get_bloginfo( 'version' ), '6.7', '>=' )
 				) {
-					$url_mapping = [
-						$this->base_url_parsed->toString() => $this->site_url_parsed
-					];
-					$postdata['post_content'] = wp_rewrite_urls( [ 'block_markup' => $postdata['post_content'], 'url-mapping' => $url_mapping ] );
-					$postdata['post_excerpt'] = wp_rewrite_urls( [ 'block_markup' => $postdata['post_excerpt'], 'url-mapping' => $url_mapping ] );
+					$url_mapping              = array(
+						$this->base_url_parsed->toString() => $this->site_url_parsed,
+					);
+					$postdata['post_content'] = wp_rewrite_urls(
+						array(
+							'block_markup' => $postdata['post_content'],
+							'url-mapping'  => $url_mapping,
+						)
+					);
+					$postdata['post_excerpt'] = wp_rewrite_urls(
+						array(
+							'block_markup' => $postdata['post_excerpt'],
+							'url-mapping'  => $url_mapping,
+						)
+					);
 				}
-				
+
 				$original_post_id = $post['post_id'];
 				$postdata         = apply_filters( 'wp_import_post_data_processed', $postdata, $post );
 
