@@ -21,12 +21,10 @@ jobs:
       - name: Install Playwright and deps
         run: |
           npm --version
-          npm install -D @playwright/test
-          npx playwright install --with-deps
+          npm install -D @playwright/test@latest playwright@latest
+          npx playwright install --with-deps chromium
 
       - name: Run E2E tests
-        env:
-          NODE_OPTIONS: --insecure-http-parser
         run: |
           composer run e2e
 
