@@ -13,5 +13,13 @@ module.exports = defineConfig({
 		// Base URL is provided per-test by the Playground fixture
 		headless: true,
 	},
+	projects: [
+		{
+			name: 'chrome',
+			use: {
+				channel: 'chrome',
+			},
+		},
+	],
 	// Server is started per-test via @wp-playground/cli runCLI()
 });

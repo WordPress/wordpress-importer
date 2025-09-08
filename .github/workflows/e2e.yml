@@ -16,13 +16,17 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
+
+      - name: Setup latest Google Chrome
+        uses: browser-actions/setup-chrome@v1
 
       - name: Install Playwright and deps
         run: |
           npm --version
+          node --version
           npm install -D @playwright/test@latest playwright@latest
-          npx playwright install --with-deps chromium
+          npx playwright install-deps
 
       - name: Run E2E tests
         run: |
