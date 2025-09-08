@@ -25,6 +25,8 @@ jobs:
           npx playwright install --with-deps
 
       - name: Run E2E tests
+        env:
+          NODE_OPTIONS: --insecure-http-parser
         run: |
           composer run e2e
 

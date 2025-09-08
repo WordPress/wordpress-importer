@@ -21,7 +21,7 @@
         "phpunit/phpunit": "^5.7.21 || ^6.5 || ^7.5"
     },
     "scripts": {
-        "e2e": "npx -y playwright test"
+        "e2e": "NODE_OPTIONS=--insecure-http-parser npx -y playwright test"
     },
     "config": {
         "allow-plugins": {
