@@ -7,6 +7,8 @@
  */
 
 use function WordPress\DataLiberation\URL\wp_rewrite_urls;
+use WordPress\DataLiberation\Importer\AttachmentDownloader;
+use WordPress\DataLiberation\Importer\AttachmentDownloaderEvent;
 
 /**
  * WordPress importer class.
@@ -40,6 +42,29 @@ class WP_Import extends WP_Importer {
 	public $fetch_attachments = false;
 	public $url_remap         = array();
 	public $featured_images   = array();
+
+	/**
+	 * Downloader to fetch attachments asynchronously.
+	 *
+	 * @var AttachmentDownloader|null
+	 */
+	protected $attachment_downloader = null;
+
+	/**
+	 * Map of remote URL to job info for finalization.
+	 *
+	 * Structure:
+	 * [ remote_url => array(
+	 *     'attachment_id'    => (int),
+	 *     'original_post_id' => (int),
+	 *     'uploads'          => array based on wp_upload_dir(),
+	 *     'relative_path'    => (string),
+	 *     'old_guid'         => (string),
+	 * ) ]
+	 *
+	 * @var array
+	 */
+	protected $attachment_jobs = array();
 
 	/**
 	 * Registered callback function for the WordPress Importer
@@ -88,9 +113,17 @@ class WP_Import extends WP_Importer {
 
 		wp_suspend_cache_invalidation( true );
 		$this->process_categories();
+		$this->maybe_drain_downloader_queue();
 		$this->process_tags();
+		$this->maybe_drain_downloader_queue();
 		$this->process_terms();
+		$this->maybe_drain_downloader_queue();
 		$this->process_posts();
+
+		// Before backfilling, ensure all asynchronous attachment downloads are finalized
+		// so URL remapping and metadata reflect the final state.
+		$this->maybe_drain_downloader_queue();
+		$this->finalize_pending_attachments();
 		wp_suspend_cache_invalidation( false );
 
 		// update incorrect/missing information in the DB
@@ -114,16 +147,20 @@ class WP_Import extends WP_Importer {
 			die();
 		}
 
-		$import_data = $this->parse( $file );
 
-		if ( is_wp_error( $import_data ) ) {
+		echo '<pre>';
+		$parse_result = $this->parse( $file );
+
+		if ( is_wp_error( $parse_result ) ) {
 			echo '<p><strong>' . __( 'Sorry, there has been an error.', 'wordpress-importer' ) . '</strong><br />';
-			echo esc_html( $import_data->get_error_message() ) . '</p>';
+			$error = $parse_result; /** @var WP_Error $error */
+			echo esc_html( $error->get_error_message() ) . '</p>';
 			$this->footer();
 			die();
 		}
 
-		$this->version = $import_data['version'];
+		$import_data      = $parse_result;
+		$this->version    = $import_data['version'];
 		$this->get_authors_from_import( $import_data );
 		$this->posts      = $import_data['posts'];
 		$this->terms      = $import_data['terms'];
@@ -153,6 +190,14 @@ class WP_Import extends WP_Importer {
 
 		$site_url_with_trailing_slash = rtrim( get_site_url(), '/' ) . '/';
 		$this->site_url_parsed        = WordPress\DataLiberation\URL\WPURL::parse( $site_url_with_trailing_slash );
+
+		// Initialize the asynchronous attachment downloader (assumed available) when attachments are allowed and requested.
+		if ( $this->allow_fetch_attachments() && $this->fetch_attachments ) {
+			$uploads = wp_upload_dir();
+			if ( is_array( $uploads ) && empty( $uploads['error'] ) ) {
+				$this->attachment_downloader = new AttachmentDownloader( $uploads['basedir'] );
+			}
+		}
 
 		wp_defer_term_counting( true );
 		wp_defer_comment_counting( true );
@@ -202,13 +247,15 @@ class WP_Import extends WP_Importer {
 		}
 
 		$this->id    = (int) $file['id'];
-		$import_data = $this->parse( $file['file'] );
-		if ( is_wp_error( $import_data ) ) {
+		$parse_result = $this->parse( $file['file'] );
+		if ( is_wp_error( $parse_result ) ) {
 			echo '<p><strong>' . __( 'Sorry, there has been an error.', 'wordpress-importer' ) . '</strong><br />';
-			echo esc_html( $import_data->get_error_message() ) . '</p>';
+			$error = $parse_result; /** @var WP_Error $error */
+			echo esc_html( $error->get_error_message() ) . '</p>';
 			return false;
 		}
 
+		$import_data   = $parse_result;
 		$this->version = $import_data['version'];
 		if ( $this->version > $this->max_wxr_version ) {
 			echo '<div class="error"><p><strong>';
@@ -797,6 +844,7 @@ class WP_Import extends WP_Importer {
 						}
 					}
 
+					$remote_url = trim($remote_url);
 					$comment_post_id = $this->process_attachment( $postdata, $remote_url );
 					$post_id         = $comment_post_id;
 				} else {
@@ -804,6 +852,8 @@ class WP_Import extends WP_Importer {
 					$post_id         = $comment_post_id;
 					do_action( 'wp_import_insert_post', $post_id, $original_post_id, $postdata, $post );
 				}
+
+				// Draining will be handled based on queue size and at boundaries.
 
 				if ( is_wp_error( $post_id ) ) {
 					printf(
@@ -1076,34 +1126,48 @@ class WP_Import extends WP_Importer {
 			$url = rtrim( $this->base_url, '/' ) . $url;
 		}
 
-		$upload = $this->fetch_remote_file( $url, $post );
-		if ( is_wp_error( $upload ) ) {
-			return $upload;
+		// Enqueue the download and create a placeholder attachment.
+		$uploads = wp_upload_dir( $post['upload_date'] );
+		if ( ! ( is_array( $uploads ) && empty( $uploads['error'] ) ) ) {
+			return new WP_Error( 'upload_dir_error', isset( $uploads['error'] ) ? $uploads['error'] : __( 'Upload directory is not available.', 'wordpress-importer' ) );
 		}
 
-		$info = wp_check_filetype( $upload['file'] );
-		if ( $info ) {
-			$post['post_mime_type'] = $info['type'];
-		} else {
-			return new WP_Error( 'attachment_processing_error', __( 'Invalid file type', 'wordpress-importer' ) );
+		$path      = parse_url( $url, PHP_URL_PATH );
+		$file_name = '';
+		if ( is_string( $path ) ) {
+			$file_name = basename( $path );
+		}
+		if ( ! $file_name ) {
+			$file_name = md5( $url );
 		}
 
-		$post['guid'] = $upload['url'];
-
-		// as per wp-admin/includes/upload.php
-		$post_id = wp_insert_attachment( $post, $upload['file'] );
-		wp_update_attachment_metadata( $post_id, wp_generate_attachment_metadata( $post_id, $upload['file'] ) );
-
-		// remap resized image URLs, works by stripping the extension and remapping the URL stub.
-		if ( preg_match( '!^image/!', $info['type'] ) ) {
-			$parts = pathinfo( $url );
-			$name  = basename( $parts['basename'], ".{$parts['extension']}" ); // PATHINFO_FILENAME in PHP 5.2
-
-			$parts_new = pathinfo( $upload['url'] );
-			$name_new  = basename( $parts_new['basename'], ".{$parts_new['extension']}" );
-
-			$this->url_remap[ $parts['dirname'] . '/' . $name ] = $parts_new['dirname'] . '/' . $name_new;
+		// Try to set mime type from the file extension if possible.
+		$wp_filetype = wp_check_filetype( $file_name );
+		if ( ! empty( $wp_filetype['type'] ) ) {
+			$post['post_mime_type'] = $wp_filetype['type'];
 		}
+
+		$unique_name    = wp_unique_filename( $uploads['path'], $file_name );
+		$relative_path  = ltrim( $uploads['subdir'] . '/' . $unique_name, '/' );
+		$expected_url   = rtrim( $uploads['baseurl'], '/' ) . '/' . $relative_path;
+		$expected_abspath = rtrim( $uploads['basedir'], '/' ) . '/' . $relative_path;
+
+		// Always enqueue; we assume async downloader availability.
+		$this->attachment_downloader->enqueue_if_not_exists( $url, $relative_path );
+
+		// Create a placeholder attachment post that will be finalized upon success.
+		$old_guid   = isset( $post['guid'] ) ? $post['guid'] : $url;
+		$post['guid'] = $expected_url;
+		$post_id    = wp_insert_attachment( $post, $expected_abspath );
+
+		// Record job info for finalization when the downloader reports completion.
+		$this->attachment_jobs[ $url ] = array(
+			'attachment_id'    => $post_id,
+			'original_post_id' => isset( $post['import_id'] ) ? (int) $post['import_id'] : 0,
+			'uploads'          => $uploads,
+			'relative_path'    => $relative_path,
+			'old_guid'         => $old_guid,
+		);
 
 		return $post_id;
 	}
@@ -1116,6 +1180,8 @@ class WP_Import extends WP_Importer {
 	 * @return array|WP_Error Local file location details on success, WP_Error otherwise
 	 */
 	public function fetch_remote_file( $url, $post ) {
+		// If we now have an asynchronous downloader, prefer letting it handle the file
+		// unless the caller explicitly uses the synchronous path from BC'd code paths.
 		// Extract the file name from the URL.
 		$path      = parse_url( $url, PHP_URL_PATH );
 		$file_name = '';
@@ -1451,6 +1517,119 @@ class WP_Import extends WP_Importer {
 	// return the difference in length between two strings
 	public function cmpr_strlen( $a, $b ) {
 		return strlen( $b ) - strlen( $a );
+	}
+
+	/**
+	 * Drain a limited number of downloader events to keep the queue moving without blocking.
+	 *
+	 * @param int $max_events Maximum events to process in this call.
+	 * @return void
+	 */
+	protected function drain_downloader_events( $max_events = 25 ) {
+		if ( ! $this->attachment_downloader ) {
+			return;
+		}
+
+		$processed = 0;
+		while ( $processed < $max_events ) {
+			if ( ! $this->attachment_downloader->poll() ) {
+				break;
+			}
+			foreach ( $this->attachment_downloader->get_events() as $event ) {
+				$this->handle_downloader_event( $event );
+				$processed++;
+			}
+		}
+	}
+
+	/**
+	 * Drain a bit of the queue if it is building up, or at boundaries between data types.
+	 * The strategy is to reduce pressure only when many requests are enqueued/active.
+	 *
+	 * Conditions:
+	 * - If more than 20 items are tracked in progress, drain some events.
+	 * - May be invoked at boundaries between categories/tags/terms/posts.
+	 *
+	 * @return void
+	 */
+	protected function maybe_drain_downloader_queue() {
+		if ( ! $this->attachment_downloader ) {
+			return;
+		}
+		$progress = $this->attachment_downloader->get_progress();
+		if ( is_array( $progress ) && count( $progress ) > 20 ) {
+			$this->drain_downloader_events( 50 );
+		}
+	}
+
+	/**
+	 * Block until all pending downloads are finalized, then process their results.
+	 *
+	 * @return void
+	 */
+	protected function finalize_pending_attachments() {
+		if ( ! $this->attachment_downloader ) {
+				return;
+		}
+
+		// Keep polling until there are no more pending requests or events.
+		while ( $this->attachment_downloader->has_pending_requests() ) {
+			while ( $this->attachment_downloader->poll() ) {
+				/* continue polling */
+			}
+			foreach ( $this->attachment_downloader->get_events() as $event ) {
+				$this->handle_downloader_event( $event );
+			}
+		}
+	}
+
+	/**
+	 * Apply the effects of a single downloader event to the corresponding attachment.
+	 *
+	 * @param AttachmentDownloaderEvent $event Event object.
+	 * @return void
+	 */
+	protected function handle_downloader_event( $event ) {
+		if ( ! ( $event instanceof AttachmentDownloaderEvent ) ) {
+			return;
+		}
+
+		$remote_url = $event->resource_id;
+		if ( ! isset( $this->attachment_jobs[ $remote_url ] ) ) {
+			return;
+		}
+
+		$job            = $this->attachment_jobs[ $remote_url ];
+		$attachment_id  = (int) $job['attachment_id'];
+		$uploads        = $job['uploads'];
+		$relative_path  = $job['relative_path'];
+		$expected_abspath = rtrim( $uploads['basedir'], '/' ) . '/' . $relative_path;
+		$expected_url     = rtrim( $uploads['baseurl'], '/' ) . '/' . $relative_path;
+
+		switch ( $event->type ) {
+			case AttachmentDownloaderEvent::SUCCESS:
+				// File should be present at expected_abspath. Update metadata and URL remaps.
+				$info = wp_check_filetype( $expected_abspath );
+				if ( ! empty( $info['type'] ) ) {
+					wp_update_post( array( 'ID' => $attachment_id, 'guid' => $expected_url ) );
+					wp_update_attachment_metadata( $attachment_id, wp_generate_attachment_metadata( $attachment_id, $expected_abspath ) );
+					// Original URL -> new URL remap for content replacement.
+					$this->url_remap[ $remote_url ] = $expected_url;
+				}
+				break;
+
+			case AttachmentDownloaderEvent::ALREADY_EXISTS:
+			case AttachmentDownloaderEvent::IN_PROGRESS:
+				// Nothing to do: placeholder already covered and will be resolved by subsequent SUCCESS/FAILURE.
+				break;
+
+			case AttachmentDownloaderEvent::FAILURE:
+				// On failure, best-effort cleanup: delete the placeholder attachment.
+				wp_delete_attachment( $attachment_id, true );
+				break;
+		}
+
+		unset( $this->attachment_jobs[ $remote_url ] );
 	}
 
 	/**

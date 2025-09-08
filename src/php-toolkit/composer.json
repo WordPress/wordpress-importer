@@ -6,7 +6,9 @@
             "ByteStream",
             "DataLiberation",
             "Encoding",
+            "Filesystem",
             "HTML",
+            "HttpClient",
             "XML"
         ],
         "exclude-from-classmap": [

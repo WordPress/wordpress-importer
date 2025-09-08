@@ -1,0 +1,41 @@
+{
+    "name": "wp-php-toolkit/filesystem",
+    "description": "Filesystem component for WordPress.",
+    "type": "library",
+    "license": "GPL-2.0-or-later",
+    "authors": [
+        {
+            "name": "Adam Zielinski",
+            "email": "adam@adamziel.com"
+        },
+        {
+            "name": "WordPress Team",
+            "email": "wordpress@wordpress.org"
+        }
+    ],
+    "require": {
+        "php": ">=7.2",
+        "wp-php-toolkit/bytestream": "^0.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "WordPress\\Filesystem\\": ""
+        },
+        "files": [
+            "functions.php"
+        ],
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5"
+    },
+    "archive": {
+        "exclude": [
+            "**/.github/",
+            "**/Tests/",
+            "**/bin/"
+        ]
+    }
+}
