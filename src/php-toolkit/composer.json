@@ -2,12 +2,10 @@
     "name": "wordpress/php-toolkit",
     "autoload": {
         "classmap": [
-            "BlockParser",
             "ByteStream",
             "DataLiberation",
             "Encoding",
             "Filesystem",
-            "HTML",
             "HttpClient",
             "XML"
         ],
