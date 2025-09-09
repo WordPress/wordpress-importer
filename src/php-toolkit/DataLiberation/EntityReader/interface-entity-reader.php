@@ -30,7 +30,7 @@ interface EntityReader {
 	 *
 	 * @return bool Whether we've processed everything from the source
 	 */
-	public function is_finished();
+	public function is_finished(): bool;
 
 	/**
 	 * Returns a cursor position that can be used to resume processing later.

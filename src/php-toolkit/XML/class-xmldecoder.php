@@ -124,12 +124,12 @@ class XMLDecoder {
 				$zeros_at    = $start_of_potential_reference_at + 2;
 				$base        = 16;
 				$digit_chars = '0123456789abcdefABCDEF';
-				$max_digits  = 6; // `&#x10FFFF;`
+				$max_digits  = 6; // `&#x10FFFF;`.
 			} else {
 				$zeros_at    = $start_of_potential_reference_at + 1;
 				$base        = 10;
 				$digit_chars = '0123456789';
-				$max_digits  = 7; // `&#1114111;`
+				$max_digits  = 7; // `&#1114111;`.
 			}
 
 			$zero_count  = strspn( $text, '0', $zeros_at );
@@ -200,7 +200,7 @@ class XMLDecoder {
 	 *
 	 * @return string|null Parsed entity, if parsed, otherwise `null`.
 	 */
-	public static function next_entity( $text, $starting_byte_offset, $ending_byte_offset, &$entity_at = null ) {
+	public static function next_entity( string $text, int $starting_byte_offset, int $ending_byte_offset, ?int &$entity_at = null ): ?string {
 		$at  = $starting_byte_offset;
 		$end = $ending_byte_offset;
 

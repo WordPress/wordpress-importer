@@ -14,8 +14,9 @@ if ( ! class_exists( 'WordPress\XML\XMLProcessor' ) ) {
 	require_once __DIR__ . '/XML/class-xmlelement.php';
 	require_once __DIR__ . '/XML/class-xmlunsupportedexception.php';
 	require_once __DIR__ . '/XML/class-xmlprocessor.php';
-	require_once __DIR__ . '/DataLiberation/EntityReader/entity-reader.php';
+	require_once __DIR__ . '/DataLiberation/EntityReader/interface-entity-reader.php';
 	require_once __DIR__ . '/DataLiberation/EntityReader/class-wxrentityreader.php';
-	require_once __DIR__ . '/Encoding/utf8.php';
+	require_once __DIR__ . '/Encoding/utf8-decoder.php';
+	require_once __DIR__ . '/Encoding/utf8-encoder.php';
 	require_once __DIR__ . '/DataLiberation/class-importentity.php';
 }

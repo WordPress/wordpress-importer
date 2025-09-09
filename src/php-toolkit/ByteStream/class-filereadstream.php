@@ -10,14 +10,14 @@ class FileReadStream extends BaseByteReadStream {
 
 	public static function from_path( $file_path ) {
 		if ( ! file_exists( $file_path ) ) {
-			throw new ByteStreamException( sprintf( 'File %s does not exist', $file_path ) );
+			throw new ByteStreamException( esc_html( sprintf( 'File %s does not exist', $file_path ) ) );
 		}
 		if ( ! is_file( $file_path ) ) {
-			throw new ByteStreamException( sprintf( '%s is not a file', $file_path ) );
+			throw new ByteStreamException( esc_html( sprintf( '%s is not a file', $file_path ) ) );
 		}
 		$handle = fopen( $file_path, 'r' );
 		if ( ! $handle ) {
-			throw new ByteStreamException( sprintf( 'Failed to open file %s', $file_path ) );
+			throw new ByteStreamException( esc_html( sprintf( 'Failed to open file %s', $file_path ) ) );
 		}
 
 		return self::from_resource( $handle, filesize( $file_path ) );
@@ -36,7 +36,7 @@ class FileReadStream extends BaseByteReadStream {
 		$this->expected_length = $expected_length;
 	}
 
-	protected function internal_pull( $n ) {
+	protected function internal_pull( $n ): string {
 		$bytes = fread( $this->file_pointer, $n );
 		/**
 		 * Workaround for a streaming bug in WordPress Playground.
@@ -55,7 +55,7 @@ class FileReadStream extends BaseByteReadStream {
 		return $bytes;
 	}
 
-	protected function seek_outside_of_buffer( $target_offset ) {
+	protected function seek_outside_of_buffer( int $target_offset ): void {
 		$this->buffer                   = '';
 		$this->offset_in_current_buffer = 0;
 		$this->bytes_already_forgotten  = $target_offset;
@@ -64,7 +64,7 @@ class FileReadStream extends BaseByteReadStream {
 		}
 	}
 
-	public function close_reading() {
+	public function close_reading(): void {
 		if ( $this->is_read_closed ) {
 			return;
 		}
@@ -76,7 +76,7 @@ class FileReadStream extends BaseByteReadStream {
 		$this->file_pointer = null;
 	}
 
-	protected function internal_reached_end_of_data() {
+	protected function internal_reached_end_of_data(): bool {
 		return ! is_resource( $this->file_pointer ) || feof( $this->file_pointer );
 	}
 }

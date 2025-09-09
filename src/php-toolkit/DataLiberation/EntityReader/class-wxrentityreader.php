@@ -252,7 +252,7 @@ class WXREntityReader implements EntityReader {
 	 */
 	private $known_entities = array();
 
-	public static function create( ByteReadStream $upstream = null, $cursor = null, $options = array() ) {
+	public static function create( ?ByteReadStream $upstream = null, $cursor = null, $options = array() ) {
 		$xml_cursor = null;
 		if ( null !== $cursor ) {
 			$cursor = json_decode( $cursor, true );
@@ -278,7 +278,7 @@ class WXREntityReader implements EntityReader {
 			$reader->connect_upstream( $upstream );
 			if ( null !== $cursor ) {
 				if ( ! isset( $cursor['upstream'] ) ) {
-					// No upstream cursor means we've processed the
+					// No upstream cursor means we've processed the.
 					// entire input stream.
 					$xml->input_finished();
 					$xml->next_token();
@@ -294,10 +294,9 @@ class WXREntityReader implements EntityReader {
 	/**
 	 * Constructor.
 	 *
-	 * @param  WP_XML_Processor  $xml  The XML processor to use.
+	 * @param XMLProcessor $xml  The XML processor to use.
 	 *
 	 * @since WP_VERSION
-	 *
 	 */
 	protected function __construct( XMLProcessor $xml, $options = array() ) {
 		$this->xml = $xml;
@@ -308,15 +307,15 @@ class WXREntityReader implements EntityReader {
 			return;
 		}
 
-		// Every XML element is a combination of a long-form namespace and a
-		// local element name, e.g. a syntax <wp:post_id> could actually refer
+		// Every XML element is a combination of a long-form namespace and a.
+		// local element name, e.g. a syntax <wp:post_id> could actually refer.
 		// to a (https://wordpress.org/export/1.0/, post_id) element.
 		//
-		// Namespaces are paramount for parsing XML and cannot be ignored. Elements
+		// Namespaces are paramount for parsing XML and cannot be ignored. Elements.
 		// element must be matched based on both their namespace and local name.
 		//
 		// Unfortunately, different WXR files defined the `wp` namespace in a different way.
-		// Folks use a mixture of HTTP vs HTTPS protocols and version numbers. We must
+		// Folks use a mixture of HTTP vs HTTPS protocols and version numbers. We must.
 		// account for all possible options to parse these documents correctly.
 		$wxr_namespaces       = array(
 			'http://wordpress.org/export/1.0/',
@@ -458,9 +457,9 @@ class WXREntityReader implements EntityReader {
 		 *        even after evicting the actual bytes where $last_entity is stored.
 		 */
 		$xml_cursor                             = $this->xml->get_reentrancy_cursor();
-		$xml_cursor                             = json_decode( base64_decode( $xml_cursor ), true );
+		$xml_cursor                             = json_decode( base64_decode( $xml_cursor ), true ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
 		$xml_cursor['upstream_bytes_forgotten'] = $this->entity_opener_byte_offset;
-		$xml_cursor                             = base64_encode( json_encode( $xml_cursor ) );
+		$xml_cursor                             = base64_encode( json_encode( $xml_cursor ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
 
 		return json_encode(
 			array(
@@ -494,7 +493,6 @@ class WXREntityReader implements EntityReader {
 	 *
 	 * @return string|false The entity type, or false if no entity is being processed.
 	 * @since WP_VERSION
-	 *
 	 */
 	private function get_entity_type() {
 		if ( null !== $this->entity_type ) {
@@ -515,7 +513,6 @@ class WXREntityReader implements EntityReader {
 	 *
 	 * @return int|null The post ID, or null if no posts have been processed.
 	 * @since WP_VERSION
-	 *
 	 */
 	public function get_last_post_id() {
 		return $this->last_post_id;
@@ -526,7 +523,6 @@ class WXREntityReader implements EntityReader {
 	 *
 	 * @return int|null The comment ID, or null if no comments have been processed.
 	 * @since WP_VERSION
-	 *
 	 */
 	public function get_last_comment_id() {
 		return $this->last_comment_id;
@@ -535,12 +531,11 @@ class WXREntityReader implements EntityReader {
 	/**
 	 * Appends bytes to the input stream.
 	 *
-	 * @param  string  $bytes  The bytes to append.
+	 * @param  string $bytes  The bytes to append.
 	 *
 	 * @since WP_VERSION
-	 *
 	 */
-	public function append_bytes( $bytes ) {
+	public function append_bytes( string $bytes ): void {
 		$this->xml->append_bytes( $bytes );
 	}
 
@@ -549,7 +544,7 @@ class WXREntityReader implements EntityReader {
 	 *
 	 * @since WP_VERSION
 	 */
-	public function input_finished() {
+	public function input_finished(): void {
 		$this->xml->input_finished();
 	}
 
@@ -558,9 +553,8 @@ class WXREntityReader implements EntityReader {
 	 *
 	 * @return bool Whether processing is finished.
 	 * @since WP_VERSION
-	 *
 	 */
-	public function is_finished() {
+	public function is_finished(): bool {
 		return $this->is_finished;
 	}
 
@@ -569,9 +563,8 @@ class WXREntityReader implements EntityReader {
 	 *
 	 * @return bool Whether processing is paused.
 	 * @since WP_VERSION
-	 *
 	 */
-	public function is_paused_at_incomplete_input() {
+	public function is_paused_at_incomplete_input(): bool {
 		return $this->xml->is_paused_at_incomplete_input();
 	}
 
@@ -580,13 +573,12 @@ class WXREntityReader implements EntityReader {
 	 *
 	 * @return string|null The error message, or null if no error occurred.
 	 * @since WP_VERSION
-	 *
 	 */
-	public function get_last_error() {
+	public function get_last_error(): ?string {
 		return $this->xml->get_last_error();
 	}
 
-	public function get_xml_exception() {
+	public function get_xml_exception(): ?XMLUnsupportedException {
 		return $this->xml->get_exception();
 	}
 
@@ -595,7 +587,6 @@ class WXREntityReader implements EntityReader {
 	 *
 	 * @return bool Whether another entity was found.
 	 * @since WP_VERSION
-	 *
 	 */
 	public function next_entity() {
 		if ( $this->is_finished ) {
@@ -605,7 +596,7 @@ class WXREntityReader implements EntityReader {
 			if ( $this->read_next_entity() ) {
 				return true;
 			}
-			// If the read failed because of incomplete input data,
+			// If the read failed because of incomplete input data,.
 			// try pulling more bytes from upstream before giving up.
 			if ( $this->is_paused_at_incomplete_input() ) {
 				if ( $this->pull_upstream_bytes() ) {
@@ -626,7 +617,6 @@ class WXREntityReader implements EntityReader {
 	 *
 	 * @return bool Whether another entity was found.
 	 * @since WP_VERSION
-	 *
 	 */
 	private function read_next_entity() {
 		if ( $this->xml->is_finished() ) {
@@ -646,8 +636,8 @@ class WXREntityReader implements EntityReader {
 		 */
 		if ( $this->entity_type && $this->entity_finished ) {
 			$this->after_entity();
-			// If we finished processing the entity on a closing tag, advance the XML processor to
-			// the next token. Otherwise the array_key_exists( $tag, static::known_entities ) branch
+			// If we finished processing the entity on a closing tag, advance the XML processor to.
+			// the next token. Otherwise the array_key_exists( $tag, static::known_entities ) branch.
 			// below will cause an infinite loop.
 			if ( $this->xml->is_tag_closer() ) {
 				if ( false === $this->xml->next_token() ) {
@@ -720,7 +710,7 @@ class WXREntityReader implements EntityReader {
 					return true;
 				}
 				$this->after_entity();
-				// Only tag openers indicate a new entity. Closers just mean
+				// Only tag openers indicate a new entity. Closers just mean.
 				// the previous entity is finished.
 				if ( $this->xml->is_tag_opener() ) {
 					$this->set_entity_tag( $tag_with_namespace );
@@ -796,7 +786,7 @@ class WXREntityReader implements EntityReader {
 
 			if (
 				! $this->entity_finished &&
-				$this->xml->get_breadcrumbs() === array( array( '', 'rss' ), array( '', 'channel' ) )
+				array( array( '', 'rss' ), array( '', 'channel' ) ) === $this->xml->get_breadcrumbs()
 			) {
 				// Look for site options in children of the <channel> tag.
 				if ( $this->parse_site_option() ) {
@@ -903,7 +893,7 @@ class WXREntityReader implements EntityReader {
 	 * Connects a byte stream to automatically pull bytes from once
 	 * the last input chunk have been processed.
 	 *
-	 * @param  WP_Byte_Reader  $stream  The upstream stream.
+	 * @param  ByteReadStream $stream  The upstream stream.
 	 */
 	public function connect_upstream( ByteReadStream $stream ) {
 		$this->upstream = $stream;
@@ -956,12 +946,11 @@ class WXREntityReader implements EntityReader {
 	/**
 	 * Sets the current entity tag and type.
 	 *
-	 * @param  string  $tag  The entity tag name.
+	 * @param  string $tag_with_namespace  The entity tag name.
 	 *
 	 * @since WP_VERSION
-	 *
 	 */
-	private function set_entity_tag( $tag_with_namespace ) {
+	private function set_entity_tag( string $tag_with_namespace ) {
 		$this->entity_tag = $tag_with_namespace;
 		if ( array_key_exists( $tag_with_namespace, $this->known_entities ) ) {
 			$this->entity_type = $this->known_entities[ $tag_with_namespace ]['type'];
