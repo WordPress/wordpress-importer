@@ -59,9 +59,16 @@ class WP_Import extends WP_Importer {
 		$this->header();
 
 		$step = empty( $_GET['step'] ) ? 0 : (int) $_GET['step'];
+		$reset = empty( $_GET['reset'] ) ? 0 : (int) $_GET['reset'];
 		switch ( $step ) {
 			case 0:
-				$this->greet();
+				if ( $this->check_running() && $reset === 0 ) {
+					$this->greet_already_started();
+				} else {
+					delete_transient( 'wxr_import_attachment_id' );
+					$this->greet();
+				}
+
 				break;
 			case 1:
 				check_admin_referer( 'import-upload' );
@@ -70,16 +77,66 @@ class WP_Import extends WP_Importer {
 				}
 				break;
 			case 2:
-				check_admin_referer( 'import-wordpress' );
-				$this->fetch_attachments = ( ! empty( $_POST['fetch_attachments'] ) && $this->allow_fetch_attachments() );
-				$this->id                = (int) $_POST['import_id'];
-				$file                    = get_attached_file( $this->id );
+				$running = $this->check_running();
+				$file = null;
+				$rewrite_urls = false;
+
+				if ( $running ) {
+					$this->id = $running['id'];
+					$file = $running['file'];
+					$this->fetch_attachments = $running['fetch_attachments'];
+					$rewrite_urls = $running['rewrite_urls'];
+				} else {
+					check_admin_referer( 'import-wordpress' );
+					$this->greet_already_started();
+					$this->fetch_attachments = ( ! empty( $_POST['fetch_attachments'] ) && $this->allow_fetch_attachments() );
+					$this->id                = (int) $_POST['import_id'];
+					$file                    = get_attached_file( $this->id );
+					$rewrite_urls            = '1' === $_POST['rewrite_urls'];
+				}
+
 				set_time_limit( 0 );
-				$this->import( $file, array( 'rewrite_urls' => '1' === $_POST['rewrite_urls'] ) );
+				$this->import( $file, array( 'rewrite_urls' => $rewrite_urls ) );
 				break;
 		}
 
 		$this->footer();
+	}
+
+	private function check_running() {
+		$import = get_transient( 'wp_wordpress_importer' );
+
+		if ( $import === false ) {
+			return false;
+		}
+
+		$file = get_attached_file( $import['id'] );
+
+		if ( !$file ) {
+			return false;
+		}
+
+		if ( ! file_exists( $file ) ) {
+			delete_transient( 'wp_wordpress_importer' );
+
+			return false;
+		}
+
+		$import['file'] = $file;
+
+		return $import;
+	}
+
+	function continue_import() {
+		$running = $this->check_running();
+
+		if ( ! $running ) {
+			return false;
+		}
+
+		$this->id = $running['id'];
+		$this->fetch_attachments = $running['fetch_attachments'];
+		$this->import( $running['file'], array( 'rewrite_urls' => $running['rewrite_urls'] ) );
 	}
 
 	/**
@@ -125,7 +182,9 @@ class WP_Import extends WP_Importer {
 
 		$this->get_author_mapping();
 
-		wp_suspend_cache_invalidation( true );
+		require_once __DIR__ . '/admin-page.php';
+
+		/*wp_suspend_cache_invalidation( true );
 		$this->process_categories();
 		$this->process_tags();
 		$this->process_terms();
@@ -137,7 +196,7 @@ class WP_Import extends WP_Importer {
 		$this->backfill_attachment_urls();
 		$this->remap_featured_images();
 
-		$this->import_end();
+		$this->import_end();*/
 	}
 
 	/**
@@ -151,6 +210,11 @@ class WP_Import extends WP_Importer {
 			echo __( 'The file does not exist, please try again.', 'wordpress-importer' ) . '</p>';
 			$this->footer();
 			die();
+		}
+
+		// Force new parser to use in WXR_Parser::parse()
+		if ( ! defined( 'PREFERRED_WXR_PARSER' ) ) {
+			$preferred_parser = 'xmlprocessor';
 		}
 
 		$import_data = $this->parse( $file );
@@ -206,6 +270,7 @@ class WP_Import extends WP_Importer {
 	 */
 	public function import_end() {
 		wp_import_cleanup( $this->id );
+		delete_transient( 'wxr_import_attachment_id' );
 
 		wp_cache_flush();
 		foreach ( get_taxonomies() as $tax ) {
@@ -222,6 +287,14 @@ class WP_Import extends WP_Importer {
 		do_action( 'import_end' );
 	}
 
+	public function get_state() {
+		$running = $this->check_running();
+
+		return array(
+			'running' => $running !== false,
+		);
+	}
+
 	/**
 	 * Handles the WXR upload and initial parsing of the file to prepare for
 	 * displaying author import options
@@ -229,7 +302,12 @@ class WP_Import extends WP_Importer {
 	 * @return bool False if error uploading or invalid file, true otherwise
 	 */
 	public function handle_upload() {
-		$file = wp_import_handle_upload();
+		// Check if the import is already running. The file is already stored in the media library.
+		$file = $this->check_running();
+
+		if ( ! $file ) {
+			$file = wp_import_handle_upload();
+		}
 
 		if ( isset( $file['error'] ) ) {
 			echo '<p><strong>' . __( 'Sorry, there has been an error.', 'wordpress-importer' ) . '</strong><br />';
@@ -242,7 +320,12 @@ class WP_Import extends WP_Importer {
 			return false;
 		}
 
-		$this->id    = (int) $file['id'];
+		$this->id = (int) $file['id'];
+
+		// Store the attachment ID so we can use it in the import process.
+		set_transient( 'wxr_import_attachment_id', $this->id, time() + DAY_IN_SECONDS );
+
+		// Force new parser to use in WXR_Parser::parse()
 		$import_data = $this->parse( $file['file'] );
 		if ( is_wp_error( $import_data ) ) {
 			/** @var WP_Error $import_error */
@@ -1417,6 +1500,17 @@ class WP_Import extends WP_Importer {
 
 	// Close div.wrap
 	public function footer() {
+		echo '</div>';
+	}
+
+	/**
+	 * Display a message that an import has already started
+	 */
+	private function greet_already_started() {
+		echo '<div class="narrow">';
+		echo '<p>' . __( 'An import has already started. Do you want to continue it?', 'wordpress-importer' ) . '</p>';
+		echo '<p><a href="' . wp_nonce_url( admin_url( 'admin.php?import=wordpress&amp;step=1' ), 'import-upload' ) . '" class="button button-primary">' . __( 'Continue Import', 'wordpress-importer' ) . '</a>&nbsp;';
+		echo '<a href="' . admin_url( 'admin.php?import=wordpress&amp;reset=1' ) . '" class="button">' . __( 'Start New Import', 'wordpress-importer' ) . '</a></p>';
 		echo '</div>';
 	}
 

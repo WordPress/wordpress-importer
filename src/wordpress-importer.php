@@ -76,3 +76,48 @@ function wordpress_importer_init() {
 	register_importer( 'wordpress', 'WordPress', __( 'Import <strong>posts, pages, comments, custom fields, categories, and tags</strong> from a WordPress export file.', 'wordpress-importer' ), array( $GLOBALS['wp_import'], 'dispatch' ) );
 }
 add_action( 'admin_init', 'wordpress_importer_init' );
+
+add_action( 'rest_api_init', function () {
+	register_rest_route( 'wordpress-importer/v1', '/state', array(
+		'methods' => 'GET',
+		'callback' => function () {
+			return WP_Import::get_state();
+		},
+		'permission_callback' => function () {
+			return current_user_can( 'manage_options' );
+		},
+	) );
+
+	register_rest_route( 'wordpress-importer/v1', '/continue', array(
+		'methods' => 'GET',
+		'callback' => function () {
+			$state = WP_Import::get_state();
+
+			if ( ! $state['running'] ) {
+				return new WP_Error( 'not_running', __( 'Import is not running.', 'wordpress-importer' ), array( 'status' => 400 ) );
+			}
+
+			$importer = new WP_Import();
+			$importer->continue_import();
+		},
+		'permission_callback' => function () {
+			return current_user_can( 'manage_options' );
+		},
+	) );
+} );
+
+add_action( 'admin_enqueue_scripts', 'enqueue_wordpress_importer_scripts' );
+
+function enqueue_wordpress_importer_scripts() {
+	wp_register_script_module(
+		'@wordpress-importer/import-screen',
+		plugin_dir_url( __FILE__ ) . 'import-screen.js',
+		array( '@wordpress/interactivity', '@wordpress/interactivity-router', 'wp-api-fetch' )
+	);
+	wp_enqueue_script( 'wp-api-fetch' );
+	wp_enqueue_script_module(
+		'@wordpress-importer/import-screen',
+		plugin_dir_url( __FILE__ ) . 'import-screen.js',
+		array( '@wordpress/interactivity', '@wordpress/interactivity-router' )
+	);
+}
