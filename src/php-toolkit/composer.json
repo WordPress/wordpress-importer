@@ -2,11 +2,9 @@
     "name": "wordpress/php-toolkit",
     "autoload": {
         "classmap": [
-            "BlockParser",
             "ByteStream",
             "DataLiberation",
             "Encoding",
-            "HTML",
             "XML"
         ],
         "exclude-from-classmap": [
