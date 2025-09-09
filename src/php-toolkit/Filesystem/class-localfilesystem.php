@@ -114,6 +114,7 @@ class LocalFilesystem implements Filesystem {
 	}
 
 	public function copy_file( $from_path, $to_path, $options ) {
+		// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
 		if ( false === @copy( $from_path, $to_path ) ) {
 			throw new FilesystemException(
 				sprintf( 'Failed to copy file: %s to %s', $from_path, $to_path )
@@ -134,6 +135,7 @@ class LocalFilesystem implements Filesystem {
 			);
 		}
 		if ( isset( $options['chmod'] ) ) {
+			// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
 			if ( false === @chmod( $path, $options['chmod'] ) ) {
 				throw new FilesystemException(
 					sprintf( 'Failed to chmod directory: %s', $path )
@@ -159,6 +161,7 @@ class LocalFilesystem implements Filesystem {
 	}
 
 	public function put_contents( $path, $data, $options = array() ) {
+		// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
 		if ( false === @file_put_contents(
 			$path,
 			$data

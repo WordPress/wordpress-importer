@@ -359,11 +359,11 @@ final class CacheMiddleware implements MiddlewareInterface {
 	protected function commit( Request $request, Response $response, string $temp_file ) {
 		$url  = $request->url;
 		$meta = array(
-			'url' => $url,
-			'status' => $response->status_code,
-			'headers' => $response->headers,
-			'stored_at' => time(),
-			'etag' => $response->get_header( 'ETag' ),
+			'url'           => $url,
+			'status'        => $response->status_code,
+			'headers'       => $response->headers,
+			'stored_at'     => time(),
+			'etag'          => $response->get_header( 'ETag' ),
 			'last_modified' => $response->get_header( 'Last-Modified' ),
 		);
 

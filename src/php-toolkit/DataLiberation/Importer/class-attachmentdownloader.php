@@ -276,6 +276,7 @@ class AttachmentDownloader {
 		// Ensure any remaining open file descriptors are closed.
 		foreach ( $this->fps as $request_id => $fp ) {
 			if ( is_resource( $fp ) ) {
+				// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
 				@fclose( $fp );
 			}
 			unset( $this->fps[ $request_id ] );

@@ -149,7 +149,7 @@ class ClientState {
 		}
 		$results = array();
 		foreach ( $requests as $request ) {
-			if ( in_array( $request->state, $states ) ) {
+			if ( in_array( $request->state, $states, true ) ) {
 				$results[] = $request;
 			}
 		}

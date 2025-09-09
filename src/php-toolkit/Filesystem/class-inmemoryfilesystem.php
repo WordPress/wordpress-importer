@@ -39,14 +39,14 @@ class InMemoryFilesystem implements Filesystem, InternalizedWriteStream {
 		return '/';
 	}
 
-	public function ls( $parent = '/' ) {
-		if ( ! isset( $this->files[ $parent ] ) || 'dir' !== $this->files[ $parent ]['type'] ) {
+	public function ls( $parent_path = '/' ) {
+		if ( ! isset( $this->files[ $parent_path ] ) || 'dir' !== $this->files[ $parent_path ]['type'] ) {
 			throw new FilesystemException(
-				sprintf( 'Directory not found: %s', $parent )
+				sprintf( 'Directory not found: %s', $parent_path )
 			);
 		}
 
-		return array_keys( $this->files[ $parent ]['contents'] );
+		return array_keys( $this->files[ $parent_path ]['contents'] );
 	}
 
 	public function is_dir( $path ) {

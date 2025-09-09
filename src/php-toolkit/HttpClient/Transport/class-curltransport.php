@@ -103,6 +103,7 @@ class CurlTransport implements TransportInterface {
 		} while ( CURLM_CALL_MULTI_PERFORM === $mrc );
 
 		// Handle any completed requests.
+		// phpcs:ignore Generic.CodeAnalysis.AssignmentInCondition.FoundInWhileCondition
 		while ( $info = curl_multi_info_read( $this->multi_handle ) ) {
 			if ( CURLMSG_DONE === $info['msg'] ) {
 				$ch = $info['handle'];

@@ -67,7 +67,7 @@ class Client {
 			$this->state,
 			$middleware,
 			array(
-				'client' => $this,
+				'client'        => $this,
 				'max_redirects' => 5,
 			)
 		);
@@ -144,15 +144,15 @@ class Client {
 			// @TODO: Debug why https://wpthemetestdata.files.wordpress.com/2008/06/dsc20050727_091048_222.jpg is not getting parsed
 			// $parsed = WPURL::parse( $request->url );
 			// if ( false === $parsed ) {
-			// 	$this->state->set_request_error( $request, new HttpError( sprintf( 'Invalid URL: %s', $request->url ) ) );
-			// 	continue;
+			//  $this->state->set_request_error( $request, new HttpError( sprintf( 'Invalid URL: %s', $request->url ) ) );
+			//  continue;
 			// }
 			// if ( 'http:' !== $parsed->protocol && 'https:' !== $parsed->protocol ) {
-			// 	$this->state->set_request_error(
-			// 		$request,
-			// 		new HttpError( sprintf( 'Invalid URL – only HTTP and HTTPS URLs are supported: %s', $parsed->toString() ) )
-			// 	);
-			// 	continue;
+			//  $this->state->set_request_error(
+			//      $request,
+			//      new HttpError( sprintf( 'Invalid URL – only HTTP and HTTPS URLs are supported: %s', $parsed->toString() ) )
+			//  );
+			//  continue;
 			// }
 		}
 	}

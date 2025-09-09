@@ -130,7 +130,7 @@ class SocketTransport implements TransportInterface {
 			$url    = $request->url;
 			$parts  = parse_url( $url );
 			$scheme = $parts['scheme'];
-			if ( ! in_array( $scheme, array( 'http', 'https' ) ) ) {
+			if ( ! in_array( $scheme, array( 'http', 'https' ), true ) ) {
 				$this->set_error(
 					$request,
 					new HttpError( 'stream_http_open_nonblocking: Invalid scheme in URL ' . $url . ' – only http:// and https:// URLs are supported' )
@@ -153,6 +153,7 @@ class SocketTransport implements TransportInterface {
 				)
 			);
 
+			// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
 			$stream = @stream_socket_client(
 				'tcp://' . $host . ':' . $port,
 				$errno,
@@ -200,7 +201,7 @@ class SocketTransport implements TransportInterface {
 		}
 
 		$content_encoding = $request->response->get_header( 'content-encoding' );
-		if ( $content_encoding && ! in_array( $content_encoding, $transfer_encodings ) ) {
+		if ( $content_encoding && ! in_array( $content_encoding, $transfer_encodings, true ) ) {
 			$transfer_encodings[] = $content_encoding;
 		}
 
@@ -249,9 +250,11 @@ class SocketTransport implements TransportInterface {
 	 */
 	protected function enable_crypto( array $requests ) {
 		foreach ( $this->stream_select( $requests, static::STREAM_SELECT_WRITE ) as $request ) {
+			// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
 			@stream_set_timeout( $this->state->connections[ $request->id ]->http_socket, 1 );
 
 			// Use @ to suppress warnings. They're collected by error_get_last().
+			// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
 			$enabled_crypto = @stream_socket_enable_crypto(
 				$this->state->connections[ $request->id ]->http_socket,
 				true,
@@ -282,6 +285,7 @@ class SocketTransport implements TransportInterface {
 	protected function send_request_headers( array $requests ) {
 		foreach ( $this->stream_select( $requests, static::STREAM_SELECT_WRITE ) as $request ) {
 			$header_bytes = static::prepare_request_headers( $request );
+			// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
 			if ( false === @fwrite( $this->state->connections[ $request->id ]->http_socket, $header_bytes ) ) {
 				$last_error         = error_get_last();
 				$last_error_message = is_array( $last_error ) ? $last_error['message'] : 'unknown';
@@ -330,6 +334,7 @@ class SocketTransport implements TransportInterface {
 			}
 
 			$chunk = $request->upload_body_stream->consume( $available_bytes );
+			// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
 			if ( ! @fwrite( $this->state->connections[ $request->id ]->http_socket, $chunk ) ) {
 				$last_error         = error_get_last();
 				$last_error_message = is_array( $last_error ) ? $last_error['message'] : 'unknown';
@@ -360,6 +365,7 @@ class SocketTransport implements TransportInterface {
 				if (
 					! $this->state->connections[ $request->id ]->http_socket ||
 					! is_resource( $this->state->connections[ $request->id ]->http_socket ) ||
+					// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
 					@feof( $this->state->connections[ $request->id ]->http_socket )
 				) {
 					$this->set_error( $request, new HttpError( 'Connection closed while reading response headers.' ) );
@@ -372,6 +378,7 @@ class SocketTransport implements TransportInterface {
 					if (
 						! $this->state->connections[ $request->id ]->http_socket ||
 						! is_resource( $this->state->connections[ $request->id ]->http_socket ) ||
+						// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
 						@feof( $this->state->connections[ $request->id ]->http_socket )
 					) {
 						$this->set_error( $request, new HttpError( 'Connection closed while reading response headers.' ) );
@@ -493,7 +500,7 @@ class SocketTransport implements TransportInterface {
 		}
 		$results = array();
 		foreach ( $requests as $request ) {
-			if ( in_array( $request->state, $states ) ) {
+			if ( in_array( $request->state, $states, true ) ) {
 				$results[] = $request;
 			}
 		}

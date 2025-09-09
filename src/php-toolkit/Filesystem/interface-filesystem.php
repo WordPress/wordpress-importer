@@ -17,12 +17,12 @@ interface Filesystem {
 	/**
 	 * List the contents of a directory.
 	 *
-	 * @param  string $parent  The path to the parent directory.
+	 * @param  string $parent_path  The path to the parent directory.
 	 *
 	 * @return array<string> The contents of the directory.
 	 * @throws FilesystemException If the directory cannot be listed.
 	 */
-	public function ls( $parent = '/' );
+	public function ls( $parent_path = '/' );
 
 	/**
 	 * Check if a path is a directory.

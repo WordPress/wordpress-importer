@@ -742,7 +742,7 @@ class StreamImporter {
 	public function get_current_entity() {
 		$entity = $this->entity_iterator->current();
 		$entity = apply_filters(
-			'data_liberation.stream_importer.preprocess_entity',
+			'data_liberation_stream_importer_preprocess_entity',
 			$entity,
 			array(
 				'importer' => $this,
@@ -754,7 +754,7 @@ class StreamImporter {
 
 	protected function get_post_base_url( $post ) {
 		return apply_filters(
-			'data_liberation.stream_importer.post_base_url',
+			'data_liberation_stream_importer_post_base_url',
 			$post['link'] ?? $this->source_site_url,
 			array(
 				'post'     => $post,
@@ -872,12 +872,12 @@ class StreamImporter {
 								$p->replace_base_url( $mapping_pair['to'], $mapping_pair['from'] );
 							}
 							do_action(
-								'data_liberation.stream_importer.postprocess_url',
+								'data_liberation_stream_importer_postprocess_url',
 								$p,
 								array(
 									'applied_base_url_mapping' => $mapping_pair,
-									'raw_url_before'           => $raw_url_before,
-									'entity'                   => $entity,
+									'raw_url_before' => $raw_url_before,
+									'entity'         => $entity,
 								)
 							);
 						}
@@ -1036,7 +1036,7 @@ class StreamImporter {
 		 */
 		$path      = $p->get_parsed_url()->pathname;
 		$extension = pathinfo( $path, PATHINFO_EXTENSION );
-		if ( ! in_array( $extension, array( 'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg' ) ) ) {
+		if ( ! in_array( $extension, array( 'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg' ), true ) ) {
 			/**
 			 * Absent an extension, try to guess whether it's a static asset based
 			 * on its location in the document. For now, we only accept images.

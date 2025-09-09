@@ -66,7 +66,7 @@ class RedirectionMiddleware implements MiddlewareInterface {
 			return;
 		}
 		$code = $response->status_code;
-		if ( ! in_array( $code, array( 301, 302, 303, 307, 308 ) ) ) {
+		if ( ! in_array( $code, array( 301, 302, 303, 307, 308 ), true ) ) {
 			return;
 		}
 

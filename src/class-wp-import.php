@@ -6,9 +6,9 @@
  * @subpackage Importer
  */
 
-use function WordPress\DataLiberation\URL\wp_rewrite_urls;
 use WordPress\DataLiberation\Importer\AttachmentDownloader;
 use WordPress\DataLiberation\Importer\AttachmentDownloaderEvent;
+use function WordPress\DataLiberation\URL\wp_rewrite_urls;
 
 /**
  * WordPress importer class.
@@ -147,7 +147,6 @@ class WP_Import extends WP_Importer {
 			die();
 		}
 
-
 		echo '<pre>';
 		$parse_result = $this->parse( $file );
 
@@ -159,8 +158,8 @@ class WP_Import extends WP_Importer {
 			die();
 		}
 
-		$import_data      = $parse_result;
-		$this->version    = $import_data['version'];
+		$import_data   = $parse_result;
+		$this->version = $import_data['version'];
 		$this->get_authors_from_import( $import_data );
 		$this->posts      = $import_data['posts'];
 		$this->terms      = $import_data['terms'];
@@ -246,7 +245,7 @@ class WP_Import extends WP_Importer {
 			return false;
 		}
 
-		$this->id    = (int) $file['id'];
+		$this->id     = (int) $file['id'];
 		$parse_result = $this->parse( $file['file'] );
 		if ( is_wp_error( $parse_result ) ) {
 			echo '<p><strong>' . __( 'Sorry, there has been an error.', 'wordpress-importer' ) . '</strong><br />';
@@ -844,7 +843,7 @@ class WP_Import extends WP_Importer {
 						}
 					}
 
-					$remote_url = trim($remote_url);
+					$remote_url      = trim( $remote_url );
 					$comment_post_id = $this->process_attachment( $postdata, $remote_url );
 					$post_id         = $comment_post_id;
 				} else {
@@ -1147,18 +1146,18 @@ class WP_Import extends WP_Importer {
 			$post['post_mime_type'] = $wp_filetype['type'];
 		}
 
-		$unique_name    = wp_unique_filename( $uploads['path'], $file_name );
-		$relative_path  = ltrim( $uploads['subdir'] . '/' . $unique_name, '/' );
-		$expected_url   = rtrim( $uploads['baseurl'], '/' ) . '/' . $relative_path;
+		$unique_name      = wp_unique_filename( $uploads['path'], $file_name );
+		$relative_path    = ltrim( $uploads['subdir'] . '/' . $unique_name, '/' );
+		$expected_url     = rtrim( $uploads['baseurl'], '/' ) . '/' . $relative_path;
 		$expected_abspath = rtrim( $uploads['basedir'], '/' ) . '/' . $relative_path;
 
 		// Always enqueue; we assume async downloader availability.
 		$this->attachment_downloader->enqueue_if_not_exists( $url, $relative_path );
 
 		// Create a placeholder attachment post that will be finalized upon success.
-		$old_guid   = isset( $post['guid'] ) ? $post['guid'] : $url;
+		$old_guid     = isset( $post['guid'] ) ? $post['guid'] : $url;
 		$post['guid'] = $expected_url;
-		$post_id    = wp_insert_attachment( $post, $expected_abspath );
+		$post_id      = wp_insert_attachment( $post, $expected_abspath );
 
 		// Record job info for finalization when the downloader reports completion.
 		$this->attachment_jobs[ $url ] = array(
@@ -1537,7 +1536,7 @@ class WP_Import extends WP_Importer {
 			}
 			foreach ( $this->attachment_downloader->get_events() as $event ) {
 				$this->handle_downloader_event( $event );
-				$processed++;
+				++$processed;
 			}
 		}
 	}
@@ -1599,10 +1598,10 @@ class WP_Import extends WP_Importer {
 			return;
 		}
 
-		$job            = $this->attachment_jobs[ $remote_url ];
-		$attachment_id  = (int) $job['attachment_id'];
-		$uploads        = $job['uploads'];
-		$relative_path  = $job['relative_path'];
+		$job              = $this->attachment_jobs[ $remote_url ];
+		$attachment_id    = (int) $job['attachment_id'];
+		$uploads          = $job['uploads'];
+		$relative_path    = $job['relative_path'];
 		$expected_abspath = rtrim( $uploads['basedir'], '/' ) . '/' . $relative_path;
 		$expected_url     = rtrim( $uploads['baseurl'], '/' ) . '/' . $relative_path;
 
@@ -1611,7 +1610,12 @@ class WP_Import extends WP_Importer {
 				// File should be present at expected_abspath. Update metadata and URL remaps.
 				$info = wp_check_filetype( $expected_abspath );
 				if ( ! empty( $info['type'] ) ) {
-					wp_update_post( array( 'ID' => $attachment_id, 'guid' => $expected_url ) );
+					wp_update_post(
+						array(
+							'ID'   => $attachment_id,
+							'guid' => $expected_url,
+						)
+					);
 					wp_update_attachment_metadata( $attachment_id, wp_generate_attachment_metadata( $attachment_id, $expected_abspath ) );
 					// Original URL -> new URL remap for content replacement.
 					$this->url_remap[ $remote_url ] = $expected_url;
