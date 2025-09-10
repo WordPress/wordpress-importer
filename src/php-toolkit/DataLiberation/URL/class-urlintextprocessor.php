@@ -60,6 +60,43 @@ use WP_HTML_Text_Replacement;
  * > Visit the WordPress plugins directory (https://w.org/plug(in)s
  *
  * Would yield `https://w.org/plug(in)s`.
+ *
+ * ### Rejecting URLs with embedded credentials
+ *
+ * `https://user:pass@wp.org` is not matched. Rewriting URLs that presume transferable
+ * credentials is hazardous and rarely correct for migrations.
+ *
+ * ### Reject non-HTTP(S) schemes
+ *
+ * Out of scope for site moves; all of these are rejected:
+ * `gopher://site.com`, `blob:afgh2-48189d`, `ahttp://site.com`, `mailto:user@site.com`, `file://asset.zip`.
+ * If we need additional schemes later, we can add them intentionally.
+ *
+ * ### Reject non‑absolute‑looking references
+ *
+ * While we do rely on a base URL, inputs like `::`, `/index.html`, `?query` are still ignored.
+ * Bare-domain forms like `mysite.org/?query` are still matched.
+ *
+ * ### Handle trailing punctuation sensibly
+ *
+ * `https://mysite.com/path/..` is interpreted as `https://mysite.com/path/` rather than
+ * collapsing to the origin. A final period is far more likely sentence punctuation than `../`.
+ * If a user truly writes `https://mysite.com/path/../`, we parse it as expected.
+ *
+ * ### Fuzzy matching for malformed ports
+ *
+ * * **WHATWG**: `"http://w.org:100000 plugins are in the directory" → failure`.
+ * * **Inline detection**: `"http://w.org:100000 plugins are in the directory" → "http://w.org/"`
+ *   (truncate at the invalid port).
+ *
+ * This is a best‑effort extraction of the valid prefix rather than an all‑or‑nothing rejection.
+ *
+ * ### Whitespace handling
+ *
+ * * **WHATWG**: `"http://example\t.\norg" → "http://example.org/"`.
+ * * **Inline detection**: stops at the first whitespace, yielding `"http://example/"`.
+ *
+ * This reflects how URLs actually appear in text blocks where whitespace often terminates a link.
  */
 class URLInTextProcessor {
 
@@ -70,7 +107,7 @@ class URLInTextProcessor {
 	/**
 	 * @var string
 	 */
-	private $raw_url;
+	private $matched_url;
 	/**
 	 * @var URL
 	 */
@@ -106,14 +143,7 @@ class URLInTextProcessor {
 	 * If set to false, the matching will be more lenient, allowing for potential false positives.
 	 */
 	private $strict = false;
-	private static $public_suffix_list;
-
-
 	public function __construct( $text, $base_url = null ) {
-		if ( ! self::$public_suffix_list ) {
-			// @TODO: Parse wildcards and exceptions from the public suffix list.
-			self::$public_suffix_list = require_once __DIR__ . '/public-suffix-list.php';
-		}
 		$this->text          = $text;
 		$this->base_url      = $base_url;
 		$this->base_protocol = $base_url ? parse_url( $base_url, PHP_URL_SCHEME ) : null;
@@ -124,9 +154,8 @@ class URLInTextProcessor {
 		// Source: https://github.com/vstelmakh/url-highlight/blob/master/src/Matcher/Matcher.php.
 		$this->regex = '/' . $prefix . '
             (?:                                                      # scheme
-                (?<scheme>https?:)?                                  # Only consider http and https
-                \/\/                                                 # The protocol does not have to be there, but when
-                                                                     # it is, is must be followed by \/\/
+                (?<scheme>[a-z0-9\+]+?:)?                            #
+                (?:\/*)                                              # The protocol may optionally be followed by one or more slashes
             )?
             (?:                                                        # userinfo
                 (?:
@@ -137,12 +166,12 @@ class URLInTextProcessor {
                 (?<userinfo>[^\s<>@\/]+)                                   # not: whitespace, < > @ \/
                 @                                                          # at
             )?
-            (?=[^\p{Z}\p{Sm}\p{Sc}\p{Sk}\p{C}\p{P}])                   # followed by valid host char
+            (?=%|[^\p{Z}\p{Sm}\p{Sc}\p{Sk}\p{C}\p{P}])                   # followed by valid host char
             (?|                                                        # host
                 (?<host>                                                   # host prefixed by scheme or userinfo (less strict)
                     (?<=\/\/|@)                                               # prefixed with \/\/ or @
                     (?=[^\-])                                                  # label start, not: -
-                    (?:[^\p{Z}\p{Sm}\p{Sc}\p{Sk}\p{C}\p{P}]|-){1,63}           # label not: whitespace, mathematical, currency, modifier symbol, control point, punctuation | except -
+                    (?:%|[^\p{Z}\p{Sm}\p{Sc}\p{Sk}\p{C}\p{P}]|-){1,63}         # label not: whitespace, mathematical, currency, modifier symbol, control point, punctuation | except -
                     (?<=[^\-])                                                 # label end, not: -
                     (?:                                                        # more label parts
                         \.
@@ -154,18 +183,18 @@ class URLInTextProcessor {
                 |                                                          # or
                 (?<host>                                                   # host with tld (no scheme or userinfo)
                     (?=[^\-])                                                  # label start, not: -
-                    (?:[^\p{Z}\p{Sm}\p{Sc}\p{Sk}\p{C}\p{P}]|-){1,63}           # label not: whitespace, mathematical, currency, modifier symbol, control point, punctuation | except -
+                    (?:%|[^\p{Z}\p{Sm}\p{Sc}\p{Sk}\p{C}\p{P}]|-){1,63}         # label not: whitespace, mathematical, currency, modifier symbol, control point, punctuation | except -
                     (?<=[^\-])                                                 # label end, not: -
                     (?:                                                        # more label parts
                         \.
                         (?=[^\-])                                                  # label start, not: -
-                        (?:[^\p{Z}\p{Sm}\p{Sc}\p{Sk}\p{C}\p{P}]|-){1,63}           # label not: whitespace, mathematical, currency, modifier symbol, control point, punctuation | except -
+                        (?:%|[^\p{Z}\p{Sm}\p{Sc}\p{Sk}\p{C}\p{P}]|-){1,63}         # label not: whitespace, mathematical, currency, modifier symbol, control point, punctuation | except -
                         (?<=[^\-])                                                 # label end, not: -
                     )*
                     \.(?<tld>\w{2,63})                                         # tld
                 )
             )
-            (?:\:(?<port>\d+))?                                        # port
+            (?:\:(?<port>\d{1,5}(?!\d)))?                              # port
             (?<path>                                                   # path, query, fragment
                 [\/?#]                                                 # prefixed with \/ or ? or #
                 [^\s<>]*                                               # any chars except whitespace and <>
@@ -178,12 +207,13 @@ class URLInTextProcessor {
 	 * @return string
 	 */
 	public function next_url() {
-		$this->raw_url              = null;
-		$this->parsed_url           = null;
-		$this->url_starts_at        = null;
-		$this->url_length           = null;
-		$this->did_prepend_protocol = false;
 		while ( true ) {
+			$this->matched_url          = null;
+			$this->parsed_url           = null;
+			$this->url_starts_at        = null;
+			$this->url_length           = null;
+			$this->did_prepend_protocol = false;
+
 			/**
 			 * Thick sieve – eagerly match things that look like URLs but turn out to not be URLs in the end.
 			 */
@@ -193,33 +223,48 @@ class URLInTextProcessor {
 				return false;
 			}
 
-			$matched_url = $matches[0][0];
-			if (
-				')' === $matched_url[ strlen( $matched_url ) - 1 ] ||
-				'.' === $matched_url[ strlen( $matched_url ) - 1 ]
-			) {
-				$matched_url = substr( $matched_url, 0, - 1 );
+			$this->matched_url = $matches[0][0];
+			// Do not consider just :: as a URL.
+			if ( '::' === $this->matched_url ) {
+				continue;
 			}
-			$this->bytes_already_parsed = $matches[0][1] + strlen( $matched_url );
+			if (
+				')' === $this->matched_url[ strlen( $this->matched_url ) - 1 ] ||
+				'.' === $this->matched_url[ strlen( $this->matched_url ) - 1 ]
+			) {
+				$this->matched_url = substr( $this->matched_url, 0, - 1 );
+			}
+			$url_starts_at              = $matches[0][1];
+			$this->bytes_already_parsed = $url_starts_at + strlen( $this->matched_url );
 
-			$had_double_slash = WPURL::has_double_slash( $matched_url );
+			$had_protocol = WPURL::has_http_https_protocol( $this->matched_url );
 
-			$url_to_parse = $matched_url;
-			if ( $this->base_url && $this->base_protocol && ! $had_double_slash ) {
-				$url_to_parse               = WPURL::ensure_protocol( $url_to_parse, $this->base_protocol );
+			$preprocessed_url = $this->matched_url;
+			if ( $this->base_url && $this->base_protocol && ! $had_protocol ) {
+				$preprocessed_url           = WPURL::ensure_protocol( $preprocessed_url, $this->base_protocol );
 				$this->did_prepend_protocol = true;
 			}
 
 			/*
 			 * Extra fine sieve – parse the candidates using a WHATWG-compliant parser to rule out false positives.
 			 */
-			$parsed_url = WPURL::parse( $url_to_parse, $this->base_url );
+			$parsed_url = WPURL::parse( $preprocessed_url, $this->base_url );
 			if ( false === $parsed_url ) {
 				continue;
 			}
 
+			// Only consider HTTP and HTTPS URLs.
+			if ( $parsed_url->protocol && ! in_array( $parsed_url->protocol, array( 'http:', 'https:' ), true ) ) {
+				continue;
+			}
+
+			// Disregard URLs with auth details.
+			if ( $parsed_url->username || $parsed_url->password ) {
+				continue;
+			}
+
 			// Additional rigor for URLs that are not explicitly preceded by a double slash.
-			if ( ! $had_double_slash ) {
+			if ( ! $had_protocol ) {
 				/*
 				 * Skip TLDs that are not in the public suffix.
 				 * This reduces false positives like `index.html` or `plugins.php`.
@@ -238,16 +283,15 @@ class URLInTextProcessor {
 					continue;
 				}
 
-				$tld = strtolower( substr( $parsed_url->hostname, $last_dot_position + 1 ) );
-				if ( empty( self::$public_suffix_list[ $tld ] ) && 'internal' !== $tld ) {
+				$tld = substr( $parsed_url->hostname, $last_dot_position + 1 );
+				if ( ! WPURL::is_known_public_domain( $tld ) ) {
 					// This TLD is not in the public suffix list. It's not a valid domain name.
 					continue;
 				}
 			}
 
 			$this->parsed_url    = $parsed_url;
-			$this->raw_url       = $matched_url;
-			$this->url_starts_at = $matches[0][1];
+			$this->url_starts_at = $url_starts_at;
 			$this->url_length    = strlen( $matches[0][0] );
 
 			return true;
@@ -255,11 +299,7 @@ class URLInTextProcessor {
 	}
 
 	public function get_raw_url() {
-		if ( null === $this->raw_url ) {
-			return false;
-		}
-
-		return $this->raw_url;
+		return $this->matched_url ?? false;
 	}
 
 	public function get_parsed_url() {
@@ -271,13 +311,13 @@ class URLInTextProcessor {
 	}
 
 	public function set_raw_url( $new_url ) {
-		if ( null === $this->raw_url ) {
+		if ( null === $this->matched_url ) {
 			return false;
 		}
 		if ( $this->did_prepend_protocol ) {
 			$new_url = substr( $new_url, strpos( $new_url, '://' ) + 3 );
 		}
-		$this->raw_url                                 = $new_url;
+		$this->matched_url                             = $new_url;
 		$this->lexical_updates[ $this->url_starts_at ] = new WP_HTML_Text_Replacement(
 			$this->url_starts_at,
 			$this->url_length,
