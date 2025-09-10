@@ -21,7 +21,7 @@
         "phpunit/phpunit": "^5.7.21 || ^6.5 || ^7.5"
     },
     "scripts": {
-        "e2e": "npx -y playwright test --timeout=1800000"
+        "e2e": "npx -y playwright test --timeout=300000"
     },
     "config": {
         "allow-plugins": {
