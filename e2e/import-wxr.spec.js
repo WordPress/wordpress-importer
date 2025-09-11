@@ -81,6 +81,24 @@ async function startPlayground(port, parser = null) {
 		};
 	}
 
+	blueprintConfig.blueprint.steps = [
+		...(blueprintConfig.blueprint?.steps || []),
+		{
+			step: 'mkdir',
+			path: 'wp-content/mu-plugins',
+		},
+		{
+			step: 'writeFile',
+			path: 'wp-content/mu-plugins/enable-url-rewriting.php',
+			content: `<?php
+				add_filter('wp_import_options', function($options) {
+					$options['rewrite_urls'] = true;
+					return $options;
+				});
+			`,
+		},
+	];
+
 	const { server } = await runCLI(blueprintConfig);
 
 	await waitUntilAlive(`${siteUrl}/wp-admin/`);
@@ -210,15 +228,17 @@ function normalizePostData(post) {
 // Helper: Normalize block markup for robust comparisons
 // TODO: Do not use regexps. Actually parse the HTML.
 function normalizeBlockMarkup(s) {
-	return String(s)
-		// Normalize <br>, <br/> and <br /> to a single form
-		.replace(/<br\s*\/?>(?=)|<br\s*\/?>(?!)/gi, '<br>')
-		// Remove visible dot characters that may appear in debug renderings
-		.replace(/\u00B7/g, '')
-		// Trim trailing spaces on lines
-		.replace(/[\t ]+$/gm, '')
-		// Collapse multiple blank lines
-		.replace(/\n{3,}/g, '\n\n');
+	return (
+		String(s)
+			// Normalize <br>, <br/> and <br /> to a single form
+			.replace(/<br\s*\/?>(?=)|<br\s*\/?>(?!)/gi, '<br>')
+			// Remove visible dot characters that may appear in debug renderings
+			.replace(/\u00B7/g, '')
+			// Trim trailing spaces on lines
+			.replace(/[\t ]+$/gm, '')
+			// Collapse multiple blank lines
+			.replace(/\n{3,}/g, '\n\n')
+	);
 }
 
 // Helper: Verify post in admin list
