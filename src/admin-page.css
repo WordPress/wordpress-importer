@@ -1,0 +1,345 @@
+/**
+ * WordPress Importer Results Admin Page Styles
+ */
+
+.tools_page_wordpress-importer-results #wpcontent {
+	padding-left: 0;
+}
+
+.import-results-wrap {
+	margin: 0;
+}
+
+.import-results-header {
+	margin: 0 0 1em;
+	padding: 0;
+	text-align: center;
+	background-color: #fff;
+	border-bottom: 1px solid #dcdcde;
+}
+
+.import-results-title-section {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.import-results-title-section h1 {
+	display: inline-block;
+	font-weight: 600;
+	margin: 0;
+	font-size: 23px;
+	line-height: 1.3;
+	margin: 3rem 0 2rem;
+}
+
+.import-progress-wrapper {
+	display: flex;
+	align-items: center;
+	gap: 1em;
+}
+
+.import-progress {
+	width: 60px;
+	height: 60px;
+	position: relative;
+}
+
+.import-progress svg {
+	width: 100%;
+	height: 100%;
+	transform: rotate(-90deg);
+}
+
+.import-progress circle {
+	stroke-width: 8;
+}
+
+.import-progress circle:first-child {
+	stroke: #e0e0e0;
+}
+
+.import-progress circle#progress-bar {
+	stroke: #00a32a;
+	transition: stroke-dashoffset 0.3s ease;
+}
+
+.import-progress-label {
+	font-size: 14px;
+	color: #646970;
+}
+
+.import-results-tab {
+	display: inline-block;
+	text-decoration: none;
+	color: inherit;
+	transition: color 0.2s, border-color 0.2s;
+	padding:0.5rem 1rem 1rem;
+}
+
+.import-results-tab:hover,
+.import-results-tab:focus {
+	color: #135e96;
+	text-decoration: none;
+}
+
+.import-results-tab.active {
+	/*color: #135e96;*/
+	box-shadow: inset 0 -3px #3582c4;
+	font-weight: 600;
+}
+
+.import-results-body {
+	max-width: 800px;
+	margin: 0 auto;
+}
+
+.import-status-success {
+	background: #f0f6fc;
+	border: 1px solid #c3c4c7;
+	border-left: 4px solid #00a32a;
+	padding: 2em;
+	text-align: center;
+	margin: 2em 0;
+}
+
+.import-status-success .icon {
+	font-size: 48px;
+	color: #00a32a;
+	margin-bottom: 0.5em;
+}
+
+.import-status-success .encouragement {
+	font-size: 18px;
+	font-weight: 600;
+	color: #1d2327;
+	margin: 0 0 0.5em;
+}
+
+.import-results-stats {
+	margin: 2em 0;
+}
+
+.stats-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+	gap: 1em;
+	margin: 1em 0;
+}
+
+.stat-item {
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	padding: 1em;
+	text-align: center;
+}
+
+.stat-number {
+	display: block;
+	font-size: 24px;
+	font-weight: 600;
+	color: #135e96;
+	margin-bottom: 0.25em;
+}
+
+.stat-label {
+	font-size: 14px;
+	color: #646970;
+}
+
+.import-results-issues-wrapper {
+	margin: 2em 0;
+}
+
+.import-issue-count-title {
+	font-size: 16px;
+	font-weight: 600;
+	margin: 0 0 0.5em;
+	color: #1d2327;
+}
+
+.import-results-accordion {
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	margin: 1em 0;
+}
+
+.accordion-item {
+	border-bottom: 1px solid #c3c4c7;
+}
+
+.accordion-item:last-child {
+	border-bottom: none;
+}
+
+.import-results-accordion-heading {
+	margin: 0;
+}
+
+.import-results-accordion-trigger {
+	display: flex;
+	align-items: center;
+	width: 100%;
+	padding: 1em;
+	background: #fff;
+	border: none;
+	text-align: left;
+	cursor: pointer;
+	transition: background-color 0.2s;
+}
+
+.import-results-accordion-trigger:hover,
+.import-results-accordion-trigger:focus {
+	background: #f6f7f7;
+}
+
+.import-results-accordion-trigger .title {
+	flex: 1;
+	font-weight: 600;
+}
+
+.import-results-accordion-trigger .badge {
+	padding: 4px 8px;
+	border-radius: 3px;
+	font-size: 12px;
+	font-weight: 600;
+	text-transform: uppercase;
+	margin-left: 1em;
+}
+
+.badge.error {
+	background: #d63638;
+	color: #fff;
+}
+
+.badge.warning {
+	background: #dba617;
+	color: #fff;
+}
+
+.badge.success {
+	background: #00a32a;
+	color: #fff;
+}
+
+.import-results-accordion-trigger .icon {
+	width: 20px;
+	height: 20px;
+	margin-left: 1em;
+	position: relative;
+}
+
+.import-results-accordion-trigger .icon::before,
+.import-results-accordion-trigger .icon::after {
+	content: '';
+	position: absolute;
+	background: #646970;
+	transition: transform 0.2s;
+}
+
+.import-results-accordion-trigger .icon::before {
+	width: 12px;
+	height: 2px;
+	top: 9px;
+	left: 4px;
+}
+
+.import-results-accordion-trigger .icon::after {
+	width: 2px;
+	height: 12px;
+	top: 4px;
+	left: 9px;
+	transform: rotate(0deg);
+}
+
+.import-results-accordion-trigger[aria-expanded="true"] .icon::after {
+	transform: rotate(90deg);
+}
+
+.import-results-accordion-panel {
+	padding: 1em;
+	background: #f6f7f7;
+	border-top: 1px solid #c3c4c7;
+}
+
+.import-results-view-more {
+	margin: 2em 0;
+	text-align: center;
+}
+
+.wp-core-ui .button.import-results-view-success {
+	padding: 0 30px 0 20px;
+}
+
+.import-results-view-success .icon {
+	width: 16px;
+	height: 16px;
+	position: relative;
+}
+
+.import-results-view-success .icon::before {
+	content: '';
+	position: absolute;
+	width: 8px;
+	height: 8px;
+	border-right: 2px solid currentColor;
+	border-bottom: 2px solid currentColor;
+	transform: rotate(45deg);
+	top: 2px;
+	left: 4px;
+	transition: transform 0.2s;
+}
+
+.import-results-view-success[aria-expanded="true"] .icon::before {
+	transform: rotate(-135deg);
+	top: 6px;
+}
+
+.import-results-details-tab {
+	margin: 2em 0;
+}
+
+.import-details-content {
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	padding: 2em;
+	margin: 1em 0;
+}
+
+/* Loading state */
+.loading .import-progress circle#progress-bar {
+	stroke: #3582c4;
+	animation: importProgressSpin 1s linear infinite;
+}
+
+@keyframes importProgressSpin {
+	0% {
+		stroke-dasharray: 0 565.48;
+	}
+	50% {
+		stroke-dasharray: 282.74 282.74;
+	}
+	100% {
+		stroke-dasharray: 0 565.48;
+	}
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+	.import-results-title-section {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 1em;
+	}
+
+	.stats-grid {
+		grid-template-columns: repeat(2, 1fr);
+	}
+
+	.import-results-tabs-wrapper {
+		overflow-x: auto;
+		white-space: nowrap;
+	}
+}
