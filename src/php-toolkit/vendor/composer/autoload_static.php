@@ -79,7 +79,7 @@ class ComposerStaticInit9801abce1960fa4b71d115bb31b779c7
         'WordPress\\ByteStream\\ByteStreamException' => __DIR__ . '/../..' . '/ByteStream/class-bytestreamexception.php',
         'WordPress\\ByteStream\\NotEnoughDataException' => __DIR__ . '/../..' . '/ByteStream/class-notenoughdataexception.php',
         'WordPress\\ByteStream\\ReadStream\\BaseByteReadStream' => __DIR__ . '/../..' . '/ByteStream/ReadStream/class-basebytereadstream.php',
-        'WordPress\\ByteStream\\ReadStream\\ByteReadStream' => __DIR__ . '/../..' . '/ByteStream/ReadStream/class-bytereadstream.php',
+        'WordPress\\ByteStream\\ReadStream\\ByteReadStream' => __DIR__ . '/../..' . '/ByteStream/ReadStream/interface-bytereadstream.php',
         'WordPress\\ByteStream\\ReadStream\\FileReadStream' => __DIR__ . '/../..' . '/ByteStream/ReadStream/class-filereadstream.php',
         'WordPress\\DataLiberation\\BlockMarkup\\BlockMarkupProcessor' => __DIR__ . '/../..' . '/DataLiberation/BlockMarkup/class-blockmarkupprocessor.php',
         'WordPress\\DataLiberation\\BlockMarkup\\BlockMarkupUrlProcessor' => __DIR__ . '/../..' . '/DataLiberation/BlockMarkup/class-blockmarkupurlprocessor.php',

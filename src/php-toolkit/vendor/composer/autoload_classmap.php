@@ -10,7 +10,7 @@ return array(
     'WordPress\\ByteStream\\ByteStreamException' => $baseDir . '/ByteStream/class-bytestreamexception.php',
     'WordPress\\ByteStream\\NotEnoughDataException' => $baseDir . '/ByteStream/class-notenoughdataexception.php',
     'WordPress\\ByteStream\\ReadStream\\BaseByteReadStream' => $baseDir . '/ByteStream/ReadStream/class-basebytereadstream.php',
-    'WordPress\\ByteStream\\ReadStream\\ByteReadStream' => $baseDir . '/ByteStream/ReadStream/class-bytereadstream.php',
+    'WordPress\\ByteStream\\ReadStream\\ByteReadStream' => $baseDir . '/ByteStream/ReadStream/interface-bytereadstream.php',
     'WordPress\\ByteStream\\ReadStream\\FileReadStream' => $baseDir . '/ByteStream/ReadStream/class-filereadstream.php',
     'WordPress\\DataLiberation\\BlockMarkup\\BlockMarkupProcessor' => $baseDir . '/DataLiberation/BlockMarkup/class-blockmarkupprocessor.php',
     'WordPress\\DataLiberation\\BlockMarkup\\BlockMarkupUrlProcessor' => $baseDir . '/DataLiberation/BlockMarkup/class-blockmarkupurlprocessor.php',
