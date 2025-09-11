@@ -14,6 +14,75 @@
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  */
 
+// Admin menu and scripts should always be available
+add_action( 'admin_menu', 'wordpress_importer_add_admin_page' );
+add_action( 'admin_enqueue_scripts', 'enqueue_wordpress_importer_scripts' );
+
+function wordpress_importer_add_admin_page() {
+	$hook = add_submenu_page(
+		'tools.php',
+		__( 'Import Results', 'wordpress-importer' ),
+		__( 'Import Results', 'wordpress-importer' ),
+		'manage_options',
+		'wordpress-importer-results',
+		'wordpress_importer_results_page'
+	);
+	
+	// Debug: Log the hook to see if it's being registered
+	if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+		error_log( 'WordPress Importer admin page hook: ' . $hook );
+	}
+}
+
+function wordpress_importer_results_page() {
+	// Debug: Log when the page is being called
+	if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+		error_log( 'WordPress Importer results page called' );
+	}
+	
+	// Check if we can access the admin page file
+	$admin_page_file = __DIR__ . '/admin-page.php';
+	if ( ! file_exists( $admin_page_file ) ) {
+		wp_die( __( 'Admin page file not found.', 'wordpress-importer' ) );
+	}
+	
+	require_once $admin_page_file;
+}
+
+function enqueue_wordpress_importer_scripts( $hook_suffix ) {
+	wp_register_script_module(
+		'@wordpress-importer/import-screen',
+		plugin_dir_url( __FILE__ ) . 'import-screen.js',
+		array( '@wordpress/interactivity', '@wordpress/interactivity-router', 'wp-api-fetch' )
+	);
+	wp_enqueue_script( 'wp-api-fetch' );
+	wp_enqueue_script_module(
+		'@wordpress-importer/import-screen',
+		plugin_dir_url( __FILE__ ) . 'import-screen.js',
+		array( '@wordpress/interactivity', '@wordpress/interactivity-router' )
+	);
+
+	// Enqueue styles and scripts for the results page
+	if ( $hook_suffix === 'tools_page_wordpress-importer-results' ) {
+		wp_enqueue_style(
+			'wordpress-importer-admin',
+			plugin_dir_url( __FILE__ ) . 'admin-page.css',
+			array(),
+			'0.9.0'
+		);
+		
+		// Ensure interactivity API is available for results page
+		wp_enqueue_script_module( '@wordpress/interactivity' );
+		
+		wp_enqueue_script_module(
+			'@wordpress-importer/results',
+			plugin_dir_url( __FILE__ ) . 'results.js',
+			array( '@wordpress/interactivity' ),
+			'0.9.0'
+		);
+	}
+}
+
 if ( ! defined( 'WP_LOAD_IMPORTERS' ) ) {
 	return;
 }
@@ -105,19 +174,3 @@ add_action( 'rest_api_init', function () {
 		},
 	) );
 } );
-
-add_action( 'admin_enqueue_scripts', 'enqueue_wordpress_importer_scripts' );
-
-function enqueue_wordpress_importer_scripts() {
-	wp_register_script_module(
-		'@wordpress-importer/import-screen',
-		plugin_dir_url( __FILE__ ) . 'import-screen.js',
-		array( '@wordpress/interactivity', '@wordpress/interactivity-router', 'wp-api-fetch' )
-	);
-	wp_enqueue_script( 'wp-api-fetch' );
-	wp_enqueue_script_module(
-		'@wordpress-importer/import-screen',
-		plugin_dir_url( __FILE__ ) . 'import-screen.js',
-		array( '@wordpress/interactivity', '@wordpress/interactivity-router' )
-	);
-}
