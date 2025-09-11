@@ -85,11 +85,11 @@ async function startPlayground(port, parser = null) {
 		...(blueprintConfig.blueprint?.steps || []),
 		{
 			step: 'mkdir',
-			path: 'wp-content/mu-plugins',
+			path: '/wordpress/wp-content/mu-plugins',
 		},
 		{
 			step: 'writeFile',
-			path: 'wp-content/mu-plugins/enable-url-rewriting.php',
+			path: '/wordpress/wp-content/mu-plugins/enable-url-rewriting.php',
 			data: `<?php
 				add_filter('wp_import_options', function($options) {
 					$options['rewrite_urls'] = true;
