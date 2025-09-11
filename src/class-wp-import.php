@@ -96,7 +96,7 @@ class WP_Import extends WP_Importer {
 			)
 		);
 
-		$this->options = apply_filters( 'wp_import_options', $this->options, $options );
+		$this->options = apply_filters( 'wp_import_options', $options );
 
 		/**
 		 * If URL rewriting was requested but the WP version is too old, report
