@@ -70,7 +70,7 @@ abstract class BaseByteReadStream implements ByteReadStream {
 		return $this->expected_length;
 	}
 
-	public function pull( $n = self::CHUNK_SIZE_BYTES, $mode = self::PULL_NO_MORE_THAN ): int {
+	public function pull( ?int $n = self::CHUNK_SIZE_BYTES, string $mode = self::PULL_NO_MORE_THAN ): int {
 		switch ( $mode ) {
 			case self::PULL_NO_MORE_THAN:
 			case self::PULL_EXACTLY:
@@ -154,11 +154,11 @@ abstract class BaseByteReadStream implements ByteReadStream {
 
 	abstract protected function internal_pull( $n ): string;
 
-	public function peek( $n ): string {
+	public function peek( int $n ): string {
 		return substr( $this->buffer, $this->offset_in_current_buffer, $n );
 	}
 
-	public function consume( $n ): string {
+	public function consume( int $n ): string {
 		if ( strlen( $this->buffer ) < $this->offset_in_current_buffer + $n ) {
 			throw new NotEnoughDataException( 'Cannot consume more bytes than available in the buffer.' );
 		}

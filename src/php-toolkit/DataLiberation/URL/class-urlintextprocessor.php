@@ -6,24 +6,32 @@ use WordPress\DataLiberation\BlockMarkup\URL;
 use WP_HTML_Text_Replacement;
 
 /**
- * Finds string fragments that look like URLs and allow replacing them.
- * This is the first, "thick" sieve that yields "URL candidates" that must be
- * validated with a WHATWG-compliant parser. Some of the candidates will be
- * false positives.
+ * Finds string fragments that look like URLs and allows replacing them.
  *
- * This is a "thick sieve" that matches too much instead of too little. It
- * will yield false positives, but will not miss a URL
+ * This class implements two stages of detection:
  *
- * Looks for URLs:
+ * 1. **A "thick" sieve**
+ * 2. **A "fine" sieve**
  *
- * * Starting with http:// or https://
- * * Starting with //
- * * Domain-only, e.g. www.example.com
- * * Domain + path, e.g. www.example.com/path
+ * The thick sieve uses a regular expression to match URL-like substrings. It matches too
+ * much and may yield false positives.
+ *
+ * The fine sieve filters out invalid candidates using a WHATWG-compliant parser so only
+ * real URLs are returned.
+ *
+ * ## URL Detection
+ *
+ * The thick sieve looks for URLs:
+ *
+ * * Starting with http://, https://, or //, e.g. //wp.org.
+ * * With no protocol, e.g. www.wp.org or wp.org/path
+ *
+ * Here's a list of matching-related rules, limitations, and assumptions:
  *
  * ### Protocols
  *
- * As a migration-oriented tool, this processor will only consider http and https protocols.
+ * As a site migration tool, this processor only considers URLs with HTTP
+ * and HTTPS protocols.
  *
  * ### Domain names
  *

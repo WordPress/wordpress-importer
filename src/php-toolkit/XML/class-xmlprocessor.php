@@ -1241,7 +1241,7 @@ class XMLProcessor {
 				$attribute->namespace                          = $namespace_reference;
 			}
 
-			// Store attributes with their namespaces and discard the temporary.
+			// Store attributes with their namespaces and discard the temporary
 			// qualified attributes array.
 			$this->attributes           = $namespaced_attributes;
 			$this->qualified_attributes = array();
@@ -1989,7 +1989,7 @@ class XMLProcessor {
 				'm' === $xml[ $at + 3 ] &&
 				'l' === $xml[ $at + 4 ]
 			) {
-				// Setting the parser state early for the get_attribute_by_qualified_name() calls later in this.
+				// Setting the parser state early for the get_attribute_by_qualified_name() calls later in this
 				// branch.
 				$this->parser_state = self::STATE_XML_DECLARATION;
 
@@ -2073,8 +2073,8 @@ class XMLProcessor {
 				$this->bytes_already_parsed = $at + 2;
 				$this->parser_state         = self::STATE_XML_DECLARATION;
 
-				// Processing instructions don't have namespaces. We can just.
-				// copy the qualified attributes to the attributes array without.
+				// Processing instructions don't have namespaces. We can just
+				// copy the qualified attributes to the attributes array without
 				// resolving anything.
 				$this->attributes           = $this->qualified_attributes;
 				$this->qualified_attributes = array();
@@ -2140,7 +2140,7 @@ class XMLProcessor {
 			++$at;
 		}
 
-		// There's no more tag openers and we're not expecting more data –.
+		// There's no more tag openers and we're not expecting more data –
 		// this mist be a trailing text node.
 		if ( ! $this->expecting_more_input ) {
 			$this->parser_state         = self::STATE_TEXT_NODE;
@@ -2376,8 +2376,8 @@ class XMLProcessor {
 	}
 
 	private function is_valid_name_codepoint( $codepoint, $is_first_character = false ) {
-		// Test against the NameStartChar pattern:.
-		// NameStartChar ::= ":" | [A-Z] | "_" | [a-z] | [#xC0-#xD6] | [#xD8-#xF6] | [#xF8-#x2FF] | [#x370-#x37D] | [#x37F-#x1FFF] | [#x200C-#x200D] | [#x2070-#x218F] | [#x2C00-#x2FEF] | [#x3001-#xD7FF] | [#xF900-#xFDCF] | [#xFDF0-#xFFFD] | [#x10000-#xEFFFF].
+		// Test against the NameStartChar pattern:
+		// NameStartChar ::= ":" | [A-Z] | "_" | [a-z] | [#xC0-#xD6] | [#xD8-#xF6] | [#xF8-#x2FF] | [#x370-#x37D] | [#x37F-#x1FFF] | [#x200C-#x200D] | [#x2070-#x218F] | [#x2C00-#x2FEF] | [#x3001-#xD7FF] | [#xF900-#xFDCF] | [#xFDF0-#xFFFD] | [#x10000-#xEFFFF]
 		// See `https://www.w3.org/TR/xml/#NT-Name`.
 		if (
 			// :.
@@ -2419,8 +2419,8 @@ class XMLProcessor {
 			return false;
 		}
 
-		// Test against the NameChar pattern:.
-		// NameChar ::= NameStartChar | "-" | "." | [0-9] | #xB7 | [#x0300-#x036F] | [#x203F-#x2040].
+		// Test against the NameChar pattern:
+		// NameChar ::= NameStartChar | "-" | "." | [0-9] | #xB7 | [#x0300-#x036F] | [#x203F-#x2040]
 		// See `https://www.w3.org/TR/xml/#NT-Name`.
 		return (
 			// "-".
@@ -3700,7 +3700,7 @@ class XMLProcessor {
 			}
 		}
 
-		// XML requires a root element. If we've reached the end of data in the prolog stage,.
+		// XML requires a root element. If we've reached the end of data in the prolog stage,
 		// before finding a root element, then the document is incomplete.
 		if ( self::STATE_COMPLETE === $this->parser_state ) {
 			$this->mark_incomplete_input();

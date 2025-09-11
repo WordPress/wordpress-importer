@@ -385,7 +385,7 @@ class BlockMarkupProcessor extends WP_HTML_Tag_Processor {
 				return true;
 			}
 
-			// The rest of the comment can only consist of block attributes.
+			// The rest of the comment can only consist of block attributes
 			// and an optional solidus character.
 			$rest = ltrim( substr( $text, $at ) );
 			$at   = strlen( $text );
@@ -402,7 +402,7 @@ class BlockMarkupProcessor extends WP_HTML_Tag_Processor {
 			if ( strlen( $json_maybe ) > 0 ) {
 				$attributes = json_decode( trim( $json_maybe ), true );
 				if ( null === $attributes || ! is_array( $attributes ) ) {
-					// This comment looked like a block comment, but the attributes didn't.
+					// This comment looked like a block comment, but the attributes didn't
 					// parse as a JSON array. This means it wasn't a block after all.
 					$this->last_block_error = new WP_Block_Parser_Error(
 						sprintf( '%s could be parsed as a delimiter but JSON attributes were malformed: %s.', $name, $json_maybe ),
@@ -414,8 +414,8 @@ class BlockMarkupProcessor extends WP_HTML_Tag_Processor {
 			}
 		}
 
-		// We have a block name and a valid attributes array. We may not find a block.
-		// closer, but let's assume is a block and process it as such.
+		// We have a block name and a valid attributes array. We may not find a block
+		// closer, but let's assume is a block and process it as such
 		// @TODO: Confirm that WordPress block parser would have parsed this as a block.
 		$this->block_name       = $name;
 		$this->block_attributes = $attributes;

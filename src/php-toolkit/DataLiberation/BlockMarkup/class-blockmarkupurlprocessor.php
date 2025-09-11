@@ -69,7 +69,7 @@ class BlockMarkupUrlProcessor extends BlockMarkupProcessor {
 		$this->parsed_url                 = null;
 		$this->inspecting_html_attributes = null;
 		$this->url_in_text_processor      = null;
-		// Do not reset url_in_text_node_updated – it's reset in get_updated_html() which.
+		// Do not reset url_in_text_node_updated – it's reset in get_updated_html() which
 		// is called in parent::next_token().
 
 		return parent::next_token();
@@ -300,7 +300,7 @@ class BlockMarkupUrlProcessor extends BlockMarkupProcessor {
 			$new_raw_url = rtrim( $new_raw_url, '/' );
 		}
 		if ( ! $new_raw_url ) {
-			// @TODO: When does this happen? Let's add the test coverage and.
+			// @TODO: When does this happen? Let's add the test coverage and
 			// doubly verify the logic.
 			return false;
 		}
