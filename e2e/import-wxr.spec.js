@@ -90,7 +90,7 @@ async function startPlayground(port, parser = null) {
 		{
 			step: 'writeFile',
 			path: 'wp-content/mu-plugins/enable-url-rewriting.php',
-			content: `<?php
+			data: `<?php
 				add_filter('wp_import_options', function($options) {
 					$options['rewrite_urls'] = true;
 					return $options;
