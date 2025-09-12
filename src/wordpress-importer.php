@@ -27,7 +27,7 @@ function wordpress_importer_add_admin_page() {
 		'wordpress-importer-results',
 		'wordpress_importer_results_page'
 	);
-	
+
 	// Debug: Log the hook to see if it's being registered
 	if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 		error_log( 'WordPress Importer admin page hook: ' . $hook );
@@ -39,13 +39,13 @@ function wordpress_importer_results_page() {
 	if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 		error_log( 'WordPress Importer results page called' );
 	}
-	
+
 	// Check if we can access the admin page file
 	$admin_page_file = __DIR__ . '/admin-page.php';
 	if ( ! file_exists( $admin_page_file ) ) {
 		wp_die( __( 'Admin page file not found.', 'wordpress-importer' ) );
 	}
-	
+
 	require_once $admin_page_file;
 }
 
@@ -70,13 +70,13 @@ function enqueue_wordpress_importer_scripts( $hook_suffix ) {
 			array(),
 			'0.9.0'
 		);
-		
+
 		// Ensure interactivity API is available for results page
 		wp_enqueue_script_module( '@wordpress/interactivity' );
-		
+
 		wp_enqueue_script_module(
 			'@wordpress-importer/results',
-			plugin_dir_url( __FILE__ ) . 'results.js',
+			plugin_dir_url( __FILE__ ) . 'import-screen.js',
 			array( '@wordpress/interactivity' ),
 			'0.9.0'
 		);
