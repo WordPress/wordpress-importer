@@ -14,19 +14,19 @@ const PARSERS = ['simplexml', 'xml', 'regex', 'xmlprocessor'];
 
 // Run tests for each parser
 PARSERS.forEach((parser) => {
+	let stopPlayground;
+	test.beforeEach(async () => {
+		const port = await getAvailablePort();
+		const server = await startPlayground(port, parser);
+		PLAYGROUND_URL = server.url;
+		stopPlayground = server.stop;
+	});
+
+	test.afterEach(async () => {
+		await stopPlayground();
+	});
+
 	test.describe(`WXR Import with ${parser} parser`, () => {
-		let stopPlayground;
-		test.beforeEach(async () => {
-			const port = await getAvailablePort();
-			const server = await startPlayground(port, parser);
-			PLAYGROUND_URL = server.url;
-			stopPlayground = server.stop;
-		});
-
-		test.afterEach(async () => {
-			await stopPlayground();
-		});
-
 		test(`imports a simple WXR file using ${parser} parser`, async ({ page, request }) => {
 			// Run the import
 			await runWxrImport(page, 'wxr-simple.xml');
@@ -106,18 +106,18 @@ https://playground.internal/path-not-taken was the second best choice.
 			// Compare raw block markup with tolerant normalization (<br> vs <br />, minor whitespace)
 			const baseUrlExpected = `<!-- wp:paragraph -->
 <p>
-    <!-- Rewrites URLs that match the base URL -->
-    URLs to rewrite:
+<!-- Rewrites URLs that match the base URL -->
+URLs to rewrite:
 
-    ${PLAYGROUND_URL}
-    ${PLAYGROUND_URL}
-    ${PLAYGROUND_URL}
-    ${PLAYGROUND_URL}/
-    <a href=\"${PLAYGROUND_URL}/wp-content/image.png\">Test</a>
+${PLAYGROUND_URL}
+${PLAYGROUND_URL}
+${PLAYGROUND_URL}
+${PLAYGROUND_URL}/
+<a href=\"${PLAYGROUND_URL}/wp-content/image.png\">Test</a>
 
-    <!-- Correctly ignores URLs that are similar to the base URL but do not match it -->
-    This isn't migrated: https://🚀-science.comcast/science <br>
-    Or this: super-🚀-science.com/science
+<!-- Correctly ignores URLs that are similar to the base URL but do not match it -->
+This isn't migrated: https://🚀-science.comcast/science <br>
+Or this: super-🚀-science.com/science
 </p>
 <!-- /wp:paragraph -->
 
@@ -156,6 +156,71 @@ https://playground.internal/path-not-taken was the second best choice.
 	});
 });
 
+test.describe('General tests', () => {
+	let stopPlayground;
+	test.beforeEach(async () => {
+		const port = await getAvailablePort();
+		const server = await startPlayground(port);
+		PLAYGROUND_URL = server.url;
+		stopPlayground = server.stop;
+	});
+
+	test.afterEach(async () => {
+		await stopPlayground();
+	});
+
+	test(`URLs are not rewritten when the checkbox is unchecked`, async ({
+		page,
+		request,
+	}) => {
+		// Run the import
+		await runWxrImport(page, 'wxr-simple.xml', { rewriteUrls: false });
+
+		// Get posts (edit context to access raw block markup) and find the imported one
+		const posts = await getPostsEdit(page, 'Road Not Taken');
+		expect(posts.length).toBeGreaterThan(0);
+		const post = findPostByTitle(posts, 'The Road Not Taken');
+
+		// Verify post data
+		const normalized = normalizePostData(post);
+		expect(normalized).toMatchObject({
+			status: 'publish',
+			type: 'post',
+			sticky: false,
+			title: expect.stringContaining('The Road Not Taken'),
+			slug: expect.stringMatching(/^hello-world/),
+			datePrefix: '2024-06-05',
+			authorSlug: 'admin',
+			categories: expect.arrayContaining(['uncategorized']),
+			comment_status: expect.stringMatching(/^(open|closed)$/),
+			ping_status: expect.stringMatching(/^(open|closed)$/),
+		});
+
+		// Compare raw block markup with tolerant normalization (<br> vs <br />, minor whitespace)
+		const simpleExpected = `<!-- wp:paragraph -->
+<p>Two roads diverged in a yellow wood,<br>And sorry I could not travel both</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>
+<a href="https://playground.internal/path/one">One</a> seemed great, but <a href="https://playground.internal/path-not-taken">the other</a> seemed great too.
+There was also a <a href="https://w.org">third</a> option, but it was not as great.
+
+playground.internal/path/one was the best choice.
+https://playground.internal/path-not-taken was the second best choice.
+</p>
+<!-- /wp:paragraph -->`;
+		expect(normalizeBlockMarkup(normalized.rawContent)).toContain(
+			normalizeBlockMarkup(simpleExpected)
+		);
+
+		// Verify frontend rendering
+		await goToPostFrontend(page, post);
+		await expect(page.getByText('Two roads diverged in a yellow wood')).toBeVisible();
+		await expect(page.getByRole('link', { name: 'One' })).toBeVisible();
+		await expect(page.locator('a[href="https://w.org"]')).toBeVisible();
+	});
+});
 
 // Helpers
 
@@ -231,24 +296,6 @@ async function startPlayground(port, parser = null) {
 		};
 	}
 
-	blueprintConfig.blueprint.steps = [
-		...(blueprintConfig.blueprint?.steps || []),
-		{
-			step: 'mkdir',
-			path: '/wordpress/wp-content/mu-plugins',
-		},
-		{
-			step: 'writeFile',
-			path: '/wordpress/wp-content/mu-plugins/enable-url-rewriting.php',
-			data: `<?php
-				add_filter('wp_import_options', function($options) {
-					$options['rewrite_urls'] = true;
-					return $options;
-				});
-			`,
-		},
-	];
-
 	const { server } = await runCLI(blueprintConfig);
 
 	await waitUntilAlive(`${siteUrl}/wp-admin/`);
@@ -265,7 +312,7 @@ function abs(u) {
 }
 
 // Helper: Run WXR import process
-async function runWxrImport(page, filename) {
+async function runWxrImport(page, filename, { rewriteUrls = true } = {}) {
 	// Extra time for CI/Playground
 	test.setTimeout(240000);
 
@@ -289,6 +336,12 @@ async function runWxrImport(page, filename) {
 	await page.waitForURL('**/admin.php?import=wordpress&step=1**', {
 		waitUntil: 'domcontentloaded',
 	});
+
+	if (rewriteUrls) {
+		await page.check('#rewrite-urls');
+	} else {
+		await page.uncheck('#rewrite-urls');
+	}
 
 	// Proceed to step=2 (author mapping defaults to current user)
 	await page.getByRole('button', { name: /^Submit$/i }).click();
