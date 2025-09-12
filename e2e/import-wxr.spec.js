@@ -9,6 +9,156 @@ const fs = require('fs');
 
 let PLAYGROUND_URL = '';
 
+// Define available parsers
+const PARSERS = ['simplexml', 'xml', 'regex', 'xmlprocessor'];
+
+// Run tests for each parser
+PARSERS.forEach((parser) => {
+	test.describe(`WXR Import with ${parser} parser`, () => {
+		let stopPlayground;
+		test.beforeEach(async () => {
+			const port = await getAvailablePort();
+			const server = await startPlayground(port, parser);
+			PLAYGROUND_URL = server.url;
+			stopPlayground = server.stop;
+		});
+
+		test.afterEach(async () => {
+			await stopPlayground();
+		});
+
+		test(`imports a simple WXR file using ${parser} parser`, async ({ page, request }) => {
+			// Run the import
+			await runWxrImport(page, 'wxr-simple.xml');
+
+			// Get posts (edit context to access raw block markup) and find the imported one
+			const posts = await getPostsEdit(page, 'Road Not Taken');
+			expect(posts.length).toBeGreaterThan(0);
+			const post = findPostByTitle(posts, 'The Road Not Taken');
+
+			// Verify post data
+			const normalized = normalizePostData(post);
+			expect(normalized).toMatchObject({
+				status: 'publish',
+				type: 'post',
+				sticky: false,
+				title: expect.stringContaining('The Road Not Taken'),
+				slug: expect.stringMatching(/^hello-world/),
+				datePrefix: '2024-06-05',
+				authorSlug: 'admin',
+				categories: expect.arrayContaining(['uncategorized']),
+				comment_status: expect.stringMatching(/^(open|closed)$/),
+				ping_status: expect.stringMatching(/^(open|closed)$/),
+			});
+
+			// Compare raw block markup with tolerant normalization (<br> vs <br />, minor whitespace)
+			const simpleExpected = `<!-- wp:paragraph -->
+<p>Two roads diverged in a yellow wood,<br>And sorry I could not travel both</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>
+<a href="${PLAYGROUND_URL}/one">One</a> seemed great, but <a href="https://playground.internal/path-not-taken">the other</a> seemed great too.
+There was also a <a href="https://w.org">third</a> option, but it was not as great.
+
+${PLAYGROUND_URL.slice('http://'.length)}/one was the best choice.
+https://playground.internal/path-not-taken was the second best choice.
+</p>
+<!-- /wp:paragraph -->`;
+			expect(normalizeBlockMarkup(normalized.rawContent)).toContain(
+				normalizeBlockMarkup(simpleExpected)
+			);
+
+			// Verify frontend rendering
+			await goToPostFrontend(page, post);
+			await expect(page.getByText('Two roads diverged in a yellow wood')).toBeVisible();
+			await expect(page.getByRole('link', { name: 'One' })).toBeVisible();
+			await expect(page.locator('a[href="https://w.org"]')).toBeVisible();
+		});
+
+		test(`imports a base URL rewriting WXR file using ${parser} parser`, async ({
+			page,
+			request,
+		}) => {
+			// Run the import
+			await runWxrImport(page, 'wxr-base-url-rewriting.xml');
+
+			// Get posts and find the imported one
+			const posts = await getPostsEdit(page, 'Road Not Taken');
+			expect(posts.length).toBeGreaterThan(0);
+			const post = findPostByTitle(posts, 'The Road Not Taken');
+
+			// Verify post data
+			const normalized = normalizePostData(post);
+			expect(normalized).toMatchObject({
+				status: 'publish',
+				type: 'post',
+				sticky: false,
+				title: expect.stringContaining('The Road Not Taken'),
+				slug: expect.stringMatching(/^hello-world/),
+				datePrefix: '2024-06-05',
+				authorSlug: 'admin',
+				categories: expect.arrayContaining(['uncategorized']),
+				comment_status: expect.stringMatching(/^(open|closed)$/),
+				ping_status: expect.stringMatching(/^(open|closed)$/),
+			});
+
+			// Compare raw block markup with tolerant normalization (<br> vs <br />, minor whitespace)
+			const baseUrlExpected = `<!-- wp:paragraph -->
+<p>
+    <!-- Rewrites URLs that match the base URL -->
+    URLs to rewrite:
+
+    ${PLAYGROUND_URL}
+    ${PLAYGROUND_URL}
+    ${PLAYGROUND_URL}
+    ${PLAYGROUND_URL}/
+    <a href=\"${PLAYGROUND_URL}/wp-content/image.png\">Test</a>
+
+    <!-- Correctly ignores URLs that are similar to the base URL but do not match it -->
+    This isn't migrated: https://🚀-science.comcast/science <br>
+    Or this: super-🚀-science.com/science
+</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:image {"src":"${PLAYGROUND_URL}/wp-content/image.png"} -->
+<img src="${PLAYGROUND_URL}/wp-content/image.png">
+<!-- /wp:image -->`;
+			expect(normalizeBlockMarkup(normalized.rawContent)).toContain(
+				normalizeBlockMarkup(baseUrlExpected)
+			);
+
+			// Verify frontend rendering
+			await goToPostFrontend(page, post);
+			await expect(page.getByText('URLs to rewrite')).toBeVisible();
+		});
+
+		test.describe('Comprehensive WXR import', () => {
+			test('imports with explicit author mapping to admin', async ({ page, request }) => {
+				test.setTimeout(300000);
+				await performImport(page, { mapAuthorsToAdmin: true });
+				await verifyImportedData(page, request, { expectAuthorSlug: 'admin' });
+			});
+
+			test('imports with default author mapping (current user)', async ({
+				page,
+				request,
+			}) => {
+				if (parser === 'regex') {
+					test.skip('WP_Regex_Parser has troubles with mapping authors');
+					return;
+				}
+				test.setTimeout(300000);
+				await performImport(page, { mapAuthorsToAdmin: false });
+				await verifyImportedData(page, request, { expectAuthorSlug: 'alice' });
+			});
+		});
+	});
+});
+
+
+// Helpers
+
 function sleep(ms) {
 	return new Promise((r) => setTimeout(r, ms));
 }
@@ -392,150 +542,3 @@ async function verifyImportedData(page, request, { expectAuthorSlug = 'admin' } 
 	await page.goto(post.link);
 	await expect(page.getByText('comprehensive post body')).toBeVisible();
 }
-
-// Define available parsers
-const PARSERS = ['simplexml', 'xml', 'regex', 'xmlprocessor'];
-
-// Run tests for each parser
-PARSERS.forEach((parser) => {
-	test.describe(`WXR Import with ${parser} parser`, () => {
-		let stopPlayground;
-		test.beforeEach(async () => {
-			const port = await getAvailablePort();
-			const server = await startPlayground(port, parser);
-			PLAYGROUND_URL = server.url;
-			stopPlayground = server.stop;
-		});
-
-		test.afterEach(async () => {
-			await stopPlayground();
-		});
-
-		test(`imports a simple WXR file using ${parser} parser`, async ({ page, request }) => {
-			// Run the import
-			await runWxrImport(page, 'wxr-simple.xml');
-
-			// Get posts (edit context to access raw block markup) and find the imported one
-			const posts = await getPostsEdit(page, 'Road Not Taken');
-			expect(posts.length).toBeGreaterThan(0);
-			const post = findPostByTitle(posts, 'The Road Not Taken');
-
-			// Verify post data
-			const normalized = normalizePostData(post);
-			expect(normalized).toMatchObject({
-				status: 'publish',
-				type: 'post',
-				sticky: false,
-				title: expect.stringContaining('The Road Not Taken'),
-				slug: expect.stringMatching(/^hello-world/),
-				datePrefix: '2024-06-05',
-				authorSlug: 'admin',
-				categories: expect.arrayContaining(['uncategorized']),
-				comment_status: expect.stringMatching(/^(open|closed)$/),
-				ping_status: expect.stringMatching(/^(open|closed)$/),
-			});
-
-			// Compare raw block markup with tolerant normalization (<br> vs <br />, minor whitespace)
-			const simpleExpected = `<!-- wp:paragraph -->
-<p>Two roads diverged in a yellow wood,<br>And sorry I could not travel both</p>
-<!-- /wp:paragraph -->
-
-<!-- wp:paragraph -->
-<p>
-<a href="${PLAYGROUND_URL}/one">One</a> seemed great, but <a href="https://playground.internal/path-not-taken">the other</a> seemed great too.
-There was also a <a href="https://w.org">third</a> option, but it was not as great.
-
-${PLAYGROUND_URL.slice('http://'.length)}/one was the best choice.
-https://playground.internal/path-not-taken was the second best choice.
-</p>
-<!-- /wp:paragraph -->`;
-			expect(normalizeBlockMarkup(normalized.rawContent)).toContain(
-				normalizeBlockMarkup(simpleExpected)
-			);
-
-			// Verify frontend rendering
-			await goToPostFrontend(page, post);
-			await expect(page.getByText('Two roads diverged in a yellow wood')).toBeVisible();
-			await expect(page.getByRole('link', { name: 'One' })).toBeVisible();
-			await expect(page.locator('a[href="https://w.org"]')).toBeVisible();
-		});
-
-		test(`imports a base URL rewriting WXR file using ${parser} parser`, async ({
-			page,
-			request,
-		}) => {
-			// Run the import
-			await runWxrImport(page, 'wxr-base-url-rewriting.xml');
-
-			// Get posts and find the imported one
-			const posts = await getPostsEdit(page, 'Road Not Taken');
-			expect(posts.length).toBeGreaterThan(0);
-			const post = findPostByTitle(posts, 'The Road Not Taken');
-
-			// Verify post data
-			const normalized = normalizePostData(post);
-			expect(normalized).toMatchObject({
-				status: 'publish',
-				type: 'post',
-				sticky: false,
-				title: expect.stringContaining('The Road Not Taken'),
-				slug: expect.stringMatching(/^hello-world/),
-				datePrefix: '2024-06-05',
-				authorSlug: 'admin',
-				categories: expect.arrayContaining(['uncategorized']),
-				comment_status: expect.stringMatching(/^(open|closed)$/),
-				ping_status: expect.stringMatching(/^(open|closed)$/),
-			});
-
-			// Compare raw block markup with tolerant normalization (<br> vs <br />, minor whitespace)
-			const baseUrlExpected = `<!-- wp:paragraph -->
-<p>
-    <!-- Rewrites URLs that match the base URL -->
-    URLs to rewrite:
-
-    ${PLAYGROUND_URL}
-    ${PLAYGROUND_URL}
-    ${PLAYGROUND_URL}
-    ${PLAYGROUND_URL}/
-    <a href=\"${PLAYGROUND_URL}/wp-content/image.png\">Test</a>
-
-    <!-- Correctly ignores URLs that are similar to the base URL but do not match it -->
-    This isn't migrated: https://🚀-science.comcast/science <br>
-    Or this: super-🚀-science.com/science
-</p>
-<!-- /wp:paragraph -->
-
-<!-- wp:image {"src":"${PLAYGROUND_URL}/wp-content/image.png"} -->
-<img src="${PLAYGROUND_URL}/wp-content/image.png">
-<!-- /wp:image -->`;
-			expect(normalizeBlockMarkup(normalized.rawContent)).toContain(
-				normalizeBlockMarkup(baseUrlExpected)
-			);
-
-			// Verify frontend rendering
-			await goToPostFrontend(page, post);
-			await expect(page.getByText('URLs to rewrite')).toBeVisible();
-		});
-
-		test.describe('Comprehensive WXR import', () => {
-			test('imports with explicit author mapping to admin', async ({ page, request }) => {
-				test.setTimeout(300000);
-				await performImport(page, { mapAuthorsToAdmin: true });
-				await verifyImportedData(page, request, { expectAuthorSlug: 'admin' });
-			});
-
-			test('imports with default author mapping (current user)', async ({
-				page,
-				request,
-			}) => {
-				if (parser === 'regex') {
-					test.skip('WP_Regex_Parser has troubles with mapping authors');
-					return;
-				}
-				test.setTimeout(300000);
-				await performImport(page, { mapAuthorsToAdmin: false });
-				await verifyImportedData(page, request, { expectAuthorSlug: 'alice' });
-			});
-		});
-	});
-});
