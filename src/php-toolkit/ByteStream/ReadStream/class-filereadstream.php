@@ -56,12 +56,14 @@ class FileReadStream extends BaseByteReadStream {
 	}
 
 	protected function seek_outside_of_buffer( int $target_offset ): void {
+		$retval = fseek( $this->file_pointer, $target_offset );
+		if ( -1 === $retval ) {
+			throw new ByteStreamException( 'Failed to seek to offset' );
+		}
+
 		$this->buffer                   = '';
 		$this->offset_in_current_buffer = 0;
 		$this->bytes_already_forgotten  = $target_offset;
-		if ( false === fseek( $this->file_pointer, $target_offset ) ) {
-			throw new ByteStreamException( 'Failed to seek to offset' );
-		}
 	}
 
 	public function close_reading(): void {

@@ -26,7 +26,15 @@ use WordPress\DataLiberation\BlockMarkup\BlockMarkupUrlProcessor;
  * * Support UTF-16 characters
  * * Gracefully handle recoverable encoding issues
  * * Avoid changing the whitespace in the same manner as
- *   we do in WP_HTML_Tag_Processor
+ *   we do in WP_HTML_Tag_Processor. e.g. if we start with:
+ *
+ * ```html
+ * <!-- wp:block {"url":"https://w.org"}` -->
+ *                     ^ no space here
+ * ```
+ *
+ * then it would be nice to re-encode that block markup also without the space character. This is similar
+ * to how the tag processor avoids changing parts of the tag it doesn't need to change.
  */
 function wp_rewrite_urls( $options ) {
 	if ( empty( $options['base_url'] ) ) {
@@ -57,14 +65,14 @@ function wp_rewrite_urls( $options ) {
 	return $p->get_updated_html();
 }
 
-	/**
-	 * Check if a given URL matches the current site URL.
-	 *
-	 * @param  URL    $child  The URL to check.
-	 * @param  string $parent_url  The current site URL to compare against.
-	 *
-	 * @return bool Whether the URL matches the current site URL.
-	 */
+/**
+ * Check if a given URL matches the current site URL.
+ *
+ * @param  URL    $child  The URL to check.
+ * @param  string $parent_url  The current site URL to compare against.
+ *
+ * @return bool Whether the URL matches the current site URL.
+ */
 function is_child_url_of( $child, $parent_url ) {
 	$parent_url                       = is_string( $parent_url ) ? WPURL::parse( $parent_url ) : $parent_url;
 	$child                            = is_string( $child ) ? WPURL::parse( $child ) : $child;
@@ -105,6 +113,11 @@ function is_child_url_of( $child, $parent_url ) {
  * @return string The decoded string.
  */
 function urldecode_n( $input, $decode_n ) {
+	// Fast paths: nothing to do.
+	if ( $decode_n <= 0 || false === strpos( $input, '%' ) ) {
+			return $input;
+	}
+
 	$result = '';
 	$at     = 0;
 	while ( true ) {
@@ -135,7 +148,9 @@ function urldecode_n( $input, $decode_n ) {
 		);
 
 		if ( 2 === $decodable_length ) {
-			// Decode the hex sequence.
+			// Decodes the urlencoded hex sequence from URL.
+			// Note: This decodes bytes, not characters. It will recover the original byte sequence,
+			// not necessarily any valid UTF-8 characters.
 			$result .= chr( hexdec( $input[ $at ] . $input[ $at + 1 ] ) );
 			$at     += 2;
 		} else {
