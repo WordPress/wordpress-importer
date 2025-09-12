@@ -169,10 +169,7 @@ test.describe('General tests', () => {
 		await stopPlayground();
 	});
 
-	test(`URLs are not rewritten when the checkbox is unchecked`, async ({
-		page,
-		request,
-	}) => {
+	test(`URLs are not rewritten when the checkbox is unchecked`, async ({ page, request }) => {
 		// Run the import
 		await runWxrImport(page, 'wxr-simple.xml', { rewriteUrls: false });
 
@@ -296,12 +293,13 @@ async function startPlayground(port, parser = null) {
 		};
 	}
 
-	const { server } = await runCLI(blueprintConfig);
+	const { server, playground } = await runCLI(blueprintConfig);
 
 	await waitUntilAlive(`${siteUrl}/wp-admin/`);
 
 	const stop = async () => {
 		await server.close();
+		await playground.dispose();
 	};
 
 	return { url: siteUrl, stop };
