@@ -299,7 +299,9 @@ async function startPlayground(port, parser = null) {
 
 	const stop = async () => {
 		await server.close();
-		await playground.dispose();
+		try {
+			await playground.dispose();
+		} catch (_) {}
 	};
 
 	return { url: siteUrl, stop };
