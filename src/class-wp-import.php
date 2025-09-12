@@ -74,7 +74,7 @@ class WP_Import extends WP_Importer {
 				$this->id                = (int) $_POST['import_id'];
 				$file                    = get_attached_file( $this->id );
 				set_time_limit( 0 );
-				$this->import( $file );
+				$this->import( $file, array( 'rewrite_urls' => '1' === $_POST['rewrite_urls'] ) );
 				break;
 		}
 
@@ -155,8 +155,10 @@ class WP_Import extends WP_Importer {
 		$import_data = $this->parse( $file );
 
 		if ( is_wp_error( $import_data ) ) {
+			/** @var WP_Error $import_error */
+			$import_error = $import_data;
 			echo '<p><strong>' . __( 'Sorry, there has been an error.', 'wordpress-importer' ) . '</strong><br />';
-			echo esc_html( $import_data->get_error_message() ) . '</p>';
+			echo esc_html( $import_error->get_error_message() ) . '</p>';
 			$this->footer();
 			die();
 		}
@@ -242,8 +244,10 @@ class WP_Import extends WP_Importer {
 		$this->id    = (int) $file['id'];
 		$import_data = $this->parse( $file['file'] );
 		if ( is_wp_error( $import_data ) ) {
+			/** @var WP_Error $import_error */
+			$import_error = $import_data;
 			echo '<p><strong>' . __( 'Sorry, there has been an error.', 'wordpress-importer' ) . '</strong><br />';
-			echo esc_html( $import_data->get_error_message() ) . '</p>';
+			echo esc_html( $import_error->get_error_message() ) . '</p>';
 			return false;
 		}
 
@@ -322,6 +326,12 @@ class WP_Import extends WP_Importer {
 		<label for="import-attachments"><?php _e( 'Download and import file attachments', 'wordpress-importer' ); ?></label>
 	</p>
 		<?php endif; ?>
+
+	<h3><?php _e( 'Content Options', 'wordpress-importer' ); ?></h3>
+	<p>
+		<input type="checkbox" value="1" name="rewrite_urls" id="rewrite-urls" checked="checked" />
+		<label for="rewrite-urls"><?php _e( 'Rewrite URLs in the imported content to point to the new site', 'wordpress-importer' ); ?></label>
+	</p>
 
 	<p class="submit"><input type="submit" class="button" value="<?php esc_attr_e( 'Submit', 'wordpress-importer' ); ?>" /></p>
 </form>
