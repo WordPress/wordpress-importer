@@ -106,18 +106,18 @@ https://playground.internal/path-not-taken was the second best choice.
 			// Compare raw block markup with tolerant normalization (<br> vs <br />, minor whitespace)
 			const baseUrlExpected = `<!-- wp:paragraph -->
 <p>
-<!-- Rewrites URLs that match the base URL -->
-URLs to rewrite:
+    <!-- Rewrites URLs that match the base URL -->
+    URLs to rewrite:
 
-${PLAYGROUND_URL}
-${PLAYGROUND_URL}
-${PLAYGROUND_URL}
-${PLAYGROUND_URL}/
-<a href=\"${PLAYGROUND_URL}/wp-content/image.png\">Test</a>
+    ${PLAYGROUND_URL}
+    ${PLAYGROUND_URL}
+    ${PLAYGROUND_URL}
+    ${PLAYGROUND_URL}/
+    <a href=\"${PLAYGROUND_URL}/wp-content/image.png\">Test</a>
 
-<!-- Correctly ignores URLs that are similar to the base URL but do not match it -->
-This isn't migrated: https://🚀-science.comcast/science <br>
-Or this: super-🚀-science.com/science
+    <!-- Correctly ignores URLs that are similar to the base URL but do not match it -->
+    This isn't migrated: https://🚀-science.comcast/science <br>
+    Or this: super-🚀-science.com/science
 </p>
 <!-- /wp:paragraph -->
 
