@@ -6,8 +6,8 @@
  * @subpackage Importer
  */
 
- use WordPress\DataLiberation\URL\WPURL;
- use function WordPress\DataLiberation\URL\wp_rewrite_urls;
+use WordPress\DataLiberation\URL\WPURL;
+use function WordPress\DataLiberation\URL\wp_rewrite_urls;
 
 /**
  * WordPress importer class.
