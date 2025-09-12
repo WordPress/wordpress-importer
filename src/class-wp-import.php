@@ -330,7 +330,7 @@ class WP_Import extends WP_Importer {
 	<h3><?php _e( 'Content Options', 'wordpress-importer' ); ?></h3>
 	<p>
 		<input type="checkbox" value="1" name="rewrite_urls" id="rewrite-urls" checked="checked" />
-		<label for="rewrite-urls"><?php _e( 'Rewrite URLs in the imported content to point to the new site', 'wordpress-importer' ); ?></label>
+		<label for="rewrite-urls"><?php _e( 'Change all imported URLs that currently link to the previous site so that they now link to this site', 'wordpress-importer' ); ?></label>
 	</p>
 
 	<p class="submit"><input type="submit" class="button" value="<?php esc_attr_e( 'Submit', 'wordpress-importer' ); ?>" /></p>
