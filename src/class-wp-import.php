@@ -6,7 +6,8 @@
  * @subpackage Importer
  */
 
-use function WordPress\DataLiberation\URL\wp_rewrite_urls;
+ use WordPress\DataLiberation\URL\WPURL;
+ use function WordPress\DataLiberation\URL\wp_rewrite_urls;
 
 /**
  * WordPress importer class.
@@ -189,10 +190,10 @@ class WP_Import extends WP_Importer {
 		 * In this scenario, `/path/` and `/path-2/` are considered in the comparison.
 		 */
 		$base_url_with_trailing_slash = rtrim( $import_data['base_url'], '/' ) . '/';
-		$this->base_url_parsed        = WordPress\DataLiberation\URL\WPURL::parse( $base_url_with_trailing_slash );
+		$this->base_url_parsed        = WPURL::parse( $base_url_with_trailing_slash );
 
 		$site_url_with_trailing_slash = rtrim( get_site_url(), '/' ) . '/';
-		$this->site_url_parsed        = WordPress\DataLiberation\URL\WPURL::parse( $site_url_with_trailing_slash );
+		$this->site_url_parsed        = WPURL::parse( $site_url_with_trailing_slash );
 
 		wp_defer_term_counting( true );
 		wp_defer_comment_counting( true );
