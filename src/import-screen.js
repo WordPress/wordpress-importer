@@ -144,11 +144,11 @@ store('wordpress-importer/results', {
 
 		*toggleAccordion(event) {
 			console.log('toggleAccordion called with event:', event);
-			
+
 			// Try to get the element from the WordPress Interactivity API
 			const wpElement = getElement();
 			console.log('getElement result:', wpElement);
-			
+
 			// Extract the actual DOM element from the WordPress element object
 			let targetElement = null;
 			if (wpElement && wpElement.ref) {
@@ -158,28 +158,28 @@ store('wordpress-importer/results', {
 				targetElement = event.target;
 				console.log('Using event.target:', targetElement);
 			}
-			
+
 			console.log('Final targetElement:', targetElement);
 			console.log('targetElement has closest?', typeof targetElement?.closest);
-			
+
 			if (targetElement && typeof targetElement.closest === 'function') {
 				const accordionItem = targetElement.closest('.accordion-item');
 				console.log('Found accordion item:', accordionItem);
-				
+
 				if (accordionItem) {
 					const panel = accordionItem.querySelector('.import-results-accordion-panel');
 					console.log('Found panel:', panel);
-					
+
 					if (panel) {
 						const isHidden = panel.style.display === 'none' || !panel.style.display;
 						panel.style.display = isHidden ? 'block' : 'none';
-						
+
 						// Update the button's aria-expanded attribute
 						const button = accordionItem.querySelector('.import-results-accordion-trigger');
 						if (button) {
 							button.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
 						}
-						
+
 						console.log('Accordion toggled:', isHidden ? 'opened' : 'closed');
 					}
 				}
@@ -269,9 +269,10 @@ store('wordpress-importer/results', {
 
 	callbacks: {
 		*init() {
-			const { context } = yield import('@wordpress/interactivity');
+			console.log('init called');
 			const { actions } = store('wordpress-importer/results');
 
+			const context = getContext();
 			console.log('Initializing WordPress Importer Results with context:', context);
 
 			// Set initial tab from URL

@@ -94,7 +94,7 @@ if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 require_once ABSPATH . 'wp-admin/admin-header.php';
 ?>
 
-<div class="import-results-wrap" data-wp-interactive="wordpress-importer/results">
+<div class="import-results-wrap" data-wp-interactive="wordpress-importer/results" data-wp-init="callbacks.init">
 	<div class="import-results-header">
 		<div class="import-results-title-section">
 			<h1>
@@ -365,6 +365,10 @@ require_once ABSPATH . 'wp-admin/admin-header.php';
 </div>
 
 <?php
+// Ensure the interactive script is loaded
+wp_enqueue_script_module( '@wordpress/interactivity' );
+wp_enqueue_script_module( '@wordpress-importer/results' );
+
 /**
  * Initialize the WordPress Interactivity API context
  */
