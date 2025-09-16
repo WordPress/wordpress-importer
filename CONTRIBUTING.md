@@ -33,9 +33,16 @@ GitHub CI.
 composer e2e
 ```
 
-### Common testing gotchas
+## Common gotchas
 
-#### CI jobs seem stuck
+### Bumping minimum PHP version
+
+WordPress Core has a PHPUnit workflow that clones this repository. Bumping the minimum required PHP version
+in this repository may break that workflow, see https://github.com/WordPress/wordpress-importer/pull/196.
+Whenever you are updating the minimum PHP version, adjust the Core workflows accordingly, see
+https://core.trac.wordpress.org/ticket/63983 as a reference of how to do that.
+
+### CI jobs seem stuck
 
 Sometimes you may submit a PR and notice the required checks are stuck:
 
