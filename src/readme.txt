@@ -40,6 +40,10 @@ If you would prefer to do things manually then follow these instructions:
 
 == Changelog ==
 
+= 0.9.1 =
+
+* Add support for rewriting site URLs in post content and excerpts.
+
 = 0.9.0 =
 
 * Introduce a new XML parser class `WXR_Parser_XML_Processor` that replaces the
