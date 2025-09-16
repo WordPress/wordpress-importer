@@ -21,6 +21,7 @@
         "phpunit/phpunit": "^5.7.21 || ^6.5 || ^7.5"
     },
     "scripts": {
+        "bump-version": "php scripts/bump-version.php",
         "e2e": "npx -y playwright test"
     },
     "config": {
