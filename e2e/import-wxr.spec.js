@@ -131,6 +131,24 @@ https://playground.internal/path-not-taken was the second best choice.
 			);
 		});
 
+		test(`imports a large 10MB WXR file successfully`, async ({ page }) => {
+			await withPlaygroundServer(async () => {
+				test.setTimeout(600000);
+				await goToImporter(page);
+				const wxrPath = path.resolve(__dirname, '../phpunit/data/10MB.xml');
+				const fileInput = page.locator('#upload, input[type="file"][name="import"]');
+				await fileInput.waitFor({ state: 'visible' });
+				await fileInput.setInputFiles(wxrPath);
+				await page.getByRole('button', { name: /Upload file and import/i }).click();
+				await page.waitForURL('**/admin.php?import=wordpress&step=1**', { waitUntil: 'domcontentloaded', timeout: 120000 });
+				await page.getByRole('button', { name: /^Submit$/i }).click();
+				await page.waitForURL('**/admin.php?import=wordpress&step=2**', { waitUntil: 'domcontentloaded', timeout: 300000 });
+				await expect(page.locator('text=All done. Have fun!')).toBeVisible();
+				await expect(page.locator('text=Remember to update the passwords and roles of imported users.')).toBeVisible();
+				await expect(page.locator('a[href$="/wp-admin/"]')).toBeVisible();
+			});
+		});
+
 		test.describe('Comprehensive WXR import', () => {
 			test('imports with explicit author mapping to admin', async ({ page, request }) => {
 				await withPlaygroundServer(
@@ -215,6 +233,7 @@ https://playground.internal/path-not-taken was the second best choice.
 			await expect(page.locator('a[href="https://w.org"]')).toBeVisible();
 		});
 	});
+
 });
 
 // Helpers
