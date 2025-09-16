@@ -49,6 +49,8 @@ jobs:
           NEW_VERSION=$(grep -Eo "^Stable tag:\s*[0-9]+\.[0-9]+\.[0-9]+" src/readme.txt | awk '{print $3}')
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
+          
+
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
