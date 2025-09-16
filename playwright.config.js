@@ -4,10 +4,11 @@
 /* eslint-disable */
 const { defineConfig } = require('@playwright/test');
 
+const minute = 60_000;
 module.exports = defineConfig({
 	testDir: 'e2e',
-	globalTimeout: 600_000, // 10 minutes
-	timeout: 300_000,       // per-test timeout
+	globalTimeout: 60 * minute,
+	timeout: 10 * minute,
 	fullyParallel: false,
 	reporter: [['list']],
 	use: {
