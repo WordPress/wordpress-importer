@@ -33,3 +33,15 @@ add_action(
 		);
 	}
 );
+
+/**
+ * Disable kses filtering for E2E tests to allow all HTML content and
+ * prevent interference, e.g. the removal of block comments.
+ */
+add_action(
+	'init',
+	function () {
+		kses_remove_filters();
+	},
+	1 // Early priority to ensure it runs before other filters
+);
