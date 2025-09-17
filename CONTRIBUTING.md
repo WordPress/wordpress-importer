@@ -56,17 +56,20 @@ in GitHub UI:
 
 ## Releasing
 
-Pushing a tag to this repository automatically submits a new version of the plugin to the WordPress.org
-plugin directory. Once that happens, one of WordPress.org admins must approve the plugin release in the
-plugin directory. Make sure everything is ready to go before creating new tags! In particular:
+A new version of the plugin is automatically submitted to the WordPress.org plugin directory
+whenever you **push a new tag**. Once that happens, one of WordPress.org admins must approve
+the plugin release in the plugin directory.
 
-* Bump the version numbers in:
-    * `wordpress-importer.php`
-    * `src/wordpress-importer.php`
-    * `src/readme.txt`
-* Metadata in `src/wordpress-importer.php`
-     * `Version:`
+Here's a release checklist to go through on every release:
+
+* Before the release
+  * Bump the version numbers in:
+      * `wordpress-importer.php`
+      * `src/wordpress-importer.php`
+      * `src/readme.txt`
+  * Confirm the metadata in `src/wordpress-importer.php` is still up to date
      * `Requires at least:`
      * `Requires PHP:`
-
-Once a tag is pushed, manually create a new release on GitHub (or ask a maintainer to do so).
+  * Update the changelog in `src/readme.txt`
+* Create a new tag, push it to the repo
+* Create a new release on GitHub
