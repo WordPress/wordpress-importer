@@ -1,23 +1,19 @@
 {
 	"$schema": "https://playground.wordpress.net/blueprint-schema.json",
-	"landingPage": "/wp-admin/",
-	"preferredVersions": {
-		"php": "8.3",
-		"wp": "latest"
-	},
-	"constants": {
-		"WP_DEBUG": true,
-		"WP_DEBUG_LOG": true,
-		"WP_DEBUG_DISPLAY": true,
-		"SCRIPT_DEBUG": true
-	},
-	"steps": [
-		{
-			"step": "login"
-		},
-		{
-			"step": "activatePlugin",
-			"pluginPath": "wordpress-importer/wordpress-importer.php"
-		}
-	]
+    "landingPage": "/wp-admin/",
+    "preferredVersions": {
+        "php": "8.3",
+        "wp": "latest"
+    },
+    "steps": [
+        {
+            "step": "login"
+        },
+        {
+            "step": "activatePlugin",
+            "pluginPath": "wordpress-importer/wordpress-importer.php"
+        }
+    ]
 }
+
+
