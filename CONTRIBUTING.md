@@ -35,7 +35,7 @@ composer e2e
 
 ## Common gotchas
 
-### Bumping minimum PHP version
+### Raising the minimum required version of PHP
 
 WordPress Core has a PHPUnit workflow that clones this repository. Bumping the minimum required PHP version
 in this repository may break that workflow, see https://github.com/WordPress/wordpress-importer/pull/196.
