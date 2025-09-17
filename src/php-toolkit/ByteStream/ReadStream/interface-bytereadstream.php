@@ -36,7 +36,7 @@ interface ByteReadStream {
 	 * @return void
 	 * @throws ByteStreamException If the offset is invalid.
 	 */
-	public function seek( int $offset );
+	public function seek( int $offset ): void;
 
 	/**
 	 * Check if the end of the data stream has been reached.
@@ -52,23 +52,23 @@ interface ByteReadStream {
 	 *
 	 * @return int how many bytes were pulled
 	 */
-	public function pull( $n, $mode = self::PULL_NO_MORE_THAN ): int;
+	public function pull( ?int $n, string $mode = self::PULL_NO_MORE_THAN ): int;
 
 	/**
 	 * Get the next $n bytes without advancing the pointer.
 	 *
 	 * @return string The bytes read.
 	 */
-	public function peek( $n ): string;
+	public function peek( int $n ): string;
 
 	/**
 	 * Returns $n bytes and advances the pointer.
 	 *
-	 * @param $n
+	 * @param  int $n
 	 *
 	 * @return string
 	 */
-	public function consume( $n ): string;
+	public function consume( int $n ): string;
 
 	/**
 	 * Returns all remaining bytes in the stream.

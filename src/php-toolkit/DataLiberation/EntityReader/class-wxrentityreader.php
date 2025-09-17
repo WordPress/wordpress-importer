@@ -278,7 +278,7 @@ class WXREntityReader implements EntityReader {
 			$reader->connect_upstream( $upstream );
 			if ( null !== $cursor ) {
 				if ( ! isset( $cursor['upstream'] ) ) {
-					// No upstream cursor means we've processed the.
+					// No upstream cursor means we've processed the
 					// entire input stream.
 					$xml->input_finished();
 					$xml->next_token();
@@ -307,15 +307,15 @@ class WXREntityReader implements EntityReader {
 			return;
 		}
 
-		// Every XML element is a combination of a long-form namespace and a.
-		// local element name, e.g. a syntax <wp:post_id> could actually refer.
+		// Every XML element is a combination of a long-form namespace and a
+		// local element name, e.g. a syntax <wp:post_id> could actually refer
 		// to a (https://wordpress.org/export/1.0/, post_id) element.
 		//
-		// Namespaces are paramount for parsing XML and cannot be ignored. Elements.
+		// Namespaces are paramount for parsing XML and cannot be ignored. Elements
 		// element must be matched based on both their namespace and local name.
 		//
 		// Unfortunately, different WXR files defined the `wp` namespace in a different way.
-		// Folks use a mixture of HTTP vs HTTPS protocols and version numbers. We must.
+		// Folks use a mixture of HTTP vs HTTPS protocols and version numbers. We must
 		// account for all possible options to parse these documents correctly.
 		$wxr_namespaces       = array(
 			'http://wordpress.org/export/1.0/',
@@ -596,7 +596,7 @@ class WXREntityReader implements EntityReader {
 			if ( $this->read_next_entity() ) {
 				return true;
 			}
-			// If the read failed because of incomplete input data,.
+			// If the read failed because of incomplete input data,
 			// try pulling more bytes from upstream before giving up.
 			if ( $this->is_paused_at_incomplete_input() ) {
 				if ( $this->pull_upstream_bytes() ) {
@@ -710,7 +710,7 @@ class WXREntityReader implements EntityReader {
 					return true;
 				}
 				$this->after_entity();
-				// Only tag openers indicate a new entity. Closers just mean.
+				// Only tag openers indicate a new entity. Closers just mean
 				// the previous entity is finished.
 				if ( $this->xml->is_tag_opener() ) {
 					$this->set_entity_tag( $tag_with_namespace );
