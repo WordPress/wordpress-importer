@@ -8,7 +8,7 @@ const http = require('http');
 const fs = require('fs');
 
 // Define available parsers
-const PARSERS = ['simplexml', 'xml', 'regex', 'xmlprocessor'];
+const PARSERS = process.env.PARSER ? [process.env.PARSER] : ['simplexml', 'xml', 'regex', 'xmlprocessor'];
 let PLAYGROUND_URL = '';
 // Run tests for each parser
 PARSERS.forEach((parser) => {
@@ -116,7 +116,7 @@ https://playground.internal/path-not-taken was the second best choice.
 </p>
 <!-- /wp:paragraph -->
 
-<!-- wp:image {"src":"${PLAYGROUND_URL}/wp-content/image.png"} -->
+<!-- wp:image {"alt":"${PLAYGROUND_URL}/wp-content/image.png","notUrl":"/science/wp-content/image.png","url":"/wp-content/image.png"} -->
 <img src="${PLAYGROUND_URL}/wp-content/image.png">
 <!-- /wp:image -->`;
 					expect(normalizeBlockMarkup(normalized.rawContent)).toContain(

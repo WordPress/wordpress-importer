@@ -527,6 +527,14 @@ class BlockMarkupProcessor extends WP_HTML_Tag_Processor {
 		return isset( $this->block_attribute_paths[ $this->block_attribute_index ] );
 	}
 
+	protected function get_block_attribute_path() {
+		if ( null === $this->block_attribute_paths || ! isset( $this->block_attribute_paths[ $this->block_attribute_index ] ) ) {
+			return false;
+		}
+
+		return $this->block_attribute_paths[ $this->block_attribute_index ];
+	}
+
 	/**
 	 * Gets the key of the currently matched block attribute.
 	 *
