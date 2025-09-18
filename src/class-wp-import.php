@@ -188,19 +188,17 @@ class WP_Import extends WP_Importer {
 			die();
 		}
 
-		echo '<pre>';
-		$parse_result = $this->parse( $file );
+		$import_data = $this->parse( $file );
 
-		if ( is_wp_error( $parse_result ) ) {
+		if ( is_wp_error( $import_data ) ) {
 			/** @var WP_Error $import_error */
-			$import_error = $parse_result;
+			$import_error = $import_data;
 			echo '<p><strong>' . __( 'Sorry, there has been an error.', 'wordpress-importer' ) . '</strong><br />';
 			echo esc_html( $import_error->get_error_message() ) . '</p>';
 			$this->footer();
 			die();
 		}
 
-		$import_data   = $parse_result;
 		$this->version = $import_data['version'];
 		$this->get_authors_from_import( $import_data );
 		$this->posts      = $import_data['posts'];
@@ -290,17 +288,16 @@ class WP_Import extends WP_Importer {
 			return false;
 		}
 
-		$this->id     = (int) $file['id'];
-		$parse_result = $this->parse( $file['file'] );
-		if ( is_wp_error( $parse_result ) ) {
+		$this->id    = (int) $file['id'];
+		$import_data = $this->parse( $file['file'] );
+		if ( is_wp_error( $import_data ) ) {
 			/** @var WP_Error $import_error */
-			$import_error = $parse_result;
+			$import_error = $import_data;
 			echo '<p><strong>' . __( 'Sorry, there has been an error.', 'wordpress-importer' ) . '</strong><br />';
 			echo esc_html( $import_error->get_error_message() ) . '</p>';
 			return false;
 		}
 
-		$import_data   = $parse_result;
 		$this->version = $import_data['version'];
 		if ( $this->version > $this->max_wxr_version ) {
 			echo '<div class="error"><p><strong>';
@@ -904,8 +901,6 @@ class WP_Import extends WP_Importer {
 					do_action( 'wp_import_insert_post', $post_id, $original_post_id, $postdata, $post );
 				}
 
-				// Draining will be handled based on queue size and at boundaries.
-
 				if ( is_wp_error( $post_id ) ) {
 					printf(
 						__( 'Failed to import %1$s &#8220;%2$s&#8221;', 'wordpress-importer' ),
@@ -1224,170 +1219,6 @@ class WP_Import extends WP_Importer {
 	}
 
 	/**
-	 * Attempt to download a remote file attachment
-	 *
-	 * @param string $url URL of item to fetch
-	 * @param array $post Attachment details
-	 * @return array|WP_Error Local file location details on success, WP_Error otherwise
-	 */
-	public function fetch_remote_file( $url, $post ) {
-		// If we now have an asynchronous downloader, prefer letting it handle the file
-		// unless the caller explicitly uses the synchronous path from BC'd code paths.
-		// Extract the file name from the URL.
-		$path      = parse_url( $url, PHP_URL_PATH );
-		$file_name = '';
-		if ( is_string( $path ) ) {
-			$file_name = basename( $path );
-		}
-
-		if ( ! $file_name ) {
-			$file_name = md5( $url );
-		}
-
-		$tmp_file_name = wp_tempnam( $file_name );
-		if ( ! $tmp_file_name ) {
-			return new WP_Error( 'import_no_file', __( 'Could not create temporary file.', 'wordpress-importer' ) );
-		}
-
-		// Fetch the remote URL and write it to the placeholder file.
-		$remote_response = wp_safe_remote_get(
-			$url,
-			array(
-				'timeout'  => 300,
-				'stream'   => true,
-				'filename' => $tmp_file_name,
-				'headers'  => array(
-					'Accept-Encoding' => 'identity',
-				),
-			)
-		);
-
-		if ( is_wp_error( $remote_response ) ) {
-			@unlink( $tmp_file_name );
-			return new WP_Error(
-				'import_file_error',
-				sprintf(
-					/* translators: 1: The WordPress error message. 2: The WordPress error code. */
-					__( 'Request failed due to an error: %1$s (%2$s)', 'wordpress-importer' ),
-					esc_html( $remote_response->get_error_message() ),
-					esc_html( $remote_response->get_error_code() )
-				)
-			);
-		}
-
-		$remote_response_code = (int) wp_remote_retrieve_response_code( $remote_response );
-
-		// Make sure the fetch was successful.
-		if ( 200 !== $remote_response_code ) {
-			@unlink( $tmp_file_name );
-			return new WP_Error(
-				'import_file_error',
-				sprintf(
-					/* translators: 1: The HTTP error message. 2: The HTTP error code. */
-					__( 'Remote server returned the following unexpected result: %1$s (%2$s)', 'wordpress-importer' ),
-					get_status_header_desc( $remote_response_code ),
-					esc_html( $remote_response_code )
-				)
-			);
-		}
-
-		$headers = wp_remote_retrieve_headers( $remote_response );
-
-		// Request failed.
-		if ( ! $headers ) {
-			@unlink( $tmp_file_name );
-			return new WP_Error( 'import_file_error', __( 'Remote server did not respond', 'wordpress-importer' ) );
-		}
-
-		$filesize = (int) filesize( $tmp_file_name );
-
-		if ( 0 === $filesize ) {
-			@unlink( $tmp_file_name );
-			return new WP_Error( 'import_file_error', __( 'Zero size file downloaded', 'wordpress-importer' ) );
-		}
-
-		if ( ! isset( $headers['content-encoding'] ) && isset( $headers['content-length'] ) && $filesize !== (int) $headers['content-length'] ) {
-			@unlink( $tmp_file_name );
-			return new WP_Error( 'import_file_error', __( 'Downloaded file has incorrect size', 'wordpress-importer' ) );
-		}
-
-		$max_size = (int) $this->max_attachment_size();
-		if ( ! empty( $max_size ) && $filesize > $max_size ) {
-			@unlink( $tmp_file_name );
-			return new WP_Error( 'import_file_error', sprintf( __( 'Remote file is too large, limit is %s', 'wordpress-importer' ), size_format( $max_size ) ) );
-		}
-
-		// Override file name with Content-Disposition header value.
-		if ( ! empty( $headers['content-disposition'] ) ) {
-			$file_name_from_disposition = self::get_filename_from_disposition( (array) $headers['content-disposition'] );
-			if ( $file_name_from_disposition ) {
-				$file_name = $file_name_from_disposition;
-			}
-		}
-
-		// Set file extension if missing.
-		$file_ext = pathinfo( $file_name, PATHINFO_EXTENSION );
-		if ( ! $file_ext && ! empty( $headers['content-type'] ) ) {
-			$extension = self::get_file_extension_by_mime_type( $headers['content-type'] );
-			if ( $extension ) {
-				$file_name = "{$file_name}.{$extension}";
-			}
-		}
-
-		// Handle the upload like _wp_handle_upload() does.
-		$wp_filetype     = wp_check_filetype_and_ext( $tmp_file_name, $file_name );
-		$ext             = empty( $wp_filetype['ext'] ) ? '' : $wp_filetype['ext'];
-		$type            = empty( $wp_filetype['type'] ) ? '' : $wp_filetype['type'];
-		$proper_filename = empty( $wp_filetype['proper_filename'] ) ? '' : $wp_filetype['proper_filename'];
-
-		// Check to see if wp_check_filetype_and_ext() determined the filename was incorrect.
-		if ( $proper_filename ) {
-			$file_name = $proper_filename;
-		}
-
-		if ( ( ! $type || ! $ext ) && ! current_user_can( 'unfiltered_upload' ) ) {
-			return new WP_Error( 'import_file_error', __( 'Sorry, this file type is not permitted for security reasons.', 'wordpress-importer' ) );
-		}
-
-		$uploads = wp_upload_dir( $post['upload_date'] );
-		if ( ! ( $uploads && false === $uploads['error'] ) ) {
-			return new WP_Error( 'upload_dir_error', $uploads['error'] );
-		}
-
-		// Move the file to the uploads dir.
-		$file_name     = wp_unique_filename( $uploads['path'], $file_name );
-		$new_file      = $uploads['path'] . "/$file_name";
-		$move_new_file = copy( $tmp_file_name, $new_file );
-
-		if ( ! $move_new_file ) {
-			@unlink( $tmp_file_name );
-			return new WP_Error( 'import_file_error', __( 'The uploaded file could not be moved', 'wordpress-importer' ) );
-		}
-
-		// Set correct file permissions.
-		$stat  = stat( dirname( $new_file ) );
-		$perms = $stat['mode'] & 0000666;
-		chmod( $new_file, $perms );
-
-		$upload = array(
-			'file'  => $new_file,
-			'url'   => $uploads['url'] . "/$file_name",
-			'type'  => $wp_filetype['type'],
-			'error' => false,
-		);
-
-		// keep track of the old and new urls so we can substitute them later
-		$this->url_remap[ $url ]          = $upload['url'];
-		$this->url_remap[ $post['guid'] ] = $upload['url']; // r13735, really needed?
-		// keep track of the destination if the remote url is redirected somewhere else
-		if ( isset( $headers['x-final-location'] ) && $headers['x-final-location'] != $url ) {
-			$this->url_remap[ $headers['x-final-location'] ] = $upload['url'];
-		}
-
-		return $upload;
-	}
-
-	/**
 	 * Attempt to associate posts and menu items with previously missing parents
 	 *
 	 * An imported post's parent may not have been imported when it was first created
@@ -1597,7 +1428,6 @@ class WP_Import extends WP_Importer {
 
 			switch ( $event->type ) {
 				case AttachmentDownloaderEvent::SUCCESS:
-					// File should be present at expected_abspath. Update metadata and URL remaps.
 					$info = wp_check_filetype( $expected_abspath );
 					if ( ! empty( $info['type'] ) ) {
 						wp_update_post(
@@ -1607,7 +1437,6 @@ class WP_Import extends WP_Importer {
 							)
 						);
 						wp_update_attachment_metadata( $attachment_id, wp_generate_attachment_metadata( $attachment_id, $expected_abspath ) );
-						// Original URL -> new URL remap for content replacement.
 						$this->url_remap[ $remote_url ] = $expected_url;
 					}
 					break;
@@ -1618,7 +1447,6 @@ class WP_Import extends WP_Importer {
 					break;
 
 				case AttachmentDownloaderEvent::FAILURE:
-					// On failure, best-effort cleanup: delete the placeholder attachment.
 					wp_delete_attachment( $attachment_id, true );
 					break;
 			}
