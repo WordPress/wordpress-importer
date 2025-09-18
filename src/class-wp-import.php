@@ -756,9 +756,7 @@ class WP_Import extends WP_Importer {
 			 */
 			if ( $this->attachment_downloader ) {
 				while ( count( $this->attachment_downloader->get_client()->get_active_requests() ) > $this->max_concurrent_requests ) {
-					if ( ! $this->poll_downloader() ) {
-						break;
-					}
+					$this->poll_downloader();
 				}
 			}
 

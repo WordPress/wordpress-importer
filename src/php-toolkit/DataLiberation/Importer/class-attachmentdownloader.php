@@ -24,7 +24,7 @@ class AttachmentDownloader {
 	private $progress = array();
 
 	public function __construct( $output_root, $options = array() ) {
-		$this->client                 = new Client();
+		$this->client                 = new Client( [ 'transport' => 'sockets' ] );
 		$this->output_root            = $output_root;
 		$this->source_from_filesystem = $options['source_from_filesystem'] ?? null;
 	}
