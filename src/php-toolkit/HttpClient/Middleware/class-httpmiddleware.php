@@ -42,7 +42,7 @@ class HttpMiddleware implements MiddlewareInterface {
 	 */
 	public function enqueue( Request $request ) {
 		$request->state                           = Request::STATE_ENQUEUED;
-		$this->state->requests[]                  = apply_filters( 'wp_http_client_request', $request );
+		$this->state->requests[]                  = $request;
 		$this->state->events[ $request->id ]      = array();
 		$this->state->connections[ $request->id ] = new Connection( $request );
 	}

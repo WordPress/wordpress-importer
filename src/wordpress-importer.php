@@ -64,6 +64,16 @@ require_once __DIR__ . '/parsers/class-wxr-parser-xml-processor.php';
 /** WP_Import class */
 require_once __DIR__ . '/class-wp-import.php';
 
+function wp_http_client_request_safety_filter( \WordPress\HttpClient\Request $request ) {
+	// Check if the URL is safe using WordPress functions
+	if ( ! wp_http_validate_url( $request->url ) ) {
+		return false;
+	}
+
+	return $request;
+}
+add_filter( 'wp_http_client_request_before_enqueue', 'wp_http_client_request_safety_filter' );
+
 function wordpress_importer_init() {
 	load_plugin_textdomain( 'wordpress-importer' );
 
