@@ -44,6 +44,8 @@ class WP_Import extends WP_Importer {
 	public $url_remap         = array();
 	public $featured_images   = array();
 
+	protected $max_concurrent_requests = 20;
+
 	/**
 	 * Downloader to fetch attachments asynchronously.
 	 *
@@ -152,17 +154,17 @@ class WP_Import extends WP_Importer {
 
 		wp_suspend_cache_invalidation( true );
 		$this->process_categories();
-		$this->maybe_drain_downloader_queue();
 		$this->process_tags();
-		$this->maybe_drain_downloader_queue();
 		$this->process_terms();
-		$this->maybe_drain_downloader_queue();
 		$this->process_posts();
 
-		// Before backfilling, ensure all asynchronous attachment downloads are finalized
-		// so URL remapping and metadata reflect the final state.
-		$this->maybe_drain_downloader_queue();
-		$this->finalize_pending_attachments();
+		// Keep polling until there are no more pending media downloads.
+		if ( $this->attachment_downloader ) {
+			while ( $this->attachment_downloader->has_pending_requests() ) {
+				$this->poll_downloader();
+			}
+		}
+
 		wp_suspend_cache_invalidation( false );
 
 		// update incorrect/missing information in the DB
@@ -751,6 +753,18 @@ class WP_Import extends WP_Importer {
 		$this->posts = apply_filters( 'wp_import_posts', $this->posts );
 
 		foreach ( $this->posts as $post ) {
+			/**
+			 * Drain a bit of the queue if it is building up, or at boundaries between data types.
+			 * The strategy is to reduce pressure only when many requests are enqueued/active.
+			 */
+			if ( $this->attachment_downloader ) {
+				while ( count( $this->attachment_downloader->get_client()->get_active_requests() ) > $this->max_concurrent_requests ) {
+					if ( ! $this->poll_downloader() ) {
+						break;
+					}
+				}
+			}
+
 			$post = apply_filters( 'wp_import_post_data_raw', $post );
 
 			if ( ! post_type_exists( $post['post_type'] ) ) {
@@ -1557,121 +1571,60 @@ class WP_Import extends WP_Importer {
 	}
 
 	/**
-	 * Drain a limited number of downloader events to keep the queue moving without blocking.
-	 *
-	 * @param int $max_events Maximum events to process in this call.
-	 * @return void
-	 */
-	protected function drain_downloader_events( $max_events = 25 ) {
-		if ( ! $this->attachment_downloader ) {
-			return;
-		}
-
-		$processed = 0;
-		while ( $processed < $max_events ) {
-			if ( ! $this->attachment_downloader->poll() ) {
-				break;
-			}
-			foreach ( $this->attachment_downloader->get_events() as $event ) {
-				$this->handle_downloader_event( $event );
-				++$processed;
-			}
-		}
-	}
-
-	/**
-	 * Drain a bit of the queue if it is building up, or at boundaries between data types.
-	 * The strategy is to reduce pressure only when many requests are enqueued/active.
-	 *
-	 * Conditions:
-	 * - If more than 20 items are tracked in progress, drain some events.
-	 * - May be invoked at boundaries between categories/tags/terms/posts.
-	 *
-	 * @return void
-	 */
-	protected function maybe_drain_downloader_queue() {
-		if ( ! $this->attachment_downloader ) {
-			return;
-		}
-		$progress = $this->attachment_downloader->get_progress();
-		if ( is_array( $progress ) && count( $progress ) > 20 ) {
-			$this->drain_downloader_events( 50 );
-		}
-	}
-
-	/**
-	 * Block until all pending downloads are finalized, then process their results.
-	 *
-	 * @return void
-	 */
-	protected function finalize_pending_attachments() {
-		if ( ! $this->attachment_downloader ) {
-				return;
-		}
-
-		// Keep polling until there are no more pending requests or events.
-		while ( $this->attachment_downloader->has_pending_requests() ) {
-			while ( $this->attachment_downloader->poll() ) {
-				/* continue polling */
-			}
-			foreach ( $this->attachment_downloader->get_events() as $event ) {
-				$this->handle_downloader_event( $event );
-			}
-		}
-	}
-
-	/**
 	 * Apply the effects of a single downloader event to the corresponding attachment.
 	 *
 	 * @param AttachmentDownloaderEvent $event Event object.
 	 * @return void
 	 */
-	protected function handle_downloader_event( $event ) {
-		if ( ! ( $event instanceof AttachmentDownloaderEvent ) ) {
-			return;
+	protected function poll_downloader() {
+		if ( ! $this->attachment_downloader->poll() ) {
+			return false;
 		}
 
-		$remote_url = $event->resource_id;
-		if ( ! isset( $this->attachment_jobs[ $remote_url ] ) ) {
-			return;
+		foreach ( $this->attachment_downloader->get_events() as $event ) {
+			$remote_url = $event->resource_id;
+			if ( ! isset( $this->attachment_jobs[ $remote_url ] ) ) {
+				// @TODO: Handle an unexpected error.
+				continue;
+			}
+
+			$job              = $this->attachment_jobs[ $remote_url ];
+			$attachment_id    = (int) $job['attachment_id'];
+			$uploads          = $job['uploads'];
+			$relative_path    = $job['relative_path'];
+			$expected_abspath = rtrim( $uploads['basedir'], '/' ) . '/' . $relative_path;
+			$expected_url     = rtrim( $uploads['baseurl'], '/' ) . '/' . $relative_path;
+
+			switch ( $event->type ) {
+				case AttachmentDownloaderEvent::SUCCESS:
+					// File should be present at expected_abspath. Update metadata and URL remaps.
+					$info = wp_check_filetype( $expected_abspath );
+					if ( ! empty( $info['type'] ) ) {
+						wp_update_post(
+							array(
+								'ID'   => $attachment_id,
+								'guid' => $expected_url,
+							)
+						);
+						wp_update_attachment_metadata( $attachment_id, wp_generate_attachment_metadata( $attachment_id, $expected_abspath ) );
+						// Original URL -> new URL remap for content replacement.
+						$this->url_remap[ $remote_url ] = $expected_url;
+					}
+					break;
+
+				case AttachmentDownloaderEvent::ALREADY_EXISTS:
+				case AttachmentDownloaderEvent::IN_PROGRESS:
+					// Nothing to do: placeholder already covered and will be resolved by subsequent SUCCESS/FAILURE.
+					break;
+
+				case AttachmentDownloaderEvent::FAILURE:
+					// On failure, best-effort cleanup: delete the placeholder attachment.
+					wp_delete_attachment( $attachment_id, true );
+					break;
+			}
+
+			unset( $this->attachment_jobs[ $remote_url ] );
 		}
-
-		$job              = $this->attachment_jobs[ $remote_url ];
-		$attachment_id    = (int) $job['attachment_id'];
-		$uploads          = $job['uploads'];
-		$relative_path    = $job['relative_path'];
-		$expected_abspath = rtrim( $uploads['basedir'], '/' ) . '/' . $relative_path;
-		$expected_url     = rtrim( $uploads['baseurl'], '/' ) . '/' . $relative_path;
-
-		switch ( $event->type ) {
-			case AttachmentDownloaderEvent::SUCCESS:
-				// File should be present at expected_abspath. Update metadata and URL remaps.
-				$info = wp_check_filetype( $expected_abspath );
-				if ( ! empty( $info['type'] ) ) {
-					wp_update_post(
-						array(
-							'ID'   => $attachment_id,
-							'guid' => $expected_url,
-						)
-					);
-					wp_update_attachment_metadata( $attachment_id, wp_generate_attachment_metadata( $attachment_id, $expected_abspath ) );
-					// Original URL -> new URL remap for content replacement.
-					$this->url_remap[ $remote_url ] = $expected_url;
-				}
-				break;
-
-			case AttachmentDownloaderEvent::ALREADY_EXISTS:
-			case AttachmentDownloaderEvent::IN_PROGRESS:
-				// Nothing to do: placeholder already covered and will be resolved by subsequent SUCCESS/FAILURE.
-				break;
-
-			case AttachmentDownloaderEvent::FAILURE:
-				// On failure, best-effort cleanup: delete the placeholder attachment.
-				wp_delete_attachment( $attachment_id, true );
-				break;
-		}
-
-		unset( $this->attachment_jobs[ $remote_url ] );
 	}
 
 	/**

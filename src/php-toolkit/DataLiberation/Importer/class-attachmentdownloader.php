@@ -46,6 +46,10 @@ class AttachmentDownloader {
 		return count( $this->client->get_active_requests() ) > 0 || count( $this->pending_events ) > 0 || count( $this->progress ) > 0;
 	}
 
+	public function get_client() {
+		return $this->client;
+	}
+
 	public function enqueue_if_not_exists( $url, $output_relative_path ) {
 		$this->enqueued_url = $url;
 
