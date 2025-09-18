@@ -67,7 +67,7 @@ class Client {
 			$this->state,
 			$middleware,
 			array(
-				'client' => $this,
+				'client'        => $this,
 				'max_redirects' => 5,
 			)
 		);
@@ -149,7 +149,7 @@ class Client {
 			}
 
 			$request = $filtered_request;
-			$parsed = WPURL::parse( $request->url );
+			$parsed  = WPURL::parse( $request->url );
 			if ( false === $parsed ) {
 				$this->state->set_request_error( $request, new HttpError( sprintf( 'Invalid URL: %s', $request->url ) ) );
 				continue;

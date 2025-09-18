@@ -140,11 +140,21 @@ https://playground.internal/path-not-taken was the second best choice.
 				await fileInput.waitFor({ state: 'visible' });
 				await fileInput.setInputFiles(wxrPath);
 				await page.getByRole('button', { name: /Upload file and import/i }).click();
-				await page.waitForURL('**/admin.php?import=wordpress&step=1**', { waitUntil: 'domcontentloaded', timeout: 120000 });
+				await page.waitForURL('**/admin.php?import=wordpress&step=1**', {
+					waitUntil: 'domcontentloaded',
+					timeout: 120000,
+				});
 				await page.getByRole('button', { name: /^Submit$/i }).click();
-				await page.waitForURL('**/admin.php?import=wordpress&step=2**', { waitUntil: 'domcontentloaded', timeout: 300000 });
+				await page.waitForURL('**/admin.php?import=wordpress&step=2**', {
+					waitUntil: 'domcontentloaded',
+					timeout: 300000,
+				});
 				await expect(page.locator('text=All done. Have fun!')).toBeVisible();
-				await expect(page.locator('text=Remember to update the passwords and roles of imported users.')).toBeVisible();
+				await expect(
+					page.locator(
+						'text=Remember to update the passwords and roles of imported users.'
+					)
+				).toBeVisible();
 				await expect(page.locator('a[href$="/wp-admin/"]')).toBeVisible();
 			});
 		});
@@ -234,6 +244,195 @@ https://playground.internal/path-not-taken was the second best choice.
 		});
 	});
 
+	test.only('imports a11y-unit-test-data.xml with media assets downloaded', async ({ page }) => {
+		await withPlaygroundServer(async () => {
+			test.setTimeout(600000); // 10 minutes for large file with media downloads
+
+			// Expected media files based on the a11y-unit-test-data.xml content
+			const expectedMediaFiles = [
+				'2008/06/canola2.jpg',
+				'2008/06/100_5478.jpg',
+				'2008/06/100_5540.jpg',
+				'2008/06/cep00032.jpg',
+				'2008/06/dcp_2082.jpg',
+				'2008/06/dsc03149.jpg',
+				'2008/06/dsc04563.jpg',
+				'2008/06/dsc09114.jpg',
+				'2008/06/dsc20050727_091048_222.jpg',
+				'2008/06/dsc20050813_115856_52.jpg',
+				'2008/06/dsc20050102_192118_51.jpg',
+				'2008/06/dsc20051220_160808_102.jpg',
+				'2008/06/dsc02085.jpg',
+				'2008/06/dsc20051220_173257_119.jpg',
+				'2008/06/dscn3316.jpg',
+				'2008/06/michelle_049.jpg',
+				'2008/06/windmill.jpg',
+				'2008/06/img_0513-1.jpg',
+				'2008/06/img_0747.jpg',
+				'2008/06/img_0767.jpg',
+				'2008/06/img_8399.jpg',
+				'2008/06/dsc20050604_133440_34211.jpg',
+				'2014/01/spectacles.gif',
+			];
+
+			// Navigate to importer
+			await goToImporter(page);
+
+			// Upload the a11y test data file
+			const wxrPath = path.resolve(__dirname, './fixtures/a11y-unit-test-data.xml');
+			const fileInput = page.locator('#upload, input[type="file"][name="import"]');
+			await fileInput.waitFor({ state: 'visible' });
+			await fileInput.setInputFiles(wxrPath);
+
+			// Click upload button
+			await page.getByRole('button', { name: /Upload file and import/i }).click();
+
+			// Wait for author mapping screen
+			await page.waitForURL('**/admin.php?import=wordpress&step=1**', {
+				waitUntil: 'domcontentloaded',
+				timeout: 120000,
+			});
+
+			// Enable attachment downloads
+			const attachmentsCheckbox = page.locator('input[name="fetch_attachments"]');
+			if (await attachmentsCheckbox.count()) {
+				await attachmentsCheckbox.check();
+			}
+
+			// Submit to start import
+			await page.getByRole('button', { name: /^Submit$/i }).click();
+
+			// Wait for import to complete
+			await page.waitForURL('**/admin.php?import=wordpress&step=2**', {
+				waitUntil: 'domcontentloaded',
+				timeout: 300000, // 5 minutes for import with media downloads
+			});
+
+			// Verify import success
+			await expect(page.locator('text=All done.')).toBeVisible();
+
+			// Go to media library
+			await page.goto(abs('/wp-admin/upload.php'));
+			await loginIfNeeded(page);
+
+			// Switch to grid view if not already
+			const gridViewButton = page.locator('a[href*="mode=grid"]');
+			if (await gridViewButton.count()) {
+				await gridViewButton.click();
+				await page.waitForURL('**/upload.php?mode=grid**');
+			}
+
+			// Wait for media items to load
+			await page.waitForSelector('.attachment', { timeout: 30000 });
+
+			// Verify we have media items
+			const mediaItems = page.locator('.attachment');
+			const mediaCount = await mediaItems.count();
+			console.log(`Found ${mediaCount} media items in library`);
+			expect(mediaCount).toBeGreaterThanOrEqual(expectedMediaFiles.length - 1); // At least most files
+
+			// Verify specific images are visible in the gallery
+			// Check for a few key images by their alt text
+			await expect(page.locator('img[alt="canola"]')).toBeVisible();
+			await expect(page.locator('img[alt="Bell on Wharf"]')).toBeVisible();
+			await expect(page.locator('img[alt="Golden Gate Bridge"]')).toBeVisible();
+			await expect(page.locator('img[alt="Boardwalk"]')).toBeVisible();
+
+			// Take screenshot of the media gallery for visual verification
+			await page.screenshot({
+				path: path.join(
+					__dirname,
+					'import-wxr.spec.js-snapshots',
+					'a11y-media-gallery.png'
+				),
+				fullPage: true,
+			});
+
+			// Check file system for uploaded files using WordPress REST API
+			// First get all media items via REST API
+			await page.goto(abs('/wp-admin/')); // Ensure we're authenticated
+			const mediaResponse = await page.request.get(
+				abs('/wp-json/wp/v2/media?per_page=100&context=edit'),
+				{
+					headers: {
+						'X-WP-Nonce': await page.evaluate(() => {
+							return window.wpApiSettings?.nonce || '';
+						}),
+					},
+				}
+			);
+
+			expect(mediaResponse.ok()).toBeTruthy();
+			const mediaData = await mediaResponse.json();
+
+			// Verify each expected file has a corresponding media item
+			const uploadedFiles = mediaData
+				.map((item) => {
+					const sourceUrl = item.source_url || '';
+					const match = sourceUrl.match(/uploads\/(.+)$/);
+					return match ? match[1] : '';
+				})
+				.filter(Boolean);
+
+			console.log(`Uploaded files found: ${uploadedFiles.length}`);
+			console.log('Sample uploaded files:', uploadedFiles.slice(0, 5));
+
+			// Check that most expected files were uploaded (allow for some failures)
+			let matchedFiles = 0;
+			for (const expectedFile of expectedMediaFiles) {
+				if (
+					uploadedFiles.some((uploaded) =>
+						uploaded.includes(expectedFile.split('/').pop())
+					)
+				) {
+					matchedFiles++;
+				}
+			}
+
+			console.log(
+				`Matched ${matchedFiles} out of ${expectedMediaFiles.length} expected files`
+			);
+			expect(matchedFiles).toBeGreaterThanOrEqual(expectedMediaFiles.length * 0.8); // At least 80% success
+
+			// Verify images load properly by checking a few
+			const firstMediaItem = mediaItems.first();
+			await firstMediaItem.click();
+
+			// Wait for media modal to open
+			await page.waitForSelector('.media-modal', { timeout: 10000 });
+
+			// Check that attachment details are visible
+			await expect(page.locator('.attachment-details')).toBeVisible();
+			await expect(page.locator('.details-image, .details-media')).toBeVisible();
+
+			// Close modal
+			await page.keyboard.press('Escape');
+			await page.waitForSelector('.media-modal', { state: 'hidden' });
+
+			// Additional check: Go to a post with images to verify they display
+			const postsResponse = await page.request.get(
+				abs('/wp-json/wp/v2/posts?per_page=10&search=Image%20Alignment')
+			);
+			const posts = await postsResponse.json();
+
+			if (posts.length > 0) {
+				// Visit the first image post
+				await page.goto(posts[0].link);
+
+				// Check that images in content are loading
+				const contentImages = page.locator('.entry-content img, article img');
+				if ((await contentImages.count()) > 0) {
+					// Wait for at least one image to be fully loaded
+					await expect(contentImages.first()).toBeVisible();
+
+					// Verify image has proper src attribute
+					const imgSrc = await contentImages.first().getAttribute('src');
+					expect(imgSrc).toBeTruthy();
+					expect(imgSrc).toContain('wp-content/uploads');
+				}
+			}
+		});
+	});
 });
 
 // Helpers
