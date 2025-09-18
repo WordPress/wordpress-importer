@@ -193,7 +193,6 @@ class AttachmentDownloader {
 					if ( file_exists( $this->output_paths[ $original_request_id ] . '.partial' ) ) {
 						unlink( $this->output_paths[ $original_request_id ] . '.partial' );
 					}
-					echo $this->output_paths[ $original_request_id ] . "\n";
 					$fp = fopen( $this->output_paths[ $original_request_id ] . '.partial', 'wb' );
 					if ( false !== $fp ) {
 						$this->fps[ $original_request_id ]           = $fp;

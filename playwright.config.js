@@ -13,7 +13,7 @@ module.exports = defineConfig({
 	reporter: [['list']],
 	use: {
 		// Base URL is provided per-test by the Playground fixture
-		headless: true,
+		headless: false,
 	},
 	projects: [
 		{
