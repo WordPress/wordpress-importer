@@ -86,7 +86,7 @@ in GitHub UI:
 
 A new version of the plugin is automatically submitted to the WordPress.org plugin directory
 whenever you **push a new tag**. Once that happens, one of WordPress.org admins must approve
-the plugin release in the plugin directory.
+the plugin release in the [release management section of the plugin directory](https://wordpress.org/plugins/developers/releases/).
 
 Here's a release checklist to go through on every release:
 
@@ -100,4 +100,5 @@ Here's a release checklist to go through on every release:
      * `Requires PHP:`
   * Update the changelog in `src/readme.txt`
 * Create a new tag, push it to the repo
-* Create a new release on GitHub
+* Create a new release with the version of the plugin on GitHub. The title should
+  be “Version x.y.z” and a summary of the changed content as the description.
