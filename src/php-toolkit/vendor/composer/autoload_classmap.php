@@ -29,7 +29,6 @@ return array(
     'WordPress\\DataLiberation\\ImportEntity' => $baseDir . '/DataLiberation/class-importentity.php',
     'WordPress\\DataLiberation\\Importer\\AttachmentDownloader' => $baseDir . '/DataLiberation/Importer/class-attachmentdownloader.php',
     'WordPress\\DataLiberation\\Importer\\AttachmentDownloaderEvent' => $baseDir . '/DataLiberation/Importer/class-attachmentdownloaderevent.php',
-    'WordPress\\DataLiberation\\Importer\\RetryFrontloadingIterator' => $baseDir . '/DataLiberation/Importer/class-retryfrontloadingiterator.php',
     'WordPress\\DataLiberation\\URL\\URLInTextProcessor' => $baseDir . '/DataLiberation/URL/class-urlintextprocessor.php',
     'WordPress\\DataLiberation\\URL\\WPURL' => $baseDir . '/DataLiberation/URL/class-wpurl.php',
     'WordPress\\Filesystem\\Filesystem' => $baseDir . '/Filesystem/interface-filesystem.php',

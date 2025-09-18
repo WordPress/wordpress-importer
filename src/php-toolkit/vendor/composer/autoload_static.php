@@ -98,7 +98,6 @@ class ComposerStaticInit9801abce1960fa4b71d115bb31b779c7
         'WordPress\\DataLiberation\\ImportEntity' => __DIR__ . '/../..' . '/DataLiberation/class-importentity.php',
         'WordPress\\DataLiberation\\Importer\\AttachmentDownloader' => __DIR__ . '/../..' . '/DataLiberation/Importer/class-attachmentdownloader.php',
         'WordPress\\DataLiberation\\Importer\\AttachmentDownloaderEvent' => __DIR__ . '/../..' . '/DataLiberation/Importer/class-attachmentdownloaderevent.php',
-        'WordPress\\DataLiberation\\Importer\\RetryFrontloadingIterator' => __DIR__ . '/../..' . '/DataLiberation/Importer/class-retryfrontloadingiterator.php',
         'WordPress\\DataLiberation\\URL\\URLInTextProcessor' => __DIR__ . '/../..' . '/DataLiberation/URL/class-urlintextprocessor.php',
         'WordPress\\DataLiberation\\URL\\WPURL' => __DIR__ . '/../..' . '/DataLiberation/URL/class-wpurl.php',
         'WordPress\\Filesystem\\Filesystem' => __DIR__ . '/../..' . '/Filesystem/interface-filesystem.php',
