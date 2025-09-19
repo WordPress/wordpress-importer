@@ -5,7 +5,7 @@ Tags: importer, wordpress
 Requires at least: 5.2
 Tested up to: 6.8
 Requires PHP: 7.2
-Stable tag: 0.9.1
+Stable tag: 0.9.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -40,12 +40,13 @@ If you would prefer to do things manually then follow these instructions:
 
 == Changelog ==
 
-= 0.9.1 =
+= 0.9.2 =
+* Rewrite site URLs in block attributes.
 
+= 0.9.1 =
 * Add support for rewriting site URLs in post content and excerpts.
 
 = 0.9.0 =
-
 * Introduce a new XML parser class `WXR_Parser_XML_Processor` that replaces the
   deprecated `WXR_Parser_Regex` class.
 
@@ -54,19 +55,16 @@ If you would prefer to do things manually then follow these instructions:
 * Update compatibility tested-up-to to WordPress 6.7.2.
 
 = 0.8.3 =
-
 * Update compatibility tested-up-to to WordPress 6.7.
 * Update call to `post_exists` to include `post_type` in the query
 * PHP 8.4 compatibility fixes.
 
 = 0.8.2 =
-
 * Update compatibility tested-up-to to WordPress 6.4.2.
 * Update doc URL references.
 * Adjust workflow triggers.
 
 = 0.8.1 =
-
 * Update compatibility tested-up-to to WordPress 6.2.
 * Update paths to build status badges.
 
