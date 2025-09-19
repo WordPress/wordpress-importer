@@ -1,7 +1,7 @@
 <?php
 /*
  * Plugin Name: WordPress Importer Git loader
- * Version: 0.9.1
+ * Version: 0.9.2
  */
 
 // This file is included purely for those using Git and checking out directly into wp-content/plugins/wordpress-importer/
