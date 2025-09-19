@@ -65,7 +65,7 @@ class WP_Import extends WP_Importer {
 				if ( $this->check_running() && $reset === 0 ) {
 					$this->greet_already_started();
 				} else {
-					delete_transient( 'wxr_import_attachment_id' );
+					delete_transient( 'wp_wordpress_importer' );
 					$this->greet();
 				}
 
@@ -79,24 +79,20 @@ class WP_Import extends WP_Importer {
 			case 2:
 				$running = $this->check_running();
 				$file = null;
-				$rewrite_urls = false;
 
 				if ( $running ) {
 					$this->id = $running['id'];
 					$file = $running['file'];
-					$this->fetch_attachments = $running['fetch_attachments'];
-					$rewrite_urls = $running['rewrite_urls'];
 				} else {
 					check_admin_referer( 'import-wordpress' );
 					$this->greet_already_started();
-					$this->fetch_attachments = ( ! empty( $_POST['fetch_attachments'] ) && $this->allow_fetch_attachments() );
-					$this->id                = (int) $_POST['import_id'];
-					$file                    = get_attached_file( $this->id );
-					$rewrite_urls            = '1' === $_POST['rewrite_urls'];
+					$this->id = (int) $_POST['import_id'];
+					$file     = get_attached_file( $this->id );
 				}
 
+				$this->fetch_attachments = ( ! empty( $_POST['fetch_attachments'] ) && $this->allow_fetch_attachments() );
 				set_time_limit( 0 );
-				$this->import( $file, array( 'rewrite_urls' => $rewrite_urls ) );
+				$this->import( $file, array( 'rewrite_urls' => '1' === $_POST['rewrite_urls'] ) );
 				break;
 		}
 
@@ -270,7 +266,7 @@ class WP_Import extends WP_Importer {
 	 */
 	public function import_end() {
 		wp_import_cleanup( $this->id );
-		delete_transient( 'wxr_import_attachment_id' );
+		delete_transient( 'wp_wordpress_importer' );
 
 		wp_cache_flush();
 		foreach ( get_taxonomies() as $tax ) {
@@ -323,7 +319,7 @@ class WP_Import extends WP_Importer {
 		$this->id = (int) $file['id'];
 
 		// Store the attachment ID so we can use it in the import process.
-		set_transient( 'wxr_import_attachment_id', $this->id, time() + DAY_IN_SECONDS );
+		set_transient( 'wp_wordpress_importer', array( 'id' => $this->id ), time() + DAY_IN_SECONDS );
 
 		// Force new parser to use in WXR_Parser::parse()
 		$import_data = $this->parse( $file['file'] );
