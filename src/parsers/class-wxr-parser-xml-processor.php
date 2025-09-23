@@ -43,7 +43,7 @@ class WXR_Parser_XML_Processor {
 		$wxr_version         = '';
 
 		try {
-			$reader = $this->create_wxr_entity_reader( $file );
+			$reader = self::create_wxr_entity_reader( $file );
 			// Parse the XML document
 			$last_term = null;
 			while ( $reader->next_entity() ) {
@@ -202,7 +202,7 @@ class WXR_Parser_XML_Processor {
 		);
 	}
 
-	private function create_wxr_entity_reader( $file ) {
+	static public function create_wxr_entity_reader( $file ) {
 		// Every XML element is a combination of a long-form namespace and a
 		// local element name, e.g. a syntax <wp:post_id> could actually refer
 		// to a (https://wordpress.org/export/1.0/, post_id) element.

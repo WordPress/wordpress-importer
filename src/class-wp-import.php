@@ -6,6 +6,8 @@
  * @subpackage Importer
  */
 
+use WordPress\DataLiberation\BlockMarkup\BlockMarkupUrlProcessor;
+use WordPress\DataLiberation\Importer\StreamImporter;
 use WordPress\DataLiberation\URL\WPURL;
 use function WordPress\DataLiberation\URL\wp_rewrite_urls;
 
@@ -65,8 +67,10 @@ class WP_Import extends WP_Importer {
 				break;
 			case 1:
 				check_admin_referer( 'import-upload' );
-				if ( $this->handle_upload() ) {
-					$this->import_options();
+				$file = $this->handle_upload();
+				if ( $file ) {
+					$this->index_uploaded_import_file( $file );
+					$this->display_import_options_form();
 				}
 				break;
 			case 2:
@@ -242,24 +246,58 @@ class WP_Import extends WP_Importer {
 			return false;
 		}
 
+		return $file;
+	}
+
+	public function index_uploaded_import_file( $file ) {
 		$this->id    = (int) $file['id'];
-		$import_data = $this->parse( $file['file'] );
-		if ( is_wp_error( $import_data ) ) {
-			/** @var WP_Error $import_error */
-			$import_error = $import_data;
-			echo '<p><strong>' . __( 'Sorry, there has been an error.', 'wordpress-importer' ) . '</strong><br />';
-			echo esc_html( $import_error->get_error_message() ) . '</p>';
+		$stream_importer = StreamImporter::create_for_wxr_file( $file['file'], [
+			'index_batch_size' => 1,
+		] );
+		// We're at STAGE_INITIAL, let's advance to STAGE_INDEX_ENTITIES
+		$stream_importer->advance_to_next_stage();
+		if ( $stream_importer->get_stage() !== StreamImporter::STAGE_INDEX_ENTITIES ) {
+			_doing_it_wrong( __METHOD__, 'StreamImporter is not at STAGE_INDEX_ENTITIES', '1.0' );
 			return false;
 		}
 
-		$this->version = $import_data['version'];
-		if ( $this->version > $this->max_wxr_version ) {
-			echo '<div class="error"><p><strong>';
-			printf( __( 'This WXR file (version %s) may not be supported by this version of the importer. Please consider updating.', 'wordpress-importer' ), esc_html( $import_data['version'] ) );
-			echo '</strong></p></div>';
-		}
+		// @TODO: Pause before the 30 seconds timeout, display some nice info to the user, resume
+		//        on the next page load.
+		while ( $stream_importer->next_step() ) {
+			$entity = $stream_importer->get_current_entity();
 
-		$this->get_authors_from_import( $import_data );
+			$type = $entity->get_type();
+			$data = $entity->get_data();
+
+			switch ( $type ) {
+				case 'wxr_version':
+					$wxr_version = $data['wxr_version'];
+					// @TODO: Store this without relying on memory
+					$this->version = $wxr_version;
+					if ( $wxr_version > $this->max_wxr_version ) {
+						echo '<div class="error"><p><strong>';
+						printf( __( 'This WXR file (version %s) may not be supported by this version of the importer. Please consider updating.', 'wordpress-importer' ), esc_html( $wxr_version ) );
+						echo '</strong></p></div>';
+					}
+					break;
+				case 'user':
+					$key = isset( $data['author_login'] ) ? $data['author_login'] : (
+						isset( $data['author_email'] ) ? $data['author_email'] : (
+							isset( $data['author_id'] ) ? $data['author_id'] : count( $this->authors )
+						)
+					);
+					// @TODO: Record the author without relying on memory
+					$this->authors[ $key ] = $data;
+					// kind of like:
+					// $this->import_session->record_author( $key, $data );
+					break;
+			}			
+
+			// @TODO: What do we do with this?
+			// $stream_importer->get_indexed_assets_urls();
+
+			// @TODO: Store the cursor in the database.
+		}
 
 		return true;
 	}
@@ -299,7 +337,7 @@ class WP_Import extends WP_Importer {
 	 * Display pre-import options, author importing/mapping and option to
 	 * fetch attachments
 	 */
-	public function import_options() {
+	public function display_import_options_form() {
 		$j = 0;
 		// phpcs:disable Generic.WhiteSpace.ScopeIndent.Incorrect
 		?>
