@@ -13,6 +13,12 @@ index 3762920..ac4f5be 100644
 +					if ( $existing_url ) {
 +						$remote_url = $post['attachment_url'];
 +
++						// Map the full URLs (like original code does in fetch_remote_file)
++						$this->url_remap[ $remote_url ] = $existing_url;
++						if ( ! empty( $post['guid'] ) ) {
++							$this->url_remap[ $post['guid'] ] = $existing_url;
++						}
++
 +						// Check if it's an image to handle resized versions
 +						$existing_file = get_attached_file( $post_exists );
 +						$info = wp_check_filetype( $existing_file );

@@ -84,7 +84,7 @@ After the bug occurs, you'll see content like:
 <img src="https://yavuzceliker.github.io/sample-images/image-178.jpg" />
 
 <!-- WORKING: Properly remapped -->
-<img src="http://localhost:8880/wp-content/uploads/2024/01/image-178.jpg" />
+<img src="http://localhost:8080/wp-content/uploads/2024/01/image-178.jpg" />
 ```
 
 ## Impact
@@ -114,18 +114,6 @@ The bug manifests in several scenarios:
 ./wordpress/wp-content/plugins/wordpress-importer/test-cli/simple-test.sh
 ```
 
-### Comprehensive Tests
-```bash
-# Test various partial import scenarios
-./wordpress/wp-content/plugins/wordpress-importer/test-cli/test-partial-import-scenarios.sh
-
-# Test interrupted imports (actually kills process)
-./wordpress/wp-content/plugins/wordpress-importer/test-cli/test-kill-during-import.sh
-
-# Test network failure scenarios
-./wordpress/wp-content/plugins/wordpress-importer/test-cli/test-network-failures.sh
-```
-
 ### Manual Reproduction
 1. Create a WXR file with attachments and posts
 2. Import with attachment downloading enabled
@@ -135,58 +123,43 @@ The bug manifests in several scenarios:
 
 ## Evidence in Test Results
 
-Our tests show consistent failures:
+Our test demonstrates the bug clearly:
 
 ```
-✗ Scenario 1 (Orphaned posts): FAIL
-✗ Scenario 2 (Incomplete mapping): FAIL
-✗ Scenario 3 (Mixed state): FAIL
-✗ Scenario 4 (Metadata issues): FAIL
-✗ Scenario 5 (Permission issues): FAIL
+❌ Post 1: URLs NOT remapped (references skipped attachment)
+✅ Posts 2-3: URLs properly remapped (reference new attachments)
+🔴 IDEMPOTENCY BUG CONFIRMED
 ```
 
-Each test demonstrates URLs remaining unreplaced (`original: 3, local: 0`) after the second import.
+The test shows URLs remaining unreplaced for existing attachments after the second import.
 
 ## Proposed Solution
 
-The fix requires modifying the attachment handling in `process_posts()`:
-
-```php
-if ($post_exists && get_post_type($post_exists) == $post['post_type']) {
-    // Existing code...
-    $this->processed_posts[intval($post['post_id'])] = intval($post_exists);
-
-    // FIX: For attachments, populate url_remap even when they exist
-    if ($post['post_type'] === 'attachment') {
-        $local_url = wp_get_attachment_url($post_exists);
-        if ($local_url && !empty($remote_url)) {
-            $this->url_remap[$remote_url] = $local_url;
-            // Also map GUID if different
-            if (!empty($post['guid']) && $post['guid'] !== $remote_url) {
-                $this->url_remap[$post['guid']] = $local_url;
-            }
-        }
-    }
-}
-```
-
-This ensures that URL mappings are available for `backfill_attachment_urls()` even when attachments already exist.
+The fix requires modifying the attachment handling in `process_posts()` to populate `url_remap` even when attachments already exist. This ensures complete parity with the original WordPress Importer's URL remapping behavior.
 
 ## Files in This Test Suite
 
 - `IDEMPOTENCY-BUG.md` - This documentation
-- `e2e/fixtures/wxr-idempotency-test.xml` - Test WXR file with attachment references
 - `phpunit/tests/idempotency.php` - PHPUnit tests for the bug
-- `e2e/import-idempotency.spec.js` - Playwright E2E tests
-- `test-cli/simple-test.sh` - Quick demonstration of the bug
-- `test-cli/test-kill-during-import.sh` - Tests with actual process killing
-- `test-cli/test-network-failures.sh` - Network failure simulation tests
-- `test-cli/test-partial-import-scenarios.sh` - Comprehensive scenario tests
-- `test-cli/network-failure-plugin/` - Plugin for simulating network issues
+- `phpunit/data/idempotency-partial.xml` - Test data (1 attachment)
+- `phpunit/data/idempotency-complete.xml` - Test data (3 attachments + 3 posts)
+- `e2e/fixtures/wxr-partial.xml` - Shell test data (1 attachment)
+- `e2e/fixtures/wxr-complete.xml` - Shell test data (3 attachments + 3 posts)
+- `test-cli/simple-test.sh` - Quick demonstration of the bug and fix
+- `test-cli/test-utils.sh` - Utilities used by test scripts
+- `test-cli/fix-idempotency-git.patch` - Git patch with the fix
 
 ## Running the Tests
 
-See `TEST-INSTRUCTIONS.md` for detailed instructions on running all test cases.
+```bash
+# Quick test demonstrating the bug/fix
+cd test-cli && bash simple-test.sh
+
+# PHPUnit test (requires WordPress test environment)
+phpunit --group idempotency
+```
+
+See `TEST-INSTRUCTIONS.md` and `PHPUNIT-INSTRUCTIONS.md` for detailed setup instructions.
 
 ## The Fix ✅
 
@@ -196,10 +169,10 @@ The bug has been fixed by modifying the `process_posts()` method in `src/class-w
 
 When an attachment already exists (detected by `post_exists()`), the fix:
 
-1. **Gets the existing attachment's local URL** using `wp_get_attachment_url()`
-2. **Populates the url_remap array** with the mapping from original URL to local URL
+1. **Maps the full URLs** exactly like `fetch_remote_file()` does for new attachments
+2. **Maps GUID references** to handle WordPress internal links
 3. **Handles image URLs correctly** by stripping extensions for resized versions
-4. **Ensures backfill_attachment_urls() works** for all attachments
+4. **Ensures backfill_attachment_urls() works** for all attachment types
 
 ### Code Changes
 
@@ -211,6 +184,12 @@ if ( 'attachment' == $post['post_type'] && ! empty( $post['attachment_url'] ) ) 
     $existing_url = wp_get_attachment_url( $post_exists );
     if ( $existing_url ) {
         $remote_url = $post['attachment_url'];
+
+        // Map the full URLs (like original code does in fetch_remote_file)
+        $this->url_remap[ $remote_url ] = $existing_url;
+        if ( ! empty( $post['guid'] ) ) {
+            $this->url_remap[ $post['guid'] ] = $existing_url;
+        }
 
         // Check if it's an image to handle resized versions
         $existing_file = get_attached_file( $post_exists );
@@ -230,20 +209,16 @@ if ( 'attachment' == $post['post_type'] && ! empty( $post['attachment_url'] ) ) 
 
 ## Testing
 
-The fix has been thoroughly tested using multiple approaches:
+The fix has been thoroughly tested using:
 
-### Shell Script Tests
-- **test-cli/simple-test.sh**: Demonstrates the bug and verifies the fix
-- **test-cli/test-patch.sh**: Tests applying the patch and verifying it works
-- **test-cli/run-phpunit-style-test.sh**: PHPUnit-equivalent test using shell scripts
+### Shell Script Test
+- **test-cli/simple-test.sh**: Main test demonstrating the bug and verifying the fix
+- **test-cli/test-utils.sh**: Common utilities used by the test script
 
-### PHPUnit Tests
+### PHPUnit Tests (CI/CD Ready)
 - **phpunit/tests/idempotency.php**: Professional PHPUnit test suite for CI/CD integration
 - **phpunit/data/idempotency-partial.xml**: Test data (1 attachment)
 - **phpunit/data/idempotency-complete.xml**: Test data (3 attachments + 3 posts)
-
-### Patch Files
-- **test-cli/fix-idempotency-git.patch**: Git patch file with the fix
 
 ### Running Tests
 
@@ -256,13 +231,6 @@ bash simple-test.sh
 **PHPUnit Test (in WordPress test environment):**
 ```bash
 phpunit --group idempotency
-# or
-phpunit phpunit/tests/idempotency.php
-```
-
-**PHPUnit-equivalent Shell Test:**
-```bash
-bash run-phpunit-style-test.sh
 ```
 
 See `TEST-INSTRUCTIONS.md` and `PHPUNIT-INSTRUCTIONS.md` for detailed setup instructions.
@@ -275,18 +243,21 @@ See `TEST-INSTRUCTIONS.md` and `PHPUNIT-INSTRUCTIONS.md` for detailed setup inst
 
 ## Files
 
-### Fix and Shell Tests
-- **Fix**: `test-cli/fix-idempotency-git.patch`
-- **Test**: `test-cli/simple-test.sh`
-- **Utilities**: `test-cli/test-utils.sh`
-- **Patch Test**: `test-cli/test-patch.sh`
-- **PHPUnit-style Shell Test**: `test-cli/run-phpunit-style-test.sh`
+### Core Files
+- **Fix**: Applied directly to `src/class-wp-import.php`
+- **Patch**: `test-cli/fix-idempotency-git.patch` (for reference)
+
+### Shell Tests
+- **Main Test**: `test-cli/simple-test.sh` - demonstrates bug and verifies fix
+- **Utilities**: `test-cli/test-utils.sh` - common functions
+- **Test Data**: `e2e/fixtures/wxr-partial.xml`, `e2e/fixtures/wxr-complete.xml`
 
 ### PHPUnit Tests (CI/CD Ready)
 - **PHPUnit Test**: `phpunit/tests/idempotency.php`
 - **Test Data**: `phpunit/data/idempotency-partial.xml`, `phpunit/data/idempotency-complete.xml`
 
 ### Documentation
+- **Bug Analysis**: `IDEMPOTENCY-BUG.md` (this file)
 - **Test Instructions**: `TEST-INSTRUCTIONS.md`
 - **PHPUnit Instructions**: `PHPUNIT-INSTRUCTIONS.md`
 

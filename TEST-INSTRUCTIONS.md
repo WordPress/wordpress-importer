@@ -19,7 +19,7 @@ This document provides step-by-step instructions for testing the WordPress Impor
 
 3. **Access WordPress**: Verify WordPress is accessible
    ```bash
-   curl -s -o /dev/null -w "%{http_code}" http://localhost:8880
+   curl -s -o /dev/null -w "%{http_code}" http://localhost:8080
    # Should return 200
    ```
 
@@ -119,7 +119,7 @@ Tests verify:
 
 The tests check post content for:
 - **External URLs**: `https://yavuzceliker.github.io/sample-images/...` (broken)
-- **Local URLs**: `http://localhost:8880/wp-content/uploads/...` (working)
+- **Local URLs**: `http://localhost:8080/wp-content/uploads/...` (working)
 
 ## Troubleshooting
 
