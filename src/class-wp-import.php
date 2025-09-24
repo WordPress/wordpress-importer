@@ -769,12 +769,12 @@ class WP_Import extends WP_Importer {
 
 						// Check if it's an image to handle resized versions
 						$existing_file = get_attached_file( $post_exists );
-						$info = wp_check_filetype( $existing_file );
+						$info          = wp_check_filetype( $existing_file );
 
 						if ( preg_match( '!^image/!', $info['type'] ) ) {
 							// Remap resized image URLs by stripping the extension
-							$parts = pathinfo( $remote_url );
-							$name  = basename( $parts['basename'], ".{$parts['extension']}" );
+							$parts     = pathinfo( $remote_url );
+							$name      = basename( $parts['basename'], ".{$parts['extension']}" );
 							$parts_new = pathinfo( $existing_url );
 							$name_new  = basename( $parts_new['basename'], ".{$parts_new['extension']}" );
 							$this->url_remap[ $parts['dirname'] . '/' . $name ] = $parts_new['dirname'] . '/' . $name_new;

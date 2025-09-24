@@ -56,16 +56,20 @@ class Tests_Import_Idempotency extends WP_Import_UnitTestCase {
 		$this->_import_wp( DIR_TESTDATA_WP_IMPORTER . '/idempotency-partial.xml', $authors, true );
 
 		// Verify partial state: 1 attachment, 0 posts
-		$attachments_after_partial = get_posts( array(
-			'post_type'   => 'attachment',
-			'numberposts' => -1,
-			'post_status' => 'inherit',
-		) );
-		$posts_after_partial = get_posts( array(
-			'post_type'   => 'post',
-			'numberposts' => -1,
-			'post_status' => 'any',
-		) );
+		$attachments_after_partial = get_posts(
+			array(
+				'post_type'   => 'attachment',
+				'numberposts' => -1,
+				'post_status' => 'inherit',
+			)
+		);
+		$posts_after_partial       = get_posts(
+			array(
+				'post_type'   => 'post',
+				'numberposts' => -1,
+				'post_status' => 'any',
+			)
+		);
 
 		$this->assertCount( 1, $attachments_after_partial, 'Should have 1 attachment after partial import' );
 		$this->assertCount( 0, $posts_after_partial, 'Should have 0 posts after partial import' );
@@ -79,20 +83,24 @@ class Tests_Import_Idempotency extends WP_Import_UnitTestCase {
 		$this->_import_wp( DIR_TESTDATA_WP_IMPORTER . '/idempotency-complete.xml', $authors, true );
 
 		// Verify final state: 3 attachments, 3 posts
-		$attachments_after_complete = get_posts( array(
-			'post_type'   => 'attachment',
-			'numberposts' => -1,
-			'post_status' => 'inherit',
-			'orderby'     => 'ID',
-			'order'       => 'ASC',
-		) );
-		$posts_after_complete = get_posts( array(
-			'post_type'   => 'post',
-			'numberposts' => -1,
-			'post_status' => 'any',
-			'orderby'     => 'ID',
-			'order'       => 'ASC',
-		) );
+		$attachments_after_complete = get_posts(
+			array(
+				'post_type'   => 'attachment',
+				'numberposts' => -1,
+				'post_status' => 'inherit',
+				'orderby'     => 'ID',
+				'order'       => 'ASC',
+			)
+		);
+		$posts_after_complete       = get_posts(
+			array(
+				'post_type'   => 'post',
+				'numberposts' => -1,
+				'post_status' => 'any',
+				'orderby'     => 'ID',
+				'order'       => 'ASC',
+			)
+		);
 
 		$this->assertCount( 3, $attachments_after_complete, 'Should have 3 attachments after complete import' );
 		$this->assertCount( 3, $posts_after_complete, 'Should have 3 posts after complete import' );
@@ -157,16 +165,20 @@ class Tests_Import_Idempotency extends WP_Import_UnitTestCase {
 		$this->_import_wp( DIR_TESTDATA_WP_IMPORTER . '/idempotency-complete.xml', $authors, true );
 
 		// Should still have correct counts (not duplicated)
-		$attachments = get_posts( array(
-			'post_type'   => 'attachment',
-			'numberposts' => -1,
-			'post_status' => 'inherit',
-		) );
-		$posts = get_posts( array(
-			'post_type'   => 'post',
-			'numberposts' => -1,
-			'post_status' => 'any',
-		) );
+		$attachments = get_posts(
+			array(
+				'post_type'   => 'attachment',
+				'numberposts' => -1,
+				'post_status' => 'inherit',
+			)
+		);
+		$posts       = get_posts(
+			array(
+				'post_type'   => 'post',
+				'numberposts' => -1,
+				'post_status' => 'any',
+			)
+		);
 
 		$this->assertCount( 3, $attachments, 'Should still have 3 attachments after duplicate import' );
 		$this->assertCount( 3, $posts, 'Should still have 3 posts after duplicate import' );
