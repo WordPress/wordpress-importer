@@ -1,0 +1,32 @@
+diff --git a/src/class-wp-import.php b/src/class-wp-import.php
+index 3762920..ac4f5be 100644
+--- a/src/class-wp-import.php
++++ b/src/class-wp-import.php
+@@ -754,6 +754,27 @@ class WP_Import extends WP_Importer {
+ 				$comment_post_id = $post_exists;
+ 				$post_id         = $post_exists;
+ 				$this->processed_posts[ intval( $post['post_id'] ) ] = intval( $post_exists );
++
++				// Fix for idempotency bug: populate url_remap for existing attachments
++				if ( 'attachment' == $post['post_type'] && ! empty( $post['attachment_url'] ) ) {
++					$existing_url = wp_get_attachment_url( $post_exists );
++					if ( $existing_url ) {
++						$remote_url = $post['attachment_url'];
++
++						// Check if it's an image to handle resized versions
++						$existing_file = get_attached_file( $post_exists );
++						$info = wp_check_filetype( $existing_file );
++
++						if ( preg_match( '!^image/!', $info['type'] ) ) {
++							// Remap resized image URLs by stripping the extension
++							$parts = pathinfo( $remote_url );
++							$name  = basename( $parts['basename'], ".{$parts['extension']}" );
++							$parts_new = pathinfo( $existing_url );
++							$name_new  = basename( $parts_new['basename'], ".{$parts_new['extension']}" );
++							$this->url_remap[ $parts['dirname'] . '/' . $name ] = $parts_new['dirname'] . '/' . $name_new;
++						}
++					}
++				}
+ 			} else {
+ 				$post_parent = (int) $post['post_parent'];
+ 				if ( $post_parent ) {
