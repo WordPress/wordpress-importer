@@ -9,6 +9,8 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 
 	protected $previous_uploads_structure;
 
+	protected $mocked_attachment_url;
+
 	public function set_up() {
 		parent::set_up();
 
