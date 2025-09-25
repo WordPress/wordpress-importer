@@ -332,7 +332,7 @@ class StreamImporter {
 		$options['new_media_root_url'] = rtrim( $options['new_media_root_url'], '/' );
 
 		if ( ! isset( $options['index_batch_size'] ) ) {
-			$options['index_batch_size'] = 10000;
+			$options['index_batch_size'] = 1;
 		}
 
 		return $options;

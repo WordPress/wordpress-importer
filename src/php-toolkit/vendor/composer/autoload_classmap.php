@@ -7,6 +7,7 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
+    'WP_Block_Parser_Error' => $baseDir . '/DataLiberation/BlockMarkup/class-blockparsererror.php',
     'WordPress\\ByteStream\\ByteStreamException' => $baseDir . '/ByteStream/class-bytestreamexception.php',
     'WordPress\\ByteStream\\NotEnoughDataException' => $baseDir . '/ByteStream/class-notenoughdataexception.php',
     'WordPress\\ByteStream\\ReadStream\\BaseByteReadStream' => $baseDir . '/ByteStream/ReadStream/class-basebytereadstream.php',

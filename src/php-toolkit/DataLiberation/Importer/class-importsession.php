@@ -351,9 +351,9 @@ class ImportSession {
 				'paged'          => $options['page'] ?? 1,
 				'orderby'        => array(
 					'post_status' => array(
-						self::FRONTLOAD_STATUS_ERROR             => 0,
+						self::FRONTLOAD_STATUS_ERROR => 0,
 						self::FRONTLOAD_STATUS_AWAITING_DOWNLOAD => 1,
-						'any'                                    => 2,
+						'any'                        => 2,
 					),
 					'ID'          => 'ASC',
 				),

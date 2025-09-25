@@ -202,7 +202,7 @@ class WXR_Parser_XML_Processor {
 		);
 	}
 
-	static public function create_wxr_entity_reader( $file ) {
+	public static function create_wxr_entity_reader( $file ) {
 		// Every XML element is a combination of a long-form namespace and a
 		// local element name, e.g. a syntax <wp:post_id> could actually refer
 		// to a (https://wordpress.org/export/1.0/, post_id) element.

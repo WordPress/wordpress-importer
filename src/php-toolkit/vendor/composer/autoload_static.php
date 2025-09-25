@@ -76,6 +76,7 @@ class ComposerStaticInit9801abce1960fa4b71d115bb31b779c7
 
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
+        'WP_Block_Parser_Error' => __DIR__ . '/../..' . '/DataLiberation/BlockMarkup/class-blockparsererror.php',
         'WordPress\\ByteStream\\ByteStreamException' => __DIR__ . '/../..' . '/ByteStream/class-bytestreamexception.php',
         'WordPress\\ByteStream\\NotEnoughDataException' => __DIR__ . '/../..' . '/ByteStream/class-notenoughdataexception.php',
         'WordPress\\ByteStream\\ReadStream\\BaseByteReadStream' => __DIR__ . '/../..' . '/ByteStream/ReadStream/class-basebytereadstream.php',
