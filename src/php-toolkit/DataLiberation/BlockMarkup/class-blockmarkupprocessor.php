@@ -2,7 +2,7 @@
 
 namespace WordPress\DataLiberation\BlockMarkup;
 
-use WP_Block_Parser_Error;
+use WP_Error;
 use WP_HTML_Tag_Processor;
 
 /**
@@ -113,9 +113,9 @@ class BlockMarkupProcessor extends WP_HTML_Tag_Processor {
 	/**
 	 * Gets the most recent error encountered while parsing blocks
 	 *
-	 * @return WP_Block_Parser_Error|null The error message or null if no error
+	 * @return WP_Error|null The error message or null if no error
 	 */
-	public function get_last_error(): ?WP_Block_Parser_Error {
+	public function get_last_error(): ?WP_Error {
 		return $this->last_block_error;
 	}
 
@@ -362,9 +362,9 @@ class BlockMarkupProcessor extends WP_HTML_Tag_Processor {
 		$name_length = strspn( $text, 'abcdefghijklmnopqrstuwxvyzABCDEFGHIJKLMNOPRQSTUWXVYZ0123456789_-', $at );
 		if ( 0 === $name_length ) {
 			// This wasn't a block after all, just a regular comment.
-			$this->last_block_error = new WP_Block_Parser_Error(
-				sprintf( 'An HTML comment started with "wp:" that was not followed by a valid block name: %s', $text ),
-				WP_Block_Parser_Error::TYPE_SUSPICIOUS_DELIMITER
+			$this->last_block_error = new WP_Error(
+				'suspicious-delimiter',
+				sprintf( 'An HTML comment started with "wp:" that was not followed by a valid block name: %s', $text )
 			);
 
 			return true;
@@ -404,9 +404,9 @@ class BlockMarkupProcessor extends WP_HTML_Tag_Processor {
 				if ( null === $attributes || ! is_array( $attributes ) ) {
 					// This comment looked like a block comment, but the attributes didn't
 					// parse as a JSON array. This means it wasn't a block after all.
-					$this->last_block_error = new WP_Block_Parser_Error(
-						sprintf( '%s could be parsed as a delimiter but JSON attributes were malformed: %s.', $name, $json_maybe ),
-						WP_Block_Parser_Error::TYPE_SUSPICIOUS_DELIMITER
+					$this->last_block_error = new WP_Error(
+						'suspicious-delimiter',
+						sprintf( '%s could be parsed as a delimiter but JSON attributes were malformed: %s.', $name, $json_maybe )
 					);
 
 					return true;
@@ -423,9 +423,9 @@ class BlockMarkupProcessor extends WP_HTML_Tag_Processor {
 		if ( $this->block_closer ) {
 			$popped = array_pop( $this->stack_of_open_blocks );
 			if ( $popped !== $name ) {
-				$this->last_block_error = new WP_Block_Parser_Error(
-					sprintf( 'Block closer %s does not match the last opened block %s.', $name, $popped ),
-					WP_Block_Parser_Error::TYPE_MISMATCHED_CLOSER
+				$this->last_block_error = new WP_Error(
+					'mismatched-closer',
+					sprintf( 'Block closer %s does not match the last opened block %s.', $name, $popped )
 				);
 
 				return false;
@@ -525,6 +525,14 @@ class BlockMarkupProcessor extends WP_HTML_Tag_Processor {
 		++$this->block_attribute_index;
 
 		return isset( $this->block_attribute_paths[ $this->block_attribute_index ] );
+	}
+
+	protected function get_block_attribute_path() {
+		if ( null === $this->block_attribute_paths || ! isset( $this->block_attribute_paths[ $this->block_attribute_index ] ) ) {
+			return false;
+		}
+
+		return $this->block_attribute_paths[ $this->block_attribute_index ];
 	}
 
 	/**

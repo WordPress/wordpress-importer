@@ -132,7 +132,7 @@ class BlockMarkupUrlProcessor extends BlockMarkupProcessor {
 	private function next_url_attribute() {
 		$tag = $this->get_tag();
 
-		if ( ! array_key_exists( $tag, self::URL_ATTRIBUTES ) ) {
+		if ( ! array_key_exists( $tag, self::HTML_ATTRIBUTES_TO_ACCEPT_RELATIVE_URLS_FROM ) ) {
 			return false;
 		}
 
@@ -142,7 +142,7 @@ class BlockMarkupUrlProcessor extends BlockMarkupProcessor {
 			 * for the current token. The last element is the attribute we'll
 			 * inspect in the while() loop below.
 			 */
-			$this->inspecting_html_attributes = self::URL_ATTRIBUTES[ $tag ];
+			$this->inspecting_html_attributes = self::HTML_ATTRIBUTES_TO_ACCEPT_RELATIVE_URLS_FROM[ $tag ];
 		} else {
 			/**
 			 * Forget the attribute we've inspected on the previous call to
@@ -184,22 +184,75 @@ class BlockMarkupUrlProcessor extends BlockMarkupProcessor {
 	private function next_url_block_attribute() {
 		while ( $this->next_block_attribute() ) {
 			$url_maybe = $this->get_block_attribute_value();
-			/*
-			 * Do not use base URL for block attributes. to avoid false positives.
-			 * When a base URL is present, any word is a valid URL relative to the
-			 * base URL.
-			 * When a base URL is missing, the string must start with a protocol to
-			 * be considered a URL.
-			 */
-			if ( is_string( $url_maybe ) ) {
-				$parsed_url = WPURL::parse( $url_maybe );
-				if ( false !== $parsed_url ) {
-					$this->raw_url    = $url_maybe;
-					$this->parsed_url = $parsed_url;
-
-					return true;
-				}
+			if ( ! is_string( $url_maybe ) ||
+				count( $this->get_block_attribute_path() ) > 1
+			) {
+				// @TODO: support arrays, objects, and other non-string data structures.
+				continue;
 			}
+
+			/**
+			 * Decide whether the current block attribute holds a URL.
+			 *
+			 * Known URL attributes can be assumed to hold a URL and be
+			 * parsed with the base URL. For example, a "/about-us" value
+			 * in a wp:navigation-link block's `url` attribute is a
+			 * relative URL to the `/about-us` page.
+			 *
+			 * Other attributes may or may not contain URLs, but we cannot assume
+			 * they do. A value `/about-us` could be a relative URL or a class name.
+			 * In those cases, we'll let go of relative URLs and only detect
+			 * absolute URLs to avoid treating every string as a URL. This requires
+			 * parsing without a base URL.
+			 */
+			$is_relative_url_block_attribute = (
+				isset( self::BLOCK_ATTRIBUTES_TO_ACCEPT_RELATIVE_URLS_FROM[ $this->get_block_name() ] ) &&
+				in_array( $this->get_block_attribute_key(), self::BLOCK_ATTRIBUTES_TO_ACCEPT_RELATIVE_URLS_FROM[ $this->get_block_name() ], true )
+			);
+
+			/**
+			 * Filters whether a block attribute is known to contain a relative URL.
+			 *
+			 * This filter allows extending the list of block attributes that are
+			 * recognized as containing URLs. When a block attribute is marked as
+			 * a known URL attribute, it will be parsed with the base URL, allowing
+			 * relative URLs to be properly resolved.
+			 *
+			 * @since 6.8.0
+			 *
+			 * @param bool  $is_relative_url_block_attribute Whether the block attribute is known to contain a relative URL.
+			 * @param array $context {
+			 *     Context information about the block attribute.
+			 *
+			 *     @type string $block_name      The name of the block (e.g., 'wp:image', 'wp:button').
+			 *     @type string $attribute_name  The name of the attribute (e.g., 'url', 'href').
+			 * }
+			 */
+			$is_relative_url_block_attribute = apply_filters(
+				'url_processor_is_relative_url_block_attribute',
+				$is_relative_url_block_attribute,
+				array(
+					'block_name'     => $this->get_block_name(),
+					'attribute_name' => $this->get_block_attribute_key(),
+				)
+			);
+
+			$parsed_url = false;
+			if ( $is_relative_url_block_attribute ) {
+				// Known relative URL attribute – let's parse with the base URL.
+				$parsed_url = WPURL::parse( $url_maybe, $this->base_url_string );
+			} else {
+				// Other attributes – let's parse without a base URL (and only detect absolute URLs).
+				$parsed_url = WPURL::parse( $url_maybe );
+			}
+
+			if ( false === $parsed_url ) {
+				continue;
+			}
+
+			$this->raw_url    = $url_maybe;
+			$this->parsed_url = $parsed_url;
+			return true;
 		}
 
 		return false;
@@ -362,6 +415,26 @@ class BlockMarkupUrlProcessor extends BlockMarkupProcessor {
 		return $this->inspecting_html_attributes[ count( $this->inspecting_html_attributes ) - 1 ];
 	}
 
+	/**
+	 * A list of block attributes that are known to contain URLs.
+	 *
+	 * It covers WordPress core blocks as of WordPress version 6.9. It can be
+	 * extended by plugins and themes via the "url_processor_is_relative_url_block_attribute"
+	 * filter.
+	 *
+	 * @var array
+	 */
+	public const BLOCK_ATTRIBUTES_TO_ACCEPT_RELATIVE_URLS_FROM = array(
+		'wp:button'             => array( 'url', 'linkTarget' ),
+		'wp:cover'              => array( 'url' ),
+		'wp:embed'              => array( 'url' ),
+		'wp:gallery'            => array( 'url', 'fullUrl' ),
+		'wp:image'              => array( 'url', 'src', 'href' ),
+		'wp:media-text'         => array( 'mediaUrl', 'href' ),
+		'wp:navigation-link'    => array( 'url' ),
+		'wp:navigation-submenu' => array( 'url' ),
+		'wp:rss'                => array( 'feedURL' ),
+	);
 
 	/**
 	 * A list of HTML attributes meant to contain URLs, as defined in the HTML specification.
@@ -370,7 +443,7 @@ class BlockMarkupUrlProcessor extends BlockMarkupProcessor {
 	 * See https://html.spec.whatwg.org/multipage/indices.html#attributes-1.
 	 * See https://stackoverflow.com/questions/2725156/complete-list-of-html-tag-attributes-which-have-a-url-value.
 	 */
-	public const URL_ATTRIBUTES = array(
+	public const HTML_ATTRIBUTES_TO_ACCEPT_RELATIVE_URLS_FROM = array(
 		'A'          => array( 'href' ),
 		'APPLET'     => array( 'codebase', 'archive' ),
 		'AREA'       => array( 'href' ),
@@ -405,7 +478,7 @@ class BlockMarkupUrlProcessor extends BlockMarkupProcessor {
 	 * @TODO: Either explicitly support these attributes, or explicitly drop support for
 	 *        handling their subsyntax. A generic URL matcher might be good enough.
 	 */
-	public const URL_ATTRIBUTES_WITH_SUBSYNTAX = array(
+	public const HTML_ATTRIBUTES_WITH_SUBSYNTAX_TO_ACCEPT_RELATIVE_URLS_FROM = array(
 		'*'      => array( 'style' ), // background(), background-image().
 		'APPLET' => array( 'archive' ),
 		'IMG'    => array( 'srcset' ),
@@ -425,7 +498,7 @@ class BlockMarkupUrlProcessor extends BlockMarkupProcessor {
 	 * @TODO: Either explicitly support these tags, or explicitly drop support for
 	 *         handling their subsyntax. A generic URL matcher might be good enough.
 	 */
-	public const URL_CONTAINING_TAGS_WITH_SUBSYNTAX = array(
+	public const HTML_TAGS_WITH_SUBSYNTAX_TO_ACCEPT_RELATIVE_URLS_FROM = array(
 		'STYLE',
 		'SCRIPT',
 	);
