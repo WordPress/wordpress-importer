@@ -1301,24 +1301,30 @@ class WP_Import extends WP_Importer {
 		);
 
 		// keep track of the old and new urls so we can substitute them later
-		if($this->options['rewrite_urls']) {
+		if ( $this->options['rewrite_urls'] ) {
 			// TODO: nicer code style, don't override the old variables maybe
-			$url = WPURL::replace_base_url([
-				'url' => $url,
-				'old_base_url' => $this->base_url_parsed,
-				'new_base_url' => $this->site_url_parsed
-			]);
-			$post['guid'] = WPURL::replace_base_url([
-				'url' => $post['guid'],
-				'old_base_url' => $this->base_url_parsed,
-				'new_base_url' => $this->site_url_parsed
-			]);
-			if ( isset( $headers['x-final-location'] ) ) {
-				$headers['x-final-location'] = WPURL::replace_base_url([
-					'url' => $headers['x-final-location'],
+			$url          = WPURL::replace_base_url(
+				array(
+					'url'          => $url,
 					'old_base_url' => $this->base_url_parsed,
-					'new_base_url' => $this->site_url_parsed
-				]);
+					'new_base_url' => $this->site_url_parsed,
+				)
+			);
+			$post['guid'] = WPURL::replace_base_url(
+				array(
+					'url'          => $post['guid'],
+					'old_base_url' => $this->base_url_parsed,
+					'new_base_url' => $this->site_url_parsed,
+				)
+			);
+			if ( isset( $headers['x-final-location'] ) ) {
+				$headers['x-final-location'] = WPURL::replace_base_url(
+					array(
+						'url'          => $headers['x-final-location'],
+						'old_base_url' => $this->base_url_parsed,
+						'new_base_url' => $this->site_url_parsed,
+					)
+				);
 			}
 		}
 

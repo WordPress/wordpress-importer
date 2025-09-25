@@ -86,7 +86,7 @@ class WPURL {
 			$updated_url->pathname = $to_pathname_with_trailing_slash . $remaining_pathname;
 		}
 
-		$new_raw_url = $updated_url->toString();
+		$new_raw_url                = $updated_url->toString();
 		$should_trim_trailing_slash = (
 			'' !== $from_pathname &&
 			'/' !== substr( $from_pathname, -1 ) &&
