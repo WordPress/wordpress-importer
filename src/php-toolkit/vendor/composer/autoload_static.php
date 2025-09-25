@@ -76,7 +76,6 @@ class ComposerStaticInit9801abce1960fa4b71d115bb31b779c7
 
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
-        'WP_Block_Parser_Error' => __DIR__ . '/../..' . '/DataLiberation/BlockMarkup/class-blockparsererror.php',
         'WordPress\\ByteStream\\ByteStreamException' => __DIR__ . '/../..' . '/ByteStream/class-bytestreamexception.php',
         'WordPress\\ByteStream\\NotEnoughDataException' => __DIR__ . '/../..' . '/ByteStream/class-notenoughdataexception.php',
         'WordPress\\ByteStream\\ReadStream\\BaseByteReadStream' => __DIR__ . '/../..' . '/ByteStream/ReadStream/class-basebytereadstream.php',
@@ -94,11 +93,8 @@ class ComposerStaticInit9801abce1960fa4b71d115bb31b779c7
         'WordPress\\DataLiberation\\Importer\\AttachmentDownloaderEvent' => __DIR__ . '/../..' . '/DataLiberation/Importer/class-attachmentdownloaderevent.php',
         'WordPress\\DataLiberation\\Importer\\EntityImporter' => __DIR__ . '/../..' . '/DataLiberation/Importer/class-entityimporter.php',
         'WordPress\\DataLiberation\\Importer\\EntityIteratorChain' => __DIR__ . '/../..' . '/DataLiberation/Importer/class-entityiteratorchain.php',
-        'WordPress\\DataLiberation\\Importer\\FileVisitorEvent' => __DIR__ . '/../..' . '/DataLiberation/Importer/class-filevisitorevent.php',
         'WordPress\\DataLiberation\\Importer\\ImportSession' => __DIR__ . '/../..' . '/DataLiberation/Importer/class-importsession.php',
-        'WordPress\\DataLiberation\\Importer\\ImportUtils' => __DIR__ . '/../..' . '/DataLiberation/Importer/class-importutils.php',
         'WordPress\\DataLiberation\\Importer\\Logger' => __DIR__ . '/../..' . '/DataLiberation/Importer/class-entityimporter.php',
-        'WordPress\\DataLiberation\\Importer\\RetryFrontloadingIterator' => __DIR__ . '/../..' . '/DataLiberation/Importer/class-retryfrontloadingiterator.php',
         'WordPress\\DataLiberation\\Importer\\StreamImporter' => __DIR__ . '/../..' . '/DataLiberation/Importer/class-streamimporter.php',
         'WordPress\\DataLiberation\\URL\\URLInTextProcessor' => __DIR__ . '/../..' . '/DataLiberation/URL/class-urlintextprocessor.php',
         'WordPress\\DataLiberation\\URL\\WPURL' => __DIR__ . '/../..' . '/DataLiberation/URL/class-wpurl.php',

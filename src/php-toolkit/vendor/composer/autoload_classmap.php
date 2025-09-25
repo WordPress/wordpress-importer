@@ -7,7 +7,6 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
-    'WP_Block_Parser_Error' => $baseDir . '/DataLiberation/BlockMarkup/class-blockparsererror.php',
     'WordPress\\ByteStream\\ByteStreamException' => $baseDir . '/ByteStream/class-bytestreamexception.php',
     'WordPress\\ByteStream\\NotEnoughDataException' => $baseDir . '/ByteStream/class-notenoughdataexception.php',
     'WordPress\\ByteStream\\ReadStream\\BaseByteReadStream' => $baseDir . '/ByteStream/ReadStream/class-basebytereadstream.php',
@@ -25,11 +24,8 @@ return array(
     'WordPress\\DataLiberation\\Importer\\AttachmentDownloaderEvent' => $baseDir . '/DataLiberation/Importer/class-attachmentdownloaderevent.php',
     'WordPress\\DataLiberation\\Importer\\EntityImporter' => $baseDir . '/DataLiberation/Importer/class-entityimporter.php',
     'WordPress\\DataLiberation\\Importer\\EntityIteratorChain' => $baseDir . '/DataLiberation/Importer/class-entityiteratorchain.php',
-    'WordPress\\DataLiberation\\Importer\\FileVisitorEvent' => $baseDir . '/DataLiberation/Importer/class-filevisitorevent.php',
     'WordPress\\DataLiberation\\Importer\\ImportSession' => $baseDir . '/DataLiberation/Importer/class-importsession.php',
-    'WordPress\\DataLiberation\\Importer\\ImportUtils' => $baseDir . '/DataLiberation/Importer/class-importutils.php',
     'WordPress\\DataLiberation\\Importer\\Logger' => $baseDir . '/DataLiberation/Importer/class-entityimporter.php',
-    'WordPress\\DataLiberation\\Importer\\RetryFrontloadingIterator' => $baseDir . '/DataLiberation/Importer/class-retryfrontloadingiterator.php',
     'WordPress\\DataLiberation\\Importer\\StreamImporter' => $baseDir . '/DataLiberation/Importer/class-streamimporter.php',
     'WordPress\\DataLiberation\\URL\\URLInTextProcessor' => $baseDir . '/DataLiberation/URL/class-urlintextprocessor.php',
     'WordPress\\DataLiberation\\URL\\WPURL' => $baseDir . '/DataLiberation/URL/class-wpurl.php',
