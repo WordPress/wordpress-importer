@@ -26,7 +26,9 @@ class WPURL {
 	}
 
 	/**
-	 * Replaces the base URL for a parsed URL while preserving the remaining path/query/hash.
+	 * Replaces the base in a URL with a different base.
+	 * 
+	 * A base is a protocol, host, and a path segment. 
 	 *
 	 * Expected options:
 	 * - url (string|URL): The URL whose base should be replaced. Required.
@@ -86,6 +88,12 @@ class WPURL {
 			$updated_url->pathname = $to_pathname_with_trailing_slash . $remaining_pathname;
 		}
 
+		/*
+		 * Stylistic choice – if the updated URL has no trailing slash,
+		 * do not add it to the new URL. The WHATWG URL parser will
+		 * add one automatically if the path is empty, so we have to
+		 * explicitly remove it.
+		 */
 		$new_raw_url                = $updated_url->toString();
 		$should_trim_trailing_slash = (
 			'' !== $from_pathname &&
