@@ -374,7 +374,7 @@ final class Punycode {
 			$oldi = $i;
 			$w    = 1;
 
-			for ( $k = self::BASE; /* no condition */; $k += self::BASE ) {
+			for ( $k = self::BASE; ; $k += self::BASE ) {
 				if ( $in >= $inputLength ) {
 					throw new InvalidInputException();
 				}
@@ -496,7 +496,7 @@ final class Punycode {
 				} elseif ( $codePoint === $n ) {
 					$q = $delta;
 
-					for ( $k = self::BASE; /* no condition */; $k += self::BASE ) {
+					for ( $k = self::BASE; ; $k += self::BASE ) {
 						if ( $out >= $maxOut ) {
 							throw new OutputSizeExceededException();
 						}
