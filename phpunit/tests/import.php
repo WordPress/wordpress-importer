@@ -6,6 +6,9 @@ require_once __DIR__ . '/base.php';
  * @group import
  */
 class Tests_Import_Import extends WP_Import_UnitTestCase {
+
+	protected $previous_uploads_structure;
+
 	public function set_up() {
 		parent::set_up();
 
@@ -357,7 +360,7 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 		$this->assertCount( 1, $posts, 'Expected the post to be imported.' );
 
 		$post = $posts[0];
-		$this->assertContains( 'http://example.org/wp-content/uploads/canola2', $post->post_content );
+		$this->assertStringContainsString( 'http://example.org/wp-content/uploads/canola2', $post->post_content );
 	}
 
 	public static function data_flat_attachment_import_rewrites_attachment_url() {
