@@ -798,7 +798,7 @@ class WP_Import extends WP_Importer {
 					'post_password'  => $post['post_password'],
 				);
 
-				if ( $this->options['rewrite_urls'] && 0 ) {
+				if ( $this->options['rewrite_urls'] ) {
 					$url_mapping              = array(
 						$this->base_url_parsed->toString() => $this->site_url_parsed,
 					);
