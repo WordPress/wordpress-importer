@@ -8,8 +8,8 @@ require_once __DIR__ . '/base.php';
 class Tests_Import_Import extends WP_Import_UnitTestCase {
 
 	protected $previous_uploads_structure;
-
 	protected $mocked_attachment_url;
+	protected $mocked_attachment_body;
 
 	public function set_up() {
 		parent::set_up();
