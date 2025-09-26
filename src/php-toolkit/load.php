@@ -4,6 +4,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/Encoding/utf8-decoder.php';
 require_once __DIR__ . '/Encoding/utf8-encoder.php';
 require_once __DIR__ . '/DataLiberation/URL/functions.php';
+require_once __DIR__ . '/Filesystem/functions.php';
 
 if ( ! class_exists( '\Normalizer', false ) ) {
 	require_once __DIR__ . '/DataLiberation/vendor-patched/symfony/polyfill-intl-normalizer/Normalizer.php';
