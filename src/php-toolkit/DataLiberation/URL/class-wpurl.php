@@ -27,8 +27,8 @@ class WPURL {
 
 	/**
 	 * Replaces the base in a URL with a different base.
-	 * 
-	 * A base is a protocol, host, and a path segment. 
+	 *
+	 * A base is a protocol, host, and a path segment.
 	 *
 	 * Expected options:
 	 * - url (string|URL): The URL whose base should be replaced. Required.

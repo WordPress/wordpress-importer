@@ -1303,26 +1303,26 @@ class WP_Import extends WP_Importer {
 		/**
 		 * When URL rewriting is enabled, posts such as this one:
 		 *
-		 *     <img src="https://my-old-site.com/subpath/wp-content/uploads/2008/06/canola2.jpg" />
+		 *     <img src="https://example.com/subpath/wp-content/uploads/2008/06/canola2.jpg" />
 		 *
 		 * Are already stored as:
 		 *
-		 *     <img src="https://my-new-site.com/wp-content/uploads/2008/06/canola2.jpg" />
+		 *     <img src="https://example.org/wp-content/uploads/2008/06/canola2.jpg" />
 		 *
 		 * Therefore, we can't just remap the old URL to the new URL here. This substring
 		 * is no longer present in the post:
 		 *
-		 *     https://my-old-site.com/subpath/wp-content/uploads/2008/06/canola2.jpg
+		 *     https://example.com/subpath/wp-content/uploads/2008/06/canola2.jpg
 		 *
 		 * We need to replace the base URL in the media file URL the same way as we did
 		 * in the post content:
 		 *
-		 *     https://my-new-site.com/wp-content/uploads/2008/06/canola2.jpg
+		 *     https://example.org/wp-content/uploads/2008/06/canola2.jpg
 		 *
 		 * Only from there we can remap that URL to the new media files URL:
 		 *
-		 *     https://my-new-site.com/wp-content/uploads/canola2.jpg"
-		 *                                               ^ there may be no 2008/06 on the target site.
+		 *     https://example.org/wp-content/uploads/canola2.jpg"
+		 *                                            ^ there may be no 2008/06 on the target site.
 		 */
 		if ( $this->options['rewrite_urls'] ) {
 			$url          = WPURL::replace_base_url(
