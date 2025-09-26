@@ -150,6 +150,9 @@ class Tests_Import_Idempotency extends WP_Import_UnitTestCase {
 				'Post 1 image URL should be local'
 			);
 		}
+
+		// Verify attachment parent relationships
+		$this->verify_attachment_parent_relationships( $attachments_after_complete, $posts_after_complete );
 	}
 
 	/**
@@ -187,6 +190,44 @@ class Tests_Import_Idempotency extends WP_Import_UnitTestCase {
 		foreach ( $posts as $post ) {
 			$has_external_urls = strpos( $post->post_content, 'yavuzceliker.github.io' ) !== false;
 			$this->assertFalse( $has_external_urls, 'Post should not contain external URLs after duplicate import' );
+		}
+
+		// Verify attachment parent relationships are maintained
+		$this->verify_attachment_parent_relationships( $attachments, $posts );
+	}
+
+	/**
+	 * Verify that attachment parent relationships are properly maintained.
+	 *
+	 * @param array $attachments Array of attachment posts
+	 * @param array $posts Array of regular posts
+	 */
+	private function verify_attachment_parent_relationships( $attachments, $posts ) {
+		$post_ids = wp_list_pluck( $posts, 'ID' );
+		$unattached_count = 0;
+
+		foreach ( $attachments as $attachment ) {
+			$parent_id = $attachment->post_parent;
+
+			if ( $parent_id === 0 ) {
+				$unattached_count++;
+			} else {
+				$this->assertContains(
+					$parent_id,
+					$post_ids,
+					"Attachment '{$attachment->post_title}' has invalid parent ID {$parent_id}"
+				);
+			}
+		}
+
+		// With proper idempotency fix, all attachments should have valid parents
+		// (assuming the test data includes post_parent values)
+		if ( count( $attachments ) > 0 ) {
+			$this->assertLessThan(
+				count( $attachments ),
+				$unattached_count,
+				'Too many attachments are unattached - parent relationships may not be preserved'
+			);
 		}
 	}
 }

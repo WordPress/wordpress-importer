@@ -781,6 +781,30 @@ class WP_Import extends WP_Importer {
 						}
 					}
 				}
+
+				// Fix for attachment parent relationships: update post_parent for existing attachments
+				if ( 'attachment' == $post['post_type'] && isset( $post['post_parent'] ) ) {
+					$parent_id = (int) $post['post_parent'];
+					if ( $parent_id ) {
+						// Check if parent has been processed
+						if ( isset( $this->processed_posts[ $parent_id ] ) ) {
+							$local_parent_id = $this->processed_posts[ $parent_id ];
+							// Update the attachment's post_parent
+							global $wpdb;
+							$wpdb->update(
+								$wpdb->posts,
+								array( 'post_parent' => $local_parent_id ),
+								array( 'ID' => $post_exists ),
+								'%d',
+								'%d'
+							);
+							clean_post_cache( $post_exists );
+						} else {
+							// Parent not imported yet, add to orphans for later processing
+							$this->post_orphans[ intval( $post['post_id'] ) ] = $parent_id;
+						}
+					}
+				}
 			} else {
 				$post_parent = (int) $post['post_parent'];
 				if ( $post_parent ) {

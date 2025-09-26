@@ -19,6 +19,7 @@ When importing the same WXR file after an interrupted import:
 1. First import (interrupted): Some attachments downloaded, posts not created
 2. Second import: Skips existing attachments BUT fails to populate URL mappings
 3. Result: Posts contain broken URLs pointing to original source instead of local files
+4. **Additional Issue**: Attachment parent relationships are lost (images show as "Unattached" in Media Library)
 
 ## Technical Root Cause
 
@@ -94,6 +95,8 @@ After the bug occurs, you'll see content like:
 - **Content inconsistency** between different parts of imported posts
 - **Site functionality issues** when source URLs become unavailable
 - **User experience degradation** from missing media
+- **Media Library disorganization** with attachments showing as "Unattached"
+- **Lost post-image relationships** affecting media management workflows
 
 ## When This Occurs
 
@@ -172,11 +175,13 @@ When an attachment already exists (detected by `post_exists()`), the fix:
 1. **Maps the full URLs** exactly like `fetch_remote_file()` does for new attachments
 2. **Maps GUID references** to handle WordPress internal links
 3. **Handles image URLs correctly** by stripping extensions for resized versions
-4. **Ensures backfill_attachment_urls() works** for all attachment types
+4. **Updates post_parent relationships** to maintain attachment-post associations
+5. **Ensures backfill_attachment_urls() works** for all attachment types
+6. **Preserves Media Library organization** by updating existing attachment parent IDs
 
 ### Code Changes
 
-The fix adds this logic after line 756 in `src/class-wp-import.php`:
+The complete fix adds this logic after line 756 in `src/class-wp-import.php`:
 
 ```php
 // Fix for idempotency bug: populate url_remap for existing attachments
@@ -202,6 +207,30 @@ if ( 'attachment' == $post['post_type'] && ! empty( $post['attachment_url'] ) ) 
             $parts_new = pathinfo( $existing_url );
             $name_new  = basename( $parts_new['basename'], ".{$parts_new['extension']}" );
             $this->url_remap[ $parts['dirname'] . '/' . $name ] = $parts_new['dirname'] . '/' . $name_new;
+        }
+    }
+}
+
+// Fix for attachment parent relationships: update post_parent for existing attachments
+if ( 'attachment' == $post['post_type'] && isset( $post['post_parent'] ) ) {
+    $parent_id = (int) $post['post_parent'];
+    if ( $parent_id ) {
+        // Check if parent has been processed
+        if ( isset( $this->processed_posts[ $parent_id ] ) ) {
+            $local_parent_id = $this->processed_posts[ $parent_id ];
+            // Update the attachment's post_parent
+            global $wpdb;
+            $wpdb->update(
+                $wpdb->posts,
+                array( 'post_parent' => $local_parent_id ),
+                array( 'ID' => $post_exists ),
+                '%d',
+                '%d'
+            );
+            clean_post_cache( $post_exists );
+        } else {
+            // Parent not imported yet, add to orphans for later processing
+            $this->post_orphans[ intval( $post['post_id'] ) ] = $parent_id;
         }
     }
 }
@@ -237,9 +266,10 @@ See `TEST-INSTRUCTIONS.md` and `PHPUNIT-INSTRUCTIONS.md` for detailed setup inst
 
 ### Test Results
 
-✅ **Before fix**: URLs not remapped for existing attachments
-✅ **After fix**: All URLs properly remapped to local files
-✅ **Idempotency achieved**: Multiple imports work correctly
+✅ **Before fix**: URLs not remapped for existing attachments, parent relationships lost
+✅ **After fix**: All URLs properly remapped to local files, parent relationships preserved
+✅ **Idempotency achieved**: Multiple imports work correctly with full relationship integrity
+✅ **Media Library**: Attachments show "Uploaded to: [Post Title]" instead of "(Unattached)"
 
 ## Files
 

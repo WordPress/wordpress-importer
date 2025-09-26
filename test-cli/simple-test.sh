@@ -177,6 +177,42 @@ if (\$bug_detected) {
 }
 "
 
+# ===== STEP 4: PARENT RELATIONSHIP ANALYSIS =====
+show_test_phase "4" "PARENT RELATIONSHIP ANALYSIS" "Checking attachment-post relationships in Media Library"
+
+echo -e "${BLUE}📊 Attachment Parent Relationships:${NC}"
+wp_clean eval "
+\$attachments = get_posts(array('post_type' => 'attachment', 'numberposts' => -1, 'post_status' => 'inherit', 'orderby' => 'ID', 'order' => 'ASC'));
+\$posts = get_posts(array('post_type' => 'post', 'numberposts' => -1, 'orderby' => 'ID', 'order' => 'ASC'));
+\$relationship_issues = 0;
+
+foreach (\$attachments as \$attachment) {
+    \$parent_id = \$attachment->post_parent;
+    echo 'Attachment: ' . \$attachment->post_title . PHP_EOL;
+
+    if (\$parent_id == 0) {
+        echo '  ❌ Status: (Unattached) - Missing parent relationship' . PHP_EOL;
+        \$relationship_issues++;
+    } else {
+        \$parent_post = get_post(\$parent_id);
+        if (\$parent_post) {
+            echo '  ✅ Uploaded to: ' . \$parent_post->post_title . ' (ID: ' . \$parent_id . ')' . PHP_EOL;
+        } else {
+            echo '  ⚠️  Parent ID ' . \$parent_id . ' exists but post not found' . PHP_EOL;
+            \$relationship_issues++;
+        }
+    }
+}
+
+echo PHP_EOL . 'PARENT RELATIONSHIP SUMMARY:' . PHP_EOL;
+if (\$relationship_issues > 0) {
+    echo '🔴 RELATIONSHIP ISSUES DETECTED' . PHP_EOL;
+    echo 'Some attachments are unattached or have invalid parent references.' . PHP_EOL;
+} else {
+    echo '✅ All attachments properly linked to their parent posts.' . PHP_EOL;
+}
+"
+
 # Show specific URL examples
 echo
 echo -e "${BLUE}📋 URL Examples:${NC}"
