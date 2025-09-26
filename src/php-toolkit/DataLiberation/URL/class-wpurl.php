@@ -26,6 +26,126 @@ class WPURL {
 	}
 
 	/**
+	 * Replaces the base in a URL with a different base.
+	 *
+	 * A base is a protocol, host, and a path segment.
+	 *
+	 * Expected options:
+	 * - url (string|URL): The URL whose base should be replaced. Required.
+	 * - old_base_url (string|URL): The base URL currently associated with the URL. Required.
+	 * - new_base_url (string|URL): The base URL that should replace the existing one. Required.
+	 * - raw_url (string, optional): The original raw URL string. Used to detect relativity.
+	 * - is_relative (bool, optional): Whether the original URL was relative. Overrides raw_url detection.
+	 * - return_array (bool, optional): Whether to return the detailed array structure. Default false.
+	 *
+	 * @param array $options The options that control how the base URL is replaced.
+	 *
+	 * @return string|array|false Returns a string by default, or an array with keys 'url', 'string',
+	 *                           'relative_url', and 'was_relative' when 'return_array' is truthy.
+	 *                           Returns false on failure.
+	 */
+	public static function replace_base_url( $options ) {
+		if ( ! is_array( $options ) ) {
+			return false;
+		}
+
+		foreach ( array( 'url', 'old_base_url', 'new_base_url' ) as $required ) {
+			if ( ! array_key_exists( $required, $options ) || null === $options[ $required ] ) {
+				return false;
+			}
+		}
+
+		$old_base_url = self::parse( $options['old_base_url'] );
+		$new_base_url = self::parse( $options['new_base_url'] );
+		$url          = self::parse( $options['url'], $old_base_url ? $old_base_url->toString() : null );
+
+		if ( false === $old_base_url || false === $new_base_url || false === $url ) {
+			return false;
+		}
+
+		$updated_url = clone $url;
+
+		$updated_url->hostname = $new_base_url->hostname;
+		$updated_url->protocol = $new_base_url->protocol;
+		$updated_url->port     = $new_base_url->port;
+
+		$from_pathname = $url->pathname;
+		$to_pathname   = $new_base_url->pathname;
+		$base_pathname = $old_base_url->pathname;
+
+		if ( $base_pathname !== $to_pathname ) {
+			$base_pathname_with_trailing_slash = rtrim( $base_pathname, '/' ) . '/';
+			$decoded_matched_pathname          = urldecode_n(
+				$from_pathname,
+				strlen( $base_pathname_with_trailing_slash )
+			);
+			$to_pathname_with_trailing_slash   = rtrim( $to_pathname, '/' ) . '/';
+			$remaining_pathname                = substr(
+				$decoded_matched_pathname,
+				strlen( $base_pathname_with_trailing_slash )
+			);
+
+			$updated_url->pathname = $to_pathname_with_trailing_slash . $remaining_pathname;
+		}
+
+		/*
+		 * Stylistic choice – if the updated URL has no trailing slash,
+		 * do not add it to the new URL. The WHATWG URL parser will
+		 * add one automatically if the path is empty, so we have to
+		 * explicitly remove it.
+		 */
+		$new_raw_url                = $updated_url->toString();
+		$should_trim_trailing_slash = (
+			'' !== $from_pathname &&
+			'/' !== substr( $from_pathname, -1 ) &&
+			'/' !== $from_pathname &&
+			'' === $url->search &&
+			'' === $url->hash
+		);
+		if ( $should_trim_trailing_slash ) {
+			$new_raw_url = rtrim( $new_raw_url, '/' );
+		}
+		if ( ! $new_raw_url ) {
+			return false;
+		}
+
+		$was_relative = null;
+		if ( array_key_exists( 'is_relative', $options ) ) {
+			$was_relative = $options['is_relative'];
+		}
+		if ( null === $was_relative && array_key_exists( 'raw_url', $options ) && is_string( $options['raw_url'] ) ) {
+			$was_relative = ! self::can_parse( $options['raw_url'] );
+		}
+		if ( null === $was_relative ) {
+			$was_relative = false;
+		}
+
+		$relative_url = null;
+		if ( $was_relative ) {
+			$relative_url = $updated_url->pathname;
+			if ( '' !== $updated_url->search ) {
+				$relative_url .= $updated_url->search;
+			}
+			if ( '' !== $updated_url->hash ) {
+				$relative_url .= $updated_url->hash;
+			}
+		}
+
+		$result = array(
+			'url'          => $updated_url,
+			'string'       => $new_raw_url,
+			'relative_url' => $relative_url,
+			'was_relative' => (bool) $was_relative,
+		);
+
+		if ( empty( $options['return_array'] ) ) {
+			return $result['string'];
+		}
+
+		return $result;
+	}
+
+	/**
 	 * Prepends a protocol to any matched URL without the double slash.
 	 *
 	 * Imagine we have a base URL of `https://example.com` and a text like `Visit myblog.com`.

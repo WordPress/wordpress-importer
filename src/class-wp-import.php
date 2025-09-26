@@ -99,6 +99,11 @@ class WP_Import extends WP_Importer {
 
 		$this->options = apply_filters( 'wp_import_options', $options );
 
+		add_filter( 'import_post_meta_key', array( $this, 'is_valid_meta_key' ) );
+		add_filter( 'http_request_timeout', array( &$this, 'bump_request_timeout' ) );
+
+		$this->import_start( $file );
+
 		/**
 		 * If URL rewriting was requested but the WP version is too old, report
 		 * an error and disable it.
@@ -117,11 +122,10 @@ class WP_Import extends WP_Importer {
 			echo '<div class="error"><p><strong>' . __( 'URL rewriting requires WordPress 6.7 or newer. The import will continue without rewriting URLs.', 'wordpress-importer' ) . '</strong></p></div>';
 			$this->options['rewrite_urls'] = false;
 		}
-
-		add_filter( 'import_post_meta_key', array( $this, 'is_valid_meta_key' ) );
-		add_filter( 'http_request_timeout', array( &$this, 'bump_request_timeout' ) );
-
-		$this->import_start( $file );
+		// URL rewriting is only possible when we have the previous site base URL
+		if ( $this->options['rewrite_urls'] && ! $this->base_url_parsed ) {
+			$this->options['rewrite_urls'] = false;
+		}
 
 		$this->get_author_mapping();
 
@@ -794,7 +798,7 @@ class WP_Import extends WP_Importer {
 					'post_password'  => $post['post_password'],
 				);
 
-				if ( $this->options['rewrite_urls'] && $this->base_url_parsed ) {
+				if ( $this->options['rewrite_urls'] ) {
 					$url_mapping              = array(
 						$this->base_url_parsed->toString() => $this->site_url_parsed,
 					);
@@ -1296,7 +1300,56 @@ class WP_Import extends WP_Importer {
 			'error' => false,
 		);
 
-		// keep track of the old and new urls so we can substitute them later
+		/**
+		 * When URL rewriting is enabled, posts such as this one:
+		 *
+		 *     <img src="https://example.com/subpath/wp-content/uploads/2008/06/canola2.jpg" />
+		 *
+		 * Are already stored as:
+		 *
+		 *     <img src="https://example.org/wp-content/uploads/2008/06/canola2.jpg" />
+		 *
+		 * Therefore, we can't just remap the old URL to the new URL here. This substring
+		 * is no longer present in the post:
+		 *
+		 *     https://example.com/subpath/wp-content/uploads/2008/06/canola2.jpg
+		 *
+		 * We need to replace the base URL in the media file URL the same way as we did
+		 * in the post content:
+		 *
+		 *     https://example.org/wp-content/uploads/2008/06/canola2.jpg
+		 *
+		 * Only from there we can remap that URL to the new media files URL:
+		 *
+		 *     https://example.org/wp-content/uploads/canola2.jpg"
+		 *                                            ^ there may be no 2008/06 on the target site.
+		 */
+		if ( $this->options['rewrite_urls'] ) {
+			$url          = WPURL::replace_base_url(
+				array(
+					'url'          => $url,
+					'old_base_url' => $this->base_url_parsed,
+					'new_base_url' => $this->site_url_parsed,
+				)
+			);
+			$post['guid'] = WPURL::replace_base_url(
+				array(
+					'url'          => $post['guid'],
+					'old_base_url' => $this->base_url_parsed,
+					'new_base_url' => $this->site_url_parsed,
+				)
+			);
+			if ( isset( $headers['x-final-location'] ) ) {
+				$headers['x-final-location'] = WPURL::replace_base_url(
+					array(
+						'url'          => $headers['x-final-location'],
+						'old_base_url' => $this->base_url_parsed,
+						'new_base_url' => $this->site_url_parsed,
+					)
+				);
+			}
+		}
+
 		$this->url_remap[ $url ]          = $upload['url'];
 		$this->url_remap[ $post['guid'] ] = $upload['url']; // r13735, really needed?
 		// keep track of the destination if the remote url is redirected somewhere else
