@@ -5,7 +5,7 @@ Tags: importer, wordpress
 Requires at least: 5.2
 Tested up to: 6.8
 Requires PHP: 7.2
-Stable tag: 0.9.2
+Stable tag: 0.9.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -39,6 +39,9 @@ If you would prefer to do things manually then follow these instructions:
 1. Go to the Tools -> Import screen, click on WordPress
 
 == Changelog ==
+
+= 0.9.3 =
+* Rewrite attachment URLs to the new URL structure
 
 = 0.9.2 =
 * Rewrite site URLs in block attributes.
