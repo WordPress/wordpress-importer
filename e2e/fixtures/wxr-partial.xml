@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Partial WXR file - simulates interrupted import with only 1 attachment -->
+<rss version="2.0"
+     xmlns:excerpt="http://wordpress.org/export/1.2/excerpt/"
+     xmlns:content="http://purl.org/rss/1.0/modules/content/"
+     xmlns:dc="http://purl.org/dc/elements/1.1/"
+     xmlns:wp="http://wordpress.org/export/1.2/">
+
+    <channel>
+        <title>Interrupted Import Test Site</title>
+        <link>https://source.example.com</link>
+        <description>Simulates interrupted import state</description>
+        <pubDate>Mon, 01 Jan 2024 12:00:00 +0000</pubDate>
+        <language>en-US</language>
+        <wp:wxr_version>1.2</wp:wxr_version>
+        <wp:base_site_url>https://source.example.com</wp:base_site_url>
+        <wp:base_blog_url>https://source.example.com</wp:base_blog_url>
+
+        <wp:author>
+            <wp:author_id>1</wp:author_id>
+            <wp:author_login><![CDATA[admin]]></wp:author_login>
+            <wp:author_email><![CDATA[admin@example.com]]></wp:author_email>
+            <wp:author_display_name><![CDATA[Admin]]></wp:author_display_name>
+            <wp:author_first_name><![CDATA[]]></wp:author_first_name>
+            <wp:author_last_name><![CDATA[]]></wp:author_last_name>
+        </wp:author>
+
+        <generator>https://wordpress.org/?v=6.5.4</generator>
+
+        <!-- Only the first attachment (simulating interrupted import) -->
+        <item>
+            <title><![CDATA[image-1]]></title>
+            <link>https://source.example.com/wp-content/uploads/2024/01/image-1.jpg</link>
+            <pubDate>Mon, 01 Jan 2024 10:00:00 +0000</pubDate>
+            <dc:creator><![CDATA[admin]]></dc:creator>
+            <guid isPermaLink="false">https://source.example.com/?attachment_id=101</guid>
+            <description></description>
+            <content:encoded><![CDATA[]]></content:encoded>
+            <excerpt:encoded><![CDATA[]]></excerpt:encoded>
+            <wp:post_id>101</wp:post_id>
+            <wp:post_date><![CDATA[2024-01-01 10:00:00]]></wp:post_date>
+            <wp:post_date_gmt><![CDATA[2024-01-01 10:00:00]]></wp:post_date_gmt>
+            <wp:post_modified><![CDATA[2024-01-01 10:00:00]]></wp:post_modified>
+            <wp:post_modified_gmt><![CDATA[2024-01-01 10:00:00]]></wp:post_modified_gmt>
+            <wp:comment_status><![CDATA[closed]]></wp:comment_status>
+            <wp:ping_status><![CDATA[closed]]></wp:ping_status>
+            <wp:post_name><![CDATA[image-1]]></wp:post_name>
+            <wp:status><![CDATA[inherit]]></wp:status>
+            <wp:post_parent>0</wp:post_parent>
+            <wp:menu_order>0</wp:menu_order>
+            <wp:post_type><![CDATA[attachment]]></wp:post_type>
+            <wp:post_password><![CDATA[]]></wp:post_password>
+            <wp:is_sticky>0</wp:is_sticky>
+            <wp:attachment_url><![CDATA[https://yavuzceliker.github.io/sample-images/image-178.jpg]]></wp:attachment_url>
+            <wp:postmeta>
+                <wp:meta_key><![CDATA[_wp_attached_file]]></wp:meta_key>
+                <wp:meta_value><![CDATA[2024/01/image-1.jpg]]></wp:meta_value>
+            </wp:postmeta>
+        </item>
+    </channel>
+</rss>
