@@ -203,7 +203,7 @@ class Tests_Import_Idempotency extends WP_Import_UnitTestCase {
 	 * @param array $posts Array of regular posts
 	 */
 	private function verify_attachment_parent_relationships( $attachments, $posts ) {
-		$post_ids        = wp_list_pluck( $posts, 'ID' );
+		$post_ids         = wp_list_pluck( $posts, 'ID' );
 		$unattached_count = 0;
 
 		foreach ( $attachments as $attachment ) {
