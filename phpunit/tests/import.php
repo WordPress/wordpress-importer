@@ -6,6 +6,11 @@ require_once __DIR__ . '/base.php';
  * @group import
  */
 class Tests_Import_Import extends WP_Import_UnitTestCase {
+
+	protected $previous_uploads_structure;
+	protected $mocked_attachment_url;
+	protected $mocked_attachment_body;
+
 	public function set_up() {
 		parent::set_up();
 
@@ -28,6 +33,11 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 
 	public function tear_down() {
 		remove_filter( 'import_allow_create_users', '__return_true' );
+
+		if ( null !== $this->previous_uploads_structure ) {
+			update_option( 'uploads_use_yearmonth_folders', $this->previous_uploads_structure );
+			$this->previous_uploads_structure = null;
+		}
 
 		parent::tear_down();
 	}
@@ -296,6 +306,106 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 			'Sorry, this file type is not permitted for security reasons.',
 			$result->get_error_message(),
 			'The WP Error object did not contain the expected error'
+		);
+	}
+
+	/**
+	 * @dataProvider data_flat_attachment_import_rewrites_attachment_url
+	 */
+	public function test_flat_attachment_import_rewrites_attachment_url( $file, $rewrite_urls ) {
+		$this->previous_uploads_structure = get_option( 'uploads_use_yearmonth_folders', true );
+		update_option( 'uploads_use_yearmonth_folders', 0 );
+
+		$remote_url  = 'https://wpthemetestdata.files.wordpress.com/2008/06/canola2.jpg';
+		$image_bytes = base64_decode(
+			'/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////2wBDAf//////////////////////////////////////////////////////////////////////////////////////wAARCABkAGQDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAX/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIQAxAAAAF//8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPwB//8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAgEBPwB//8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAwEBPwB//9k',
+			true
+		);
+		$this->assertNotFalse( $image_bytes, 'Failed to decode mock attachment image.' );
+
+		$this->mocked_attachment_url  = $remote_url;
+		$this->mocked_attachment_body = $image_bytes;
+
+		add_filter( 'pre_http_request', array( $this, 'filter_mock_attachment_request' ), 10, 3 );
+
+		try {
+			$this->_import_wp( $file, array(), true, $rewrite_urls );
+		} finally {
+			remove_filter( 'pre_http_request', array( $this, 'filter_mock_attachment_request' ), 10 );
+			$this->mocked_attachment_url  = '';
+			$this->mocked_attachment_body = '';
+		}
+
+		$attachments = get_posts(
+			array(
+				'numberposts' => -1,
+				'post_type'   => 'attachment',
+				'post_status' => 'inherit',
+			)
+		);
+		$this->assertCount( 1, $attachments, 'Expected the attachment post to be imported.' );
+
+		$attachment    = $attachments[0];
+		$attached_file = get_attached_file( $attachment->ID );
+		$this->assertNotFalse( $attached_file );
+		$this->assertFileExists( $attached_file );
+
+		$localized_url = wp_get_attachment_url( $attachment->ID );
+		$this->assertStringStartsWith( 'http://example.org/wp-content/uploads/canola2', $localized_url );
+
+		$posts = get_posts(
+			array(
+				'post_type'   => 'post',
+				'post_status' => 'any',
+			)
+		);
+		$this->assertCount( 1, $posts, 'Expected the post to be imported.' );
+
+		$post = $posts[0];
+		$this->assertStringContainsString( 'http://example.org/wp-content/uploads/canola2', $post->post_content );
+	}
+
+	public static function data_flat_attachment_import_rewrites_attachment_url() {
+		return array(
+			'Same-site attachments with URL rewriting'     => array( DIR_TESTDATA_WP_IMPORTER . '/wxr-flat-attachment-same-site.xml', true ),
+			'Same-site attachments with no URL rewriting'  => array( DIR_TESTDATA_WP_IMPORTER . '/wxr-flat-attachment-same-site.xml', false ),
+			'Cross-site attachments with URL rewriting'    => array( DIR_TESTDATA_WP_IMPORTER . '/wxr-flat-attachment-different-site.xml', true ),
+			'Cross-site attachments with no URL rewriting' => array( DIR_TESTDATA_WP_IMPORTER . '/wxr-flat-attachment-different-site.xml', false ),
+		);
+	}
+
+	/**
+	 * Provides a mocked HTTP response when the importer downloads attachments.
+	 *
+	 * @param false|array|WP_Error $preempt     Preempted response.
+	 * @param array                $parsed_args Parsed HTTP arguments.
+	 * @param string               $url         Requested URL.
+	 * @return false|array|WP_Error HTTP response override when mocking, otherwise original value.
+	 */
+	public function filter_mock_attachment_request( $preempt, $parsed_args, $url ) {
+		if ( $url !== $this->mocked_attachment_url || '' === $this->mocked_attachment_body ) {
+			return $preempt;
+		}
+
+		if ( empty( $parsed_args['filename'] ) ) {
+			return $preempt;
+		}
+
+		$result = file_put_contents( $parsed_args['filename'], $this->mocked_attachment_body );
+		if ( false === $result ) {
+			return new WP_Error( 'test_mock_http_write_failed', 'Failed to write mocked attachment response.' );
+		}
+
+		return array(
+			'headers'  => array(
+				'content-length' => (string) strlen( $this->mocked_attachment_body ),
+				'content-type'   => 'image/jpeg',
+			),
+			'body'     => '',
+			'response' => array(
+				'code'    => 200,
+				'message' => 'OK',
+			),
 		);
 	}
 }

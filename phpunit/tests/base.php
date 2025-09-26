@@ -20,7 +20,7 @@ abstract class WP_Import_UnitTestCase extends WP_UnitTestCase {
 	 * @param array $users User import settings
 	 * @param bool $fetch_files Whether or not do download remote attachments
 	 */
-	protected function _import_wp( $filename, $users = array(), $fetch_files = true ) {
+	protected function _import_wp( $filename, $users = array(), $fetch_files = true, $rewrite_urls = true ) {
 		$importer = new WP_Import();
 		$file     = realpath( $filename );
 
@@ -53,7 +53,7 @@ abstract class WP_Import_UnitTestCase extends WP_UnitTestCase {
 
 		ob_start();
 		$importer->fetch_attachments = $fetch_files;
-		$importer->import( $file );
+		$importer->import( $file, array( 'rewrite_urls' => $rewrite_urls ) );
 		ob_end_clean();
 
 		$_POST = array();
