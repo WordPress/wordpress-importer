@@ -941,6 +941,13 @@ class WXREntityReader implements EntityReader {
 		}
 		$this->entity_finished = true;
 		++$this->entities_read_so_far;
+
+		// Trim all the XML whitespace.
+		foreach ( $this->entity_data as $k => $v ) {
+			if ( is_string( $v ) ) {
+				$this->entity_data[ $k ] = trim( $v );
+			}
+		}
 	}
 
 	/**
