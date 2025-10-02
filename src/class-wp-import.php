@@ -758,6 +758,57 @@ class WP_Import extends WP_Importer {
 				$comment_post_id = $post_exists;
 				$post_id         = $post_exists;
 				$this->processed_posts[ intval( $post['post_id'] ) ] = intval( $post_exists );
+
+				// Fix for idempotency bug: populate url_remap for existing attachments
+				if ( 'attachment' == $post['post_type'] && ! empty( $post['attachment_url'] ) ) {
+					$existing_url = wp_get_attachment_url( $post_exists );
+					if ( $existing_url ) {
+						$remote_url = $post['attachment_url'];
+
+						// Map the full URLs (like original code does in fetch_remote_file)
+						$this->url_remap[ $remote_url ] = $existing_url;
+						if ( ! empty( $post['guid'] ) ) {
+							$this->url_remap[ $post['guid'] ] = $existing_url;
+						}
+
+						// Check if it's an image to handle resized versions
+						$existing_file = get_attached_file( $post_exists );
+						$info          = wp_check_filetype( $existing_file );
+
+						if ( preg_match( '!^image/!', $info['type'] ) ) {
+							// Remap resized image URLs by stripping the extension
+							$parts     = pathinfo( $remote_url );
+							$name      = basename( $parts['basename'], ".{$parts['extension']}" );
+							$parts_new = pathinfo( $existing_url );
+							$name_new  = basename( $parts_new['basename'], ".{$parts_new['extension']}" );
+							$this->url_remap[ $parts['dirname'] . '/' . $name ] = $parts_new['dirname'] . '/' . $name_new;
+						}
+					}
+				}
+
+				// Fix for attachment parent relationships: update post_parent for existing attachments
+				if ( 'attachment' == $post['post_type'] && isset( $post['post_parent'] ) ) {
+					$parent_id = (int) $post['post_parent'];
+					if ( $parent_id ) {
+						// Check if parent has been processed
+						if ( isset( $this->processed_posts[ $parent_id ] ) ) {
+							$local_parent_id = $this->processed_posts[ $parent_id ];
+							// Update the attachment's post_parent
+							global $wpdb;
+							$wpdb->update(
+								$wpdb->posts,
+								array( 'post_parent' => $local_parent_id ),
+								array( 'ID' => $post_exists ),
+								'%d',
+								'%d'
+							);
+							clean_post_cache( $post_exists );
+						} else {
+							// Parent not imported yet, add to orphans for later processing
+							$this->post_orphans[ intval( $post['post_id'] ) ] = $parent_id;
+						}
+					}
+				}
 			} else {
 				$post_parent = (int) $post['post_parent'];
 				if ( $post_parent ) {
