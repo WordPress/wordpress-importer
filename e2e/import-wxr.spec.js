@@ -44,6 +44,9 @@ PARSERS.forEach((parser) => {
 <p>Two roads diverged in a yellow wood,<br>And sorry I could not travel both</p>
 <!-- /wp:paragraph -->
 
+<!-- Test if self-closing blocks remain self-closing after URL rewriting. -->
+<!-- wp:navigation-link {"url":"${PLAYGROUND_URL}/one"} /-->
+
 <!-- wp:paragraph -->
 <p>
 <a href="${PLAYGROUND_URL}/one">One</a> seemed great, but <a href="https://playground.internal/path-not-taken">the other</a> seemed great too.
