@@ -40,6 +40,9 @@ If you would prefer to do things manually then follow these instructions:
 
 == Changelog ==
 
+= 0.9.4 =
+* Fix a bug that caused self-closing blocks to be incorrectly serialized during URL rewriting.
+
 = 0.9.3 =
 * Rewrite attachment URLs to the new URL structure
 
