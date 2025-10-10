@@ -496,7 +496,8 @@ class BlockMarkupProcessor extends WP_HTML_Tag_Processor {
 			' ' .
 			$this->block_name .
 			' ' .
-			$encoded_attributes
+			$encoded_attributes .
+			( $this->is_self_closing_block() ? '/' : '' )
 		);
 
 		return true;
