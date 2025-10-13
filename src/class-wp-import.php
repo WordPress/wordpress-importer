@@ -1007,9 +1007,10 @@ class WP_Import extends WP_Importer {
 				$comment['comment_parent'] = $inserted_comments[ $comment['comment_parent'] ];
 			}
 
-			$inserted_comment_id = $this->process_post_comment( $comment, $post_exists, $comment_post_id, $post );
+			$inserted_comment_id = $this->process_post_comment( $comment, $post_exists, $comment_post_id );
 
 			if ( $inserted_comment_id ) {
+				do_action( 'wp_import_insert_comment', $inserted_comment_id, $comment, $comment_post_id, $post );
 				$this->process_post_comment_metas( $inserted_comment_id, $comment['commentmeta'] );
 				$inserted_comments[ $key ] = $inserted_comment_id;
 				++$num_comments;
@@ -1026,7 +1027,7 @@ class WP_Import extends WP_Importer {
 	 * @param array $post            Original post array from the WXR file.
 	 * @return int|false Inserted comment ID on success, false otherwise.
 	 */
-	protected function process_post_comment( $comment, $post_exists, $comment_post_id, $post ) {
+	protected function process_post_comment( $comment, $post_exists, $comment_post_id ) {
 		if ( $post_exists && comment_exists( $comment['comment_author'], $comment['comment_date'] ) ) {
 			return false;
 		}
@@ -1037,11 +1038,7 @@ class WP_Import extends WP_Importer {
 		unset( $comment_data['commentmeta'] ); // Handled separately, wp_insert_comment() also expects `comment_meta`.
 		$comment_data = wp_filter_comment( $comment_data );
 
-		$inserted_comment_id = wp_insert_comment( $comment_data );
-
-		do_action( 'wp_import_insert_comment', $inserted_comment_id, $comment, $comment_post_id, $post );
-
-		return $inserted_comment_id;
+		return wp_insert_comment( $comment_data );
 	}
 
 	/**
