@@ -481,46 +481,60 @@ class WP_Import extends WP_Importer {
 		}
 
 		foreach ( $this->categories as $cat ) {
-			// if the category already exists leave it alone
-			$term_id = term_exists( $cat['category_nicename'], 'category' );
-			if ( $term_id ) {
-				if ( is_array( $term_id ) ) {
-					$term_id = $term_id['term_id'];
-				}
-				if ( isset( $cat['term_id'] ) ) {
-					$this->processed_terms[ intval( $cat['term_id'] ) ] = (int) $term_id;
-				}
+			$processed_category = $this->process_category( $cat );
+			if ( false === $processed_category ) {
 				continue;
 			}
 
-			$parent      = empty( $cat['category_parent'] ) ? 0 : category_exists( $cat['category_parent'] );
-			$description = isset( $cat['category_description'] ) ? $cat['category_description'] : '';
-
-			$data = array(
-				'category_nicename'    => $cat['category_nicename'],
-				'category_parent'      => $parent,
-				'cat_name'             => wp_slash( $cat['cat_name'] ),
-				'category_description' => wp_slash( $description ),
-			);
-
-			$id = wp_insert_category( $data, true );
-			if ( ! is_wp_error( $id ) && $id > 0 ) {
-				if ( isset( $cat['term_id'] ) ) {
-					$this->processed_terms[ intval( $cat['term_id'] ) ] = $id;
-				}
-			} else {
-				printf( __( 'Failed to import category %s', 'wordpress-importer' ), esc_html( $cat['category_nicename'] ) );
-				if ( defined( 'IMPORT_DEBUG' ) && IMPORT_DEBUG ) {
-					echo ': ' . $id->get_error_message();
-				}
-				echo '<br />';
-				continue;
+			$this->processed_terms[ intval( $cat['term_id'] ) ] = $processed_category['term_id'];
+			if ( $processed_category['created'] ) {
+				$this->process_termmeta( $cat, $processed_category['term_id'] );
 			}
-
-			$this->process_termmeta( $cat, $id );
 		}
 
 		unset( $this->categories );
+	}
+
+	protected function process_category( $category ) {
+		$term_id = term_exists( $category['category_nicename'], 'category' );
+		if ( $term_id ) {
+			if ( is_array( $term_id ) ) {
+				$term_id = $term_id['term_id'];
+			}
+			return array(
+				'created' => false,
+				'term_id' => $term_id,
+			);
+		}
+
+		$parent      = empty( $category['category_parent'] ) ? 0 : category_exists( $category['category_parent'] );
+		$description = isset( $category['category_description'] ) ? $category['category_description'] : '';
+
+		$data = array(
+			'category_nicename'    => $category['category_nicename'],
+			'category_parent'      => $parent,
+			'cat_name'             => wp_slash( $category['cat_name'] ),
+			'category_description' => wp_slash( $description ),
+		);
+
+		$id = wp_insert_category( $data, true );
+		if ( is_wp_error( $id ) || $id <= 0 ) {
+			printf( __( 'Failed to import category %s', 'wordpress-importer' ), esc_html( $category['category_nicename'] ) );
+			if ( defined( 'IMPORT_DEBUG' ) && IMPORT_DEBUG ) {
+				echo ': ' . $id->get_error_message();
+			}
+			echo '<br />';
+			return false;
+		}
+
+		if ( isset( $category['term_id'] ) ) {
+			$this->processed_terms[ intval( $category['term_id'] ) ] = $id;
+		}
+
+		return array(
+			'created' => true,
+			'term_id' => $id,
+		);
 	}
 
 	/**
