@@ -889,35 +889,8 @@ class WP_Import extends WP_Importer {
 
 			// add categories, tags and other terms
 			if ( ! empty( $post['terms'] ) ) {
-				$terms_to_set = array();
-				foreach ( $post['terms'] as $term ) {
-					// back compat with WXR 1.0 map 'tag' to 'post_tag'
-					$taxonomy    = ( 'tag' == $term['domain'] ) ? 'post_tag' : $term['domain'];
-					$term_exists = term_exists( $term['slug'], $taxonomy );
-					$term_id     = is_array( $term_exists ) ? $term_exists['term_id'] : $term_exists;
-					if ( ! $term_id ) {
-						$t = wp_insert_term( $term['name'], $taxonomy, array( 'slug' => $term['slug'] ) );
-						if ( ! is_wp_error( $t ) ) {
-							$term_id = $t['term_id'];
-							do_action( 'wp_import_insert_term', $t, $term, $post_id, $post );
-						} else {
-							printf( __( 'Failed to import %1$s %2$s', 'wordpress-importer' ), esc_html( $taxonomy ), esc_html( $term['name'] ) );
-							if ( defined( 'IMPORT_DEBUG' ) && IMPORT_DEBUG ) {
-								echo ': ' . $t->get_error_message();
-							}
-							echo '<br />';
-							do_action( 'wp_import_insert_term_failed', $t, $term, $post_id, $post );
-							continue;
-						}
-					}
-					$terms_to_set[ $taxonomy ][] = intval( $term_id );
-				}
-
-				foreach ( $terms_to_set as $tax => $ids ) {
-					$tt_ids = wp_set_post_terms( $post_id, $ids, $tax );
-					do_action( 'wp_import_set_post_terms', $tt_ids, $ids, $tax, $post_id, $post );
-				}
-				unset( $post['terms'], $terms_to_set );
+				$this->process_post_terms( $post['terms'], $post_id, $post );
+				unset( $post['terms'] );
 			}
 
 			if ( ! isset( $post['comments'] ) ) {
@@ -1017,6 +990,77 @@ class WP_Import extends WP_Importer {
 		}
 
 		unset( $this->posts );
+	}
+
+	/**
+	 * Add categories, tags, and other taxonomies to a post.
+	 *
+	 * @param array $terms   Terms to be added to the post.
+	 * @param int   $post_id The ID of the post being processed.
+	 * @param array $post    The raw post data from the import file.
+	 */
+	protected function process_post_terms( $terms, $post_id, $post ) {
+		if ( empty( $terms ) ) {
+			return;
+		}
+
+		$terms_to_set = array();
+
+		foreach ( $terms as $term ) {
+			$processed_term = $this->process_post_term( $term, $post_id, $post );
+
+			if ( $processed_term ) {
+				$taxonomy                    = $processed_term['taxonomy'];
+				$terms_to_set[ $taxonomy ][] = $processed_term['term_id'];
+			}
+		}
+
+		foreach ( $terms_to_set as $tax => $ids ) {
+			$tt_ids = wp_set_post_terms( $post_id, $ids, $tax );
+			do_action( 'wp_import_set_post_terms', $tt_ids, $ids, $tax, $post_id, $post );
+		}
+	}
+
+	/**
+	 * Ensure a single term exists and return its taxonomy mapping for a post.
+	 *
+	 * @param array $term    Term data from the import file.
+	 * @param int   $post_id The ID of the post being processed.
+	 * @param array $post    The raw post data from the import file.
+	 * @return array|false {
+	 *     Mapping of taxonomy to term ID or false on failure.
+	 *
+	 *     @type string $taxonomy Taxonomy slug.
+	 *     @type int    $term_id  Term ID.
+	 * }
+	 */
+	protected function process_post_term( $term, $post_id, $post ) {
+		// Back compat with WXR 1.0 map 'tag' to 'post_tag'.
+		$taxonomy    = ( 'tag' == $term['domain'] ) ? 'post_tag' : $term['domain'];
+		$term_exists = term_exists( $term['slug'], $taxonomy );
+		$term_id     = is_array( $term_exists ) ? $term_exists['term_id'] : $term_exists;
+
+		if ( ! $term_id ) {
+			$t = wp_insert_term( $term['name'], $taxonomy, array( 'slug' => $term['slug'] ) );
+
+			if ( is_wp_error( $t ) ) {
+				printf( __( 'Failed to import %1$s %2$s', 'wordpress-importer' ), esc_html( $taxonomy ), esc_html( $term['name'] ) );
+				if ( defined( 'IMPORT_DEBUG' ) && IMPORT_DEBUG ) {
+					echo ': ' . $t->get_error_message();
+				}
+				echo '<br />';
+				do_action( 'wp_import_insert_term_failed', $t, $term, $post_id, $post );
+				return false;
+			}
+
+			$term_id = $t['term_id'];
+			do_action( 'wp_import_insert_term', $t, $term, $post_id, $post );
+		}
+
+		return array(
+			'taxonomy' => $taxonomy,
+			'term_id'  => intval( $term_id ),
+		);
 	}
 
 	/**
