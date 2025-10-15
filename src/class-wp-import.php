@@ -587,52 +587,66 @@ class WP_Import extends WP_Importer {
 		}
 
 		foreach ( $this->terms as $term ) {
-			// if the term already exists in the correct taxonomy leave it alone
-			$term_id = term_exists( $term['slug'], $term['term_taxonomy'] );
-			if ( $term_id ) {
-				if ( is_array( $term_id ) ) {
-					$term_id = $term_id['term_id'];
-				}
-				if ( isset( $term['term_id'] ) ) {
-					$this->processed_terms[ intval( $term['term_id'] ) ] = (int) $term_id;
-				}
+			$processed_term = $this->process_term( $term );
+			if ( false === $processed_term ) {
 				continue;
 			}
 
-			if ( empty( $term['term_parent'] ) ) {
-				$parent = 0;
-			} else {
-				$parent = term_exists( $term['term_parent'], $term['term_taxonomy'] );
-				if ( is_array( $parent ) ) {
-					$parent = $parent['term_id'];
-				}
+			if ( isset( $term['term_id'] ) ) {
+				$this->processed_terms[ intval( $term['term_id'] ) ] = $processed_term['term_id'];
 			}
 
-			$description = isset( $term['term_description'] ) ? $term['term_description'] : '';
-			$args        = array(
-				'slug'        => $term['slug'],
-				'description' => wp_slash( $description ),
-				'parent'      => (int) $parent,
-			);
-
-			$id = wp_insert_term( wp_slash( $term['term_name'] ), $term['term_taxonomy'], $args );
-			if ( ! is_wp_error( $id ) ) {
-				if ( isset( $term['term_id'] ) ) {
-					$this->processed_terms[ intval( $term['term_id'] ) ] = $id['term_id'];
-				}
-			} else {
-				printf( __( 'Failed to import %1$s %2$s', 'wordpress-importer' ), esc_html( $term['term_taxonomy'] ), esc_html( $term['term_name'] ) );
-				if ( defined( 'IMPORT_DEBUG' ) && IMPORT_DEBUG ) {
-					echo ': ' . $id->get_error_message();
-				}
-				echo '<br />';
-				continue;
+			if ( $processed_term['created'] ) {
+				$this->process_termmeta( $term, $processed_term['term_id'] );
 			}
-
-			$this->process_termmeta( $term, $id['term_id'] );
 		}
 
 		unset( $this->terms );
+	}
+
+	protected function process_term( $term ) {
+		$term_id = term_exists( $term['slug'], $term['term_taxonomy'] );
+		if ( $term_id ) {
+			if ( is_array( $term_id ) ) {
+				$term_id = $term_id['term_id'];
+			}
+
+			return array(
+				'created' => false,
+				'term_id' => (int) $term_id,
+			);
+		}
+
+		if ( empty( $term['term_parent'] ) ) {
+			$parent = 0;
+		} else {
+			$parent = term_exists( $term['term_parent'], $term['term_taxonomy'] );
+			if ( is_array( $parent ) ) {
+				$parent = $parent['term_id'];
+			}
+		}
+
+		$description = isset( $term['term_description'] ) ? $term['term_description'] : '';
+		$args        = array(
+			'slug'        => $term['slug'],
+			'description' => wp_slash( $description ),
+			'parent'      => (int) $parent,
+		);
+
+		$id = wp_insert_term( wp_slash( $term['term_name'] ), $term['term_taxonomy'], $args );
+		if ( is_wp_error( $id ) ) {
+			printf( __( 'Failed to import %1$s %2$s', 'wordpress-importer' ), esc_html( $term['term_taxonomy'] ), esc_html( $term['term_name'] ) );
+			if ( defined( 'IMPORT_DEBUG' ) && IMPORT_DEBUG ) {
+				echo ': ' . $id->get_error_message();
+			}
+			echo '<br />';
+			return false;
+		}
+
+		return array(
+			'created' => true,
+			'term_id' => (int) $id['term_id'],
+		);
 	}
 
 	/**
