@@ -481,46 +481,60 @@ class WP_Import extends WP_Importer {
 		}
 
 		foreach ( $this->categories as $cat ) {
-			// if the category already exists leave it alone
-			$term_id = term_exists( $cat['category_nicename'], 'category' );
-			if ( $term_id ) {
-				if ( is_array( $term_id ) ) {
-					$term_id = $term_id['term_id'];
-				}
-				if ( isset( $cat['term_id'] ) ) {
-					$this->processed_terms[ intval( $cat['term_id'] ) ] = (int) $term_id;
-				}
+			$processed_category = $this->process_category( $cat );
+			if ( false === $processed_category ) {
 				continue;
 			}
 
-			$parent      = empty( $cat['category_parent'] ) ? 0 : category_exists( $cat['category_parent'] );
-			$description = isset( $cat['category_description'] ) ? $cat['category_description'] : '';
-
-			$data = array(
-				'category_nicename'    => $cat['category_nicename'],
-				'category_parent'      => $parent,
-				'cat_name'             => wp_slash( $cat['cat_name'] ),
-				'category_description' => wp_slash( $description ),
-			);
-
-			$id = wp_insert_category( $data, true );
-			if ( ! is_wp_error( $id ) && $id > 0 ) {
-				if ( isset( $cat['term_id'] ) ) {
-					$this->processed_terms[ intval( $cat['term_id'] ) ] = $id;
-				}
-			} else {
-				printf( __( 'Failed to import category %s', 'wordpress-importer' ), esc_html( $cat['category_nicename'] ) );
-				if ( defined( 'IMPORT_DEBUG' ) && IMPORT_DEBUG ) {
-					echo ': ' . $id->get_error_message();
-				}
-				echo '<br />';
-				continue;
+			$this->processed_terms[ intval( $cat['term_id'] ) ] = $processed_category['term_id'];
+			if ( $processed_category['created'] ) {
+				$this->process_termmeta( $cat, $processed_category['term_id'] );
 			}
-
-			$this->process_termmeta( $cat, $id );
 		}
 
 		unset( $this->categories );
+	}
+
+	protected function process_category( $category ) {
+		$term_id = term_exists( $category['category_nicename'], 'category' );
+		if ( $term_id ) {
+			if ( is_array( $term_id ) ) {
+				$term_id = $term_id['term_id'];
+			}
+			return array(
+				'created' => false,
+				'term_id' => $term_id,
+			);
+		}
+
+		$parent      = empty( $category['category_parent'] ) ? 0 : category_exists( $category['category_parent'] );
+		$description = isset( $category['category_description'] ) ? $category['category_description'] : '';
+
+		$data = array(
+			'category_nicename'    => $category['category_nicename'],
+			'category_parent'      => $parent,
+			'cat_name'             => wp_slash( $category['cat_name'] ),
+			'category_description' => wp_slash( $description ),
+		);
+
+		$id = wp_insert_category( $data, true );
+		if ( is_wp_error( $id ) || $id <= 0 ) {
+			printf( __( 'Failed to import category %s', 'wordpress-importer' ), esc_html( $category['category_nicename'] ) );
+			if ( defined( 'IMPORT_DEBUG' ) && IMPORT_DEBUG ) {
+				echo ': ' . $id->get_error_message();
+			}
+			echo '<br />';
+			return false;
+		}
+
+		if ( isset( $category['term_id'] ) ) {
+			$this->processed_terms[ intval( $category['term_id'] ) ] = $id;
+		}
+
+		return array(
+			'created' => true,
+			'term_id' => $id,
+		);
 	}
 
 	/**
@@ -536,42 +550,64 @@ class WP_Import extends WP_Importer {
 		}
 
 		foreach ( $this->tags as $tag ) {
-			// if the tag already exists leave it alone
-			$term_id = term_exists( $tag['tag_slug'], 'post_tag' );
-			if ( $term_id ) {
-				if ( is_array( $term_id ) ) {
-					$term_id = $term_id['term_id'];
-				}
-				if ( isset( $tag['term_id'] ) ) {
-					$this->processed_terms[ intval( $tag['term_id'] ) ] = (int) $term_id;
-				}
+			$processed_tag = $this->process_tag( $tag );
+			if ( false === $processed_tag ) {
 				continue;
 			}
 
-			$description = isset( $tag['tag_description'] ) ? $tag['tag_description'] : '';
-			$args        = array(
-				'slug'        => $tag['tag_slug'],
-				'description' => wp_slash( $description ),
-			);
-
-			$id = wp_insert_term( wp_slash( $tag['tag_name'] ), 'post_tag', $args );
-			if ( ! is_wp_error( $id ) ) {
-				if ( isset( $tag['term_id'] ) ) {
-					$this->processed_terms[ intval( $tag['term_id'] ) ] = $id['term_id'];
-				}
-			} else {
-				printf( __( 'Failed to import post tag %s', 'wordpress-importer' ), esc_html( $tag['tag_name'] ) );
-				if ( defined( 'IMPORT_DEBUG' ) && IMPORT_DEBUG ) {
-					echo ': ' . $id->get_error_message();
-				}
-				echo '<br />';
-				continue;
+			if ( isset( $tag['term_id'] ) ) {
+				$this->processed_terms[ intval( $tag['term_id'] ) ] = $processed_tag['term_id'];
 			}
 
-			$this->process_termmeta( $tag, $id['term_id'] );
+			if ( $processed_tag['created'] ) {
+				$this->process_termmeta( $tag, $processed_tag['term_id'] );
+			}
 		}
 
 		unset( $this->tags );
+	}
+
+	protected function process_tag( $tag ) {
+		$term_id = term_exists( $tag['tag_slug'], 'post_tag' );
+		if ( $term_id ) {
+			if ( is_array( $term_id ) ) {
+				$term_id = $term_id['term_id'];
+			}
+
+			if ( isset( $tag['term_id'] ) ) {
+				$this->processed_terms[ intval( $tag['term_id'] ) ] = (int) $term_id;
+			}
+
+			return array(
+				'created' => false,
+				'term_id' => (int) $term_id,
+			);
+		}
+
+		$description = isset( $tag['tag_description'] ) ? $tag['tag_description'] : '';
+		$args        = array(
+			'slug'        => $tag['tag_slug'],
+			'description' => wp_slash( $description ),
+		);
+
+		$id = wp_insert_term( wp_slash( $tag['tag_name'] ), 'post_tag', $args );
+		if ( is_wp_error( $id ) ) {
+			printf( __( 'Failed to import post tag %s', 'wordpress-importer' ), esc_html( $tag['tag_name'] ) );
+			if ( defined( 'IMPORT_DEBUG' ) && IMPORT_DEBUG ) {
+				echo ': ' . $id->get_error_message();
+			}
+			echo '<br />';
+			return false;
+		}
+
+		if ( isset( $tag['term_id'] ) ) {
+			$this->processed_terms[ intval( $tag['term_id'] ) ] = (int) $id['term_id'];
+		}
+
+		return array(
+			'created' => true,
+			'term_id' => (int) $id['term_id'],
+		);
 	}
 
 	/**
@@ -587,52 +623,66 @@ class WP_Import extends WP_Importer {
 		}
 
 		foreach ( $this->terms as $term ) {
-			// if the term already exists in the correct taxonomy leave it alone
-			$term_id = term_exists( $term['slug'], $term['term_taxonomy'] );
-			if ( $term_id ) {
-				if ( is_array( $term_id ) ) {
-					$term_id = $term_id['term_id'];
-				}
-				if ( isset( $term['term_id'] ) ) {
-					$this->processed_terms[ intval( $term['term_id'] ) ] = (int) $term_id;
-				}
+			$processed_term = $this->process_term( $term );
+			if ( false === $processed_term ) {
 				continue;
 			}
 
-			if ( empty( $term['term_parent'] ) ) {
-				$parent = 0;
-			} else {
-				$parent = term_exists( $term['term_parent'], $term['term_taxonomy'] );
-				if ( is_array( $parent ) ) {
-					$parent = $parent['term_id'];
-				}
+			if ( isset( $term['term_id'] ) ) {
+				$this->processed_terms[ intval( $term['term_id'] ) ] = $processed_term['term_id'];
 			}
 
-			$description = isset( $term['term_description'] ) ? $term['term_description'] : '';
-			$args        = array(
-				'slug'        => $term['slug'],
-				'description' => wp_slash( $description ),
-				'parent'      => (int) $parent,
-			);
-
-			$id = wp_insert_term( wp_slash( $term['term_name'] ), $term['term_taxonomy'], $args );
-			if ( ! is_wp_error( $id ) ) {
-				if ( isset( $term['term_id'] ) ) {
-					$this->processed_terms[ intval( $term['term_id'] ) ] = $id['term_id'];
-				}
-			} else {
-				printf( __( 'Failed to import %1$s %2$s', 'wordpress-importer' ), esc_html( $term['term_taxonomy'] ), esc_html( $term['term_name'] ) );
-				if ( defined( 'IMPORT_DEBUG' ) && IMPORT_DEBUG ) {
-					echo ': ' . $id->get_error_message();
-				}
-				echo '<br />';
-				continue;
+			if ( $processed_term['created'] ) {
+				$this->process_termmeta( $term, $processed_term['term_id'] );
 			}
-
-			$this->process_termmeta( $term, $id['term_id'] );
 		}
 
 		unset( $this->terms );
+	}
+
+	protected function process_term( $term ) {
+		$term_id = term_exists( $term['slug'], $term['term_taxonomy'] );
+		if ( $term_id ) {
+			if ( is_array( $term_id ) ) {
+				$term_id = $term_id['term_id'];
+			}
+
+			return array(
+				'created' => false,
+				'term_id' => (int) $term_id,
+			);
+		}
+
+		if ( empty( $term['term_parent'] ) ) {
+			$parent = 0;
+		} else {
+			$parent = term_exists( $term['term_parent'], $term['term_taxonomy'] );
+			if ( is_array( $parent ) ) {
+				$parent = $parent['term_id'];
+			}
+		}
+
+		$description = isset( $term['term_description'] ) ? $term['term_description'] : '';
+		$args        = array(
+			'slug'        => $term['slug'],
+			'description' => wp_slash( $description ),
+			'parent'      => (int) $parent,
+		);
+
+		$id = wp_insert_term( wp_slash( $term['term_name'] ), $term['term_taxonomy'], $args );
+		if ( is_wp_error( $id ) ) {
+			printf( __( 'Failed to import %1$s %2$s', 'wordpress-importer' ), esc_html( $term['term_taxonomy'] ), esc_html( $term['term_name'] ) );
+			if ( defined( 'IMPORT_DEBUG' ) && IMPORT_DEBUG ) {
+				echo ': ' . $id->get_error_message();
+			}
+			echo '<br />';
+			return false;
+		}
+
+		return array(
+			'created' => true,
+			'term_id' => (int) $id['term_id'],
+		);
 	}
 
 	/**
@@ -875,35 +925,8 @@ class WP_Import extends WP_Importer {
 
 			// add categories, tags and other terms
 			if ( ! empty( $post['terms'] ) ) {
-				$terms_to_set = array();
-				foreach ( $post['terms'] as $term ) {
-					// back compat with WXR 1.0 map 'tag' to 'post_tag'
-					$taxonomy    = ( 'tag' == $term['domain'] ) ? 'post_tag' : $term['domain'];
-					$term_exists = term_exists( $term['slug'], $taxonomy );
-					$term_id     = is_array( $term_exists ) ? $term_exists['term_id'] : $term_exists;
-					if ( ! $term_id ) {
-						$t = wp_insert_term( $term['name'], $taxonomy, array( 'slug' => $term['slug'] ) );
-						if ( ! is_wp_error( $t ) ) {
-							$term_id = $t['term_id'];
-							do_action( 'wp_import_insert_term', $t, $term, $post_id, $post );
-						} else {
-							printf( __( 'Failed to import %1$s %2$s', 'wordpress-importer' ), esc_html( $taxonomy ), esc_html( $term['name'] ) );
-							if ( defined( 'IMPORT_DEBUG' ) && IMPORT_DEBUG ) {
-								echo ': ' . $t->get_error_message();
-							}
-							echo '<br />';
-							do_action( 'wp_import_insert_term_failed', $t, $term, $post_id, $post );
-							continue;
-						}
-					}
-					$terms_to_set[ $taxonomy ][] = intval( $term_id );
-				}
-
-				foreach ( $terms_to_set as $tax => $ids ) {
-					$tt_ids = wp_set_post_terms( $post_id, $ids, $tax );
-					do_action( 'wp_import_set_post_terms', $tt_ids, $ids, $tax, $post_id, $post );
-				}
-				unset( $post['terms'], $terms_to_set );
+				$this->process_post_terms( $post['terms'], $post_id, $post );
+				unset( $post['terms'] );
 			}
 
 			if ( ! isset( $post['comments'] ) ) {
@@ -914,53 +937,8 @@ class WP_Import extends WP_Importer {
 
 			// add/update comments
 			if ( ! empty( $post['comments'] ) ) {
-				$num_comments      = 0;
-				$inserted_comments = array();
-				foreach ( $post['comments'] as $comment ) {
-					$comment_id                                    = $comment['comment_id'];
-					$newcomments[ $comment_id ]['comment_post_ID'] = $comment_post_id;
-					$newcomments[ $comment_id ]['comment_author']  = $comment['comment_author'];
-					$newcomments[ $comment_id ]['comment_author_email'] = $comment['comment_author_email'];
-					$newcomments[ $comment_id ]['comment_author_IP']    = $comment['comment_author_IP'];
-					$newcomments[ $comment_id ]['comment_author_url']   = $comment['comment_author_url'];
-					$newcomments[ $comment_id ]['comment_date']         = $comment['comment_date'];
-					$newcomments[ $comment_id ]['comment_date_gmt']     = $comment['comment_date_gmt'];
-					$newcomments[ $comment_id ]['comment_content']      = $comment['comment_content'];
-					$newcomments[ $comment_id ]['comment_approved']     = $comment['comment_approved'];
-					$newcomments[ $comment_id ]['comment_type']         = $comment['comment_type'];
-					$newcomments[ $comment_id ]['comment_parent']       = $comment['comment_parent'];
-					$newcomments[ $comment_id ]['commentmeta']          = isset( $comment['commentmeta'] ) ? $comment['commentmeta'] : array();
-					if ( isset( $this->processed_authors[ $comment['comment_user_id'] ] ) ) {
-						$newcomments[ $comment_id ]['user_id'] = $this->processed_authors[ $comment['comment_user_id'] ];
-					}
-				}
-				ksort( $newcomments );
-
-				foreach ( $newcomments as $key => $comment ) {
-					// if this is a new post we can skip the comment_exists() check
-					if ( ! $post_exists || ! comment_exists( $comment['comment_author'], $comment['comment_date'] ) ) {
-						if ( isset( $inserted_comments[ $comment['comment_parent'] ] ) ) {
-							$comment['comment_parent'] = $inserted_comments[ $comment['comment_parent'] ];
-						}
-
-						$comment_data = wp_slash( $comment );
-						unset( $comment_data['commentmeta'] ); // Handled separately, wp_insert_comment() also expects `comment_meta`.
-						$comment_data = wp_filter_comment( $comment_data );
-
-						$inserted_comments[ $key ] = wp_insert_comment( $comment_data );
-
-						do_action( 'wp_import_insert_comment', $inserted_comments[ $key ], $comment, $comment_post_id, $post );
-
-						foreach ( $comment['commentmeta'] as $meta ) {
-							$value = $this->maybe_unserialize( $meta['value'] );
-
-							add_comment_meta( $inserted_comments[ $key ], wp_slash( $meta['key'] ), wp_slash_strings_only( $value ) );
-						}
-
-						++$num_comments;
-					}
-				}
-				unset( $newcomments, $inserted_comments, $post['comments'] );
+				$this->process_post_comments( $post['comments'], (bool) $post_exists, $comment_post_id, $post );
+				unset( $post['comments'] );
 			}
 
 			if ( ! isset( $post['postmeta'] ) ) {
@@ -1028,6 +1006,190 @@ class WP_Import extends WP_Importer {
 		if ( '_thumbnail_id' == $key ) {
 			$this->featured_images[ $post_id ] = (int) $value;
 		}
+	}
+
+	/**
+	 * Process comments for a post being imported.
+	 *
+	 * @param array $comments        Comment data from the WXR file.
+	 * @param bool  $post_exists     Whether the post already exists.
+	 * @param int   $comment_post_id Local post ID for the imported comments.
+	 * @param array $post            Original post array from the WXR file.
+	 */
+	protected function process_post_comments( $comments, $post_exists, $comment_post_id, $post ) {
+		$num_comments      = 0;
+		$newcomments       = array();
+		$inserted_comments = array();
+
+		foreach ( $comments as $comment ) {
+			$comment_id = $comment['comment_id'];
+
+			$newcomments[ $comment_id ] = array(
+				'comment_post_ID'      => $comment_post_id,
+				'comment_author'       => $comment['comment_author'],
+				'comment_author_email' => $comment['comment_author_email'],
+				'comment_author_IP'    => $comment['comment_author_IP'],
+				'comment_author_url'   => $comment['comment_author_url'],
+				'comment_date'         => $comment['comment_date'],
+				'comment_date_gmt'     => $comment['comment_date_gmt'],
+				'comment_content'      => $comment['comment_content'],
+				'comment_approved'     => $comment['comment_approved'],
+				'comment_type'         => $comment['comment_type'],
+				'comment_parent'       => $comment['comment_parent'],
+				'commentmeta'          => isset( $comment['commentmeta'] ) ? $comment['commentmeta'] : array(),
+			);
+
+			if ( isset( $this->processed_authors[ $comment['comment_user_id'] ] ) ) {
+				$newcomments[ $comment_id ]['user_id'] = $this->processed_authors[ $comment['comment_user_id'] ];
+			}
+		}
+
+		if ( empty( $newcomments ) ) {
+			return;
+		}
+
+		ksort( $newcomments );
+
+		foreach ( $newcomments as $key => $comment ) {
+			if ( isset( $inserted_comments[ $comment['comment_parent'] ] ) ) {
+				$comment['comment_parent'] = $inserted_comments[ $comment['comment_parent'] ];
+			}
+
+			$inserted_comment_id = $this->process_post_comment( $comment, $post_exists, $comment_post_id );
+
+			if ( $inserted_comment_id ) {
+				do_action( 'wp_import_insert_comment', $inserted_comment_id, $comment, $comment_post_id, $post );
+				$this->process_post_comment_metas( $inserted_comment_id, $comment['commentmeta'] );
+				$inserted_comments[ $key ] = $inserted_comment_id;
+				++$num_comments;
+			}
+		}
+	}
+
+	/**
+	 * Insert an individual comment for the post during import.
+	 *
+	 * @param array $comment         Comment data to insert.
+	 * @param bool  $post_exists     Whether the post already exists.
+	 * @param int   $comment_post_id Local post ID for the imported comment.
+	 * @param array $post            Original post array from the WXR file.
+	 * @return int|false Inserted comment ID on success, false otherwise.
+	 */
+	protected function process_post_comment( $comment, $post_exists, $comment_post_id ) {
+		if ( $post_exists && comment_exists( $comment['comment_author'], $comment['comment_date'] ) ) {
+			return false;
+		}
+
+		$comment['comment_post_ID'] = $comment_post_id;
+
+		$comment_data = wp_slash( $comment );
+		unset( $comment_data['commentmeta'] ); // Handled separately, wp_insert_comment() also expects `comment_meta`.
+		$comment_data = wp_filter_comment( $comment_data );
+
+		return wp_insert_comment( $comment_data );
+	}
+
+	/**
+	 * Process comment meta for an imported comment.
+	 *
+	 * @param int   $comment_id   ID of the comment being imported.
+	 * @param array $commentmeta  Comment meta data for the inserted comment.
+	 */
+	protected function process_post_comment_metas( $comment_id, $commentmeta ) {
+		if ( empty( $commentmeta ) ) {
+			return;
+		}
+
+		foreach ( $commentmeta as $meta ) {
+			$this->process_post_comment_meta( $comment_id, $meta );
+		}
+	}
+
+	/**
+	 * Process a single comment meta entry for an imported comment.
+	 *
+	 * @param int   $comment_id ID of the comment being imported.
+	 * @param array $meta       Single meta entry (key/value) for the comment.
+	 */
+	protected function process_post_comment_meta( $comment_id, $meta ) {
+		if ( ! isset( $meta['key'], $meta['value'] ) ) {
+			return;
+		}
+
+		$value = $this->maybe_unserialize( $meta['value'] );
+
+		add_comment_meta( $comment_id, wp_slash( $meta['key'] ), wp_slash_strings_only( $value ) );
+	}
+
+	/**
+	 * Add categories, tags, and other taxonomies to a post.
+	 *
+	 * @param array $terms   Terms to be added to the post.
+	 * @param int   $post_id The ID of the post being processed.
+	 * @param array $post    The raw post data from the import file.
+	 */
+	protected function process_post_terms( $terms, $post_id, $post ) {
+		if ( empty( $terms ) ) {
+			return;
+		}
+
+		$terms_to_set = array();
+
+		foreach ( $terms as $term ) {
+			$processed_term = $this->process_post_term( $term, $post_id, $post );
+
+			if ( $processed_term ) {
+				$taxonomy                    = $processed_term['taxonomy'];
+				$terms_to_set[ $taxonomy ][] = $processed_term['term_id'];
+			}
+		}
+
+		foreach ( $terms_to_set as $tax => $ids ) {
+			$tt_ids = wp_set_post_terms( $post_id, $ids, $tax );
+			do_action( 'wp_import_set_post_terms', $tt_ids, $ids, $tax, $post_id, $post );
+		}
+	}
+
+	/**
+	 * Ensure a single term exists and return its taxonomy mapping for a post.
+	 *
+	 * @param array $term    Term data from the import file.
+	 * @param int   $post_id The ID of the post being processed.
+	 * @param array $post    The raw post data from the import file.
+	 * @return array|false {
+	 *     Mapping of taxonomy to term ID or false on failure.
+	 *
+	 *     @type string $taxonomy Taxonomy slug.
+	 *     @type int    $term_id  Term ID.
+	 * }
+	 */
+	protected function process_post_term( $term, $post_id, $post ) {
+		// Back compat with WXR 1.0 map 'tag' to 'post_tag'.
+		$taxonomy    = ( 'tag' == $term['domain'] ) ? 'post_tag' : $term['domain'];
+		$term_exists = term_exists( $term['slug'], $taxonomy );
+		$term_id     = is_array( $term_exists ) ? $term_exists['term_id'] : $term_exists;
+
+		if ( ! $term_id ) {
+			$t = wp_insert_term( $term['name'], $taxonomy, array( 'slug' => $term['slug'] ) );
+
+			if ( is_wp_error( $t ) ) {
+				printf( __( 'Failed to import %1$s %2$s', 'wordpress-importer' ), esc_html( $taxonomy ), esc_html( $term['name'] ) );
+				if ( defined( 'IMPORT_DEBUG' ) && IMPORT_DEBUG ) {
+					echo ': ' . $t->get_error_message();
+				}
+				echo '<br />';
+				do_action( 'wp_import_insert_term_failed', $t, $term, $post_id, $post );
+				return false;
+			}
+
+			$term_id = $t['term_id'];
+			do_action( 'wp_import_insert_term', $t, $term, $post_id, $post );
+		}
+
+		return array(
+			'taxonomy' => $taxonomy,
+			'term_id'  => intval( $term_id ),
+		);
 	}
 
 	/**
