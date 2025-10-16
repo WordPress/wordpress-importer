@@ -925,40 +925,65 @@ class WP_Import extends WP_Importer {
 
 			$post['postmeta'] = apply_filters( 'wp_import_post_meta', $post['postmeta'], $post_id, $post );
 
-			// add/update post meta
-			if ( ! empty( $post['postmeta'] ) ) {
-				foreach ( $post['postmeta'] as $meta ) {
-					$key   = apply_filters( 'import_post_meta_key', $meta['key'], $post_id, $post );
-					$value = false;
-
-					if ( '_edit_last' == $key ) {
-						if ( isset( $this->processed_authors[ intval( $meta['value'] ) ] ) ) {
-							$value = $this->processed_authors[ intval( $meta['value'] ) ];
-						} else {
-							$key = false;
-						}
-					}
-
-					if ( $key ) {
-						// export gets meta straight from the DB so could have a serialized string
-						if ( ! $value ) {
-							$value = $this->maybe_unserialize( $meta['value'] );
-						}
-
-						add_post_meta( $post_id, wp_slash( $key ), wp_slash_strings_only( $value ) );
-
-						do_action( 'import_post_meta', $post_id, $key, $value );
-
-						// if the post has a featured image, take note of this in case of remap
-						if ( '_thumbnail_id' == $key ) {
-							$this->featured_images[ $post_id ] = (int) $value;
-						}
-					}
-				}
-			}
+			$this->process_post_metas( $post['postmeta'], $post_id, $post );
 		}
 
 		unset( $this->posts );
+	}
+
+	/**
+	 * Add or update post meta for an imported post.
+	 *
+	 * @param array $post_metas Array of post meta entries.
+	 * @param int   $post_id    ID of the just imported post.
+	 * @param array $post       Raw post data from the WXR file.
+	 */
+	protected function process_post_metas( $post_metas, $post_id, $post ) {
+		if ( empty( $post_metas ) ) {
+			return;
+		}
+
+		foreach ( $post_metas as $meta ) {
+			$this->process_post_meta( $meta, $post_id, $post );
+		}
+	}
+
+	/**
+	 * Process a single post meta entry.
+	 *
+	 * @param array $meta    Post meta data.
+	 * @param int   $post_id ID of the just imported post.
+	 * @param array $post    Raw post data from the WXR file.
+	 */
+	protected function process_post_meta( $meta, $post_id, $post ) {
+		$key   = apply_filters( 'import_post_meta_key', $meta['key'], $post_id, $post );
+		$value = false;
+
+		if ( '_edit_last' == $key ) {
+			if ( isset( $this->processed_authors[ intval( $meta['value'] ) ] ) ) {
+				$value = $this->processed_authors[ intval( $meta['value'] ) ];
+			} else {
+				$key = false;
+			}
+		}
+
+		if ( ! $key ) {
+			return;
+		}
+
+		// export gets meta straight from the DB so could have a serialized string
+		if ( ! $value ) {
+			$value = $this->maybe_unserialize( $meta['value'] );
+		}
+
+		add_post_meta( $post_id, wp_slash( $key ), wp_slash_strings_only( $value ) );
+
+		do_action( 'import_post_meta', $post_id, $key, $value );
+
+		// if the post has a featured image, take note of this in case of remap
+		if ( '_thumbnail_id' == $key ) {
+			$this->featured_images[ $post_id ] = (int) $value;
+		}
 	}
 
 	/**
