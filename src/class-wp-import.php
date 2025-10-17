@@ -672,6 +672,9 @@ class WP_Import extends WP_Importer {
 	 * @param int   $term_id ID of the newly created term.
 	 */
 	protected function process_termmeta( $term, $term_id ) {
+		if ( ! function_exists( 'add_term_meta' ) ) {
+			return;
+		}
 		if ( ! isset( $term['termmeta'] ) ) {
 			$term['termmeta'] = array();
 		}
@@ -1212,7 +1215,8 @@ class WP_Import extends WP_Importer {
 		} else {
 			$menu_id = is_array( $menu_id ) ? $menu_id['term_id'] : $menu_id;
 		}
-
+		$backup_menu_item_meta             = array();
+		$backup_menu_item_meta['postmeta'] = $item['postmeta'];
 		foreach ( $item['postmeta'] as $meta ) {
 			${$meta['key']} = $meta['value'];
 		}
@@ -1258,6 +1262,16 @@ class WP_Import extends WP_Importer {
 
 		$id = wp_update_nav_menu_item( $menu_id, 0, $args );
 		if ( $id && ! is_wp_error( $id ) ) {
+			$menu_item_db_id                   = $id;
+			$backup_menu_item_meta['postmeta'] = apply_filters( 'wordpress_importer_menu_items_meta_import', $backup_menu_item_meta['postmeta'], $id );
+			$skip_meta_items                   = array( '_menu_item_type', '_menu_item_menu_item_parent', '_menu_item_object_id', '_menu_item_object', '_menu_item_target', '_menu_item_classes', '_menu_item_xfn', '_menu_item_url' );
+			if ( is_array( $backup_menu_item_meta['postmeta'] ) && ! empty( $backup_menu_item_meta['postmeta'] ) ) {
+				foreach ( $backup_menu_item_meta['postmeta'] as $meta ) {
+						if ( ! in_array( $meta['key'], $skip_meta_items, true ) ) {
+							update_post_meta( $menu_item_db_id, $meta['key'], $meta['value'] );
+						}
+				}
+			}
 			$this->processed_menu_items[ intval( $item['post_id'] ) ] = (int) $id;
 		}
 	}
