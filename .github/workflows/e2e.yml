@@ -24,7 +24,7 @@ jobs:
           node-version: '22'
 
       - name: Setup latest Google Chrome
-        uses: browser-actions/setup-chrome@v1
+        uses: browser-actions/setup-chrome@v2
 
       - name: Install Playwright and deps
         run: |
