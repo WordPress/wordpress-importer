@@ -1,5 +1,10 @@
 // E2E test: import WXR files using a fresh Playground instance per test
 // Import from 'playwright/test' to ensure it matches the npx runner version
+// Polyfill crypto for @wp-playground/cli compatibility
+if (!globalThis.crypto) {
+	const nodeCrypto = require('crypto');
+	globalThis.crypto = nodeCrypto.webcrypto || nodeCrypto;
+}
 const { test, expect } = require('playwright/test');
 const { runCLI } = require('@wp-playground/cli');
 const path = require('path');
@@ -8,7 +13,9 @@ const http = require('http');
 const fs = require('fs');
 
 // Define available parsers
-const PARSERS = process.env.PARSER ? [process.env.PARSER] : ['simplexml', 'xml', 'regex', 'xmlprocessor'];
+const PARSERS = process.env.PARSER
+	? [process.env.PARSER]
+	: ['simplexml', 'xml', 'regex', 'xmlprocessor'];
 let PLAYGROUND_URL = '';
 // Run tests for each parser
 PARSERS.forEach((parser) => {
@@ -143,13 +150,112 @@ https://playground.internal/path-not-taken was the second best choice.
 				await fileInput.waitFor({ state: 'visible' });
 				await fileInput.setInputFiles(wxrPath);
 				await page.getByRole('button', { name: /Upload file and import/i }).click();
-				await page.waitForURL('**/admin.php?import=wordpress&step=1**', { waitUntil: 'domcontentloaded', timeout: 120000 });
+				await page.waitForURL('**/admin.php?import=wordpress&step=1**', {
+					waitUntil: 'domcontentloaded',
+					timeout: 120000,
+				});
 				await page.getByRole('button', { name: /^Submit$/i }).click();
-				await page.waitForURL('**/admin.php?import=wordpress&step=2**', { waitUntil: 'domcontentloaded', timeout: 300000 });
+				await page.waitForURL('**/admin.php?import=wordpress&step=2**', {
+					waitUntil: 'domcontentloaded',
+					timeout: 300000,
+				});
 				await expect(page.locator('text=All done. Have fun!')).toBeVisible();
-				await expect(page.locator('text=Remember to update the passwords and roles of imported users.')).toBeVisible();
+				await expect(
+					page.locator(
+						'text=Remember to update the passwords and roles of imported users.'
+					)
+				).toBeVisible();
 				await expect(page.locator('a[href$="/wp-admin/"]')).toBeVisible();
 			});
+		});
+
+		test(`imports CSS URLs in style attributes using ${parser} parser`, async ({
+			page,
+			request,
+		}) => {
+			await withPlaygroundServer(
+				async () => {
+					// Run the import
+					await runWxrImport(page, 'wxr-css-urls.xml');
+
+					// Get posts and find the imported one
+					const posts = await getPostsEdit(page, 'CSS URL Migration');
+					expect(posts.length).toBeGreaterThan(0);
+					const post = findPostByTitle(posts, 'CSS URL Migration Test');
+
+					// Verify post data
+					const normalized = normalizePostData(post);
+					expect(normalized).toMatchObject({
+						status: 'publish',
+						type: 'post',
+						title: expect.stringContaining('CSS URL Migration Test'),
+					});
+
+					// Test various CSS URL scenarios
+					expect(normalized.rawContent).toEqual(`<!-- wp:paragraph -->
+<p>Testing CSS URL migration in style attributes:</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p style="background-image: url(&quot;${PLAYGROUND_URL}/wp-content/uploads/bg1.jpg&quot;)">Quoted URL with single quotes</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p style="background-image: url(&quot;${PLAYGROUND_URL}/wp-content/uploads/bg2.jpg&quot;)">Quoted URL with double quotes</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p style="background-image: url(&quot;${PLAYGROUND_URL}/wp-content/uploads/bg3.jpg&quot;)">Unquoted URL</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p style="background: url(&quot;/wp-content/uploads/bg4.jpg&quot;) no-repeat">Relative URL with single quotes</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p style="background: /* comment */ url(&quot;/wp-content/uploads/bg5.jpg&quot;) no-repeat">URL after CSS comment</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p style="background-image: url(&quot;${PLAYGROUND_URL}/wp-content/uploads/bg6.jpg&quot;); /* trailing comment */ ">URL with trailing comment</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p style="content: &quot;This is a url(fake) in a string&quot;; background: url(&quot;${PLAYGROUND_URL}/wp-content/uploads/bg7.jpg&quot;)">URL with string containing fake url()</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p style="background-image: url(&quot;${PLAYGROUND_URL}/wp-content/uploads/bg(special).jpg&quot;)">URL with escaped parentheses</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p style="background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==)">Data URI (should not be migrated)</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p style="background: url(&quot;${PLAYGROUND_URL}/wp-content/uploads/bg8.jpg&quot;), url(&quot;${PLAYGROUND_URL}/wp-content/uploads/bg9.jpg&quot;)">Multiple URLs</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p style="background-image: URL(&quot;${PLAYGROUND_URL}/wp-content/uploads/BG10.JPG&quot;)">Uppercase URL keyword</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:image -->
+<figure class="wp-block-image" style="background: url(&quot;${PLAYGROUND_URL}/wp-content/uploads/figure-bg.jpg&quot;)"><img src="${PLAYGROUND_URL}/wp-content/uploads/image.jpg" alt="Test Image" /></figure>
+<!-- /wp:image -->
+
+<!-- wp:html -->
+<div style="background-image: url(&quot;${PLAYGROUND_URL}/wp-content/uploads/html-bg.jpg&quot;)">
+	HTML block with inline style
+</div>
+<!-- /wp:html -->`);
+
+					// Verify frontend rendering
+					await goToPostFrontend(page, post);
+					await expect(page.getByText('Testing CSS URL migration')).toBeVisible();
+				},
+				{ parser }
+			);
 		});
 
 		test.describe('Comprehensive WXR import', () => {
@@ -239,7 +345,6 @@ https://playground.internal/path-not-taken was the second best choice.
 			await expect(page.locator('a[href="https://w.org"]')).toBeVisible();
 		});
 	});
-
 });
 
 // Helpers
