@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0"
+	xmlns:excerpt="http://wordpress.org/export/1.2/excerpt/"
+	xmlns:content="http://purl.org/rss/1.0/modules/content/"
+	xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:wp="http://wordpress.org/export/1.2/"
+>
+<channel>
+	<title>Test Site</title>
+	<link>https://playground.internal</link>
+	<description>Test CSS URL Migration</description>
+	<pubDate>Wed, 05 Jun 2024 10:00:00 +0000</pubDate>
+	<language>en-US</language>
+	<wp:wxr_version>1.2</wp:wxr_version>
+	<wp:base_site_url>https://playground.internal</wp:base_site_url>
+	<wp:base_blog_url>https://playground.internal</wp:base_blog_url>
+
+	<wp:author>
+		<wp:author_id>1</wp:author_id>
+		<wp:author_login><![CDATA[admin]]></wp:author_login>
+		<wp:author_email><![CDATA[admin@example.com]]></wp:author_email>
+		<wp:author_display_name><![CDATA[Admin]]></wp:author_display_name>
+		<wp:author_first_name><![CDATA[]]></wp:author_first_name>
+		<wp:author_last_name><![CDATA[]]></wp:author_last_name>
+	</wp:author>
+
+	<wp:category>
+		<wp:term_id>1</wp:term_id>
+		<wp:category_nicename><![CDATA[uncategorized]]></wp:category_nicename>
+		<wp:category_parent><![CDATA[]]></wp:category_parent>
+		<wp:cat_name><![CDATA[Uncategorized]]></wp:cat_name>
+	</wp:category>
+
+	<item>
+		<title>CSS URL Migration Test</title>
+		<link>https://playground.internal/css-urls</link>
+		<pubDate>Wed, 05 Jun 2024 10:30:00 +0000</pubDate>
+		<dc:creator><![CDATA[admin]]></dc:creator>
+		<guid isPermaLink="false">https://playground.internal/?p=123</guid>
+		<description></description>
+		<content:encoded><![CDATA[<!-- wp:paragraph -->
+<p>Testing CSS URL migration in style attributes:</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p style="background-image: url('https://playground.internal/wp-content/uploads/bg1.jpg')">Quoted URL with single quotes</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p style="background-image: url(&quot;https://playground.internal/wp-content/uploads/bg2.jpg&quot;)">Quoted URL with double quotes</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p style="background-image: url(https://playground.internal/wp-content/uploads/bg3.jpg)">Unquoted URL</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p style="background: url('/wp-content/uploads/bg4.jpg') no-repeat">Relative URL with single quotes</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p style="background: /* comment */ url(&quot;/wp-content/uploads/bg5.jpg&quot;) no-repeat">URL after CSS comment</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p style="background-image: url('https://playground.internal/wp-content/uploads/bg6.jpg'); /* trailing comment */ ">URL with trailing comment</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p style="content: &quot;This is a url(fake) in a string&quot;; background: url('https://playground.internal/wp-content/uploads/bg7.jpg')">URL with string containing fake url()</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p style="background-image: url('https://playground.internal/wp-content/uploads/bg\28special\29.jpg')">URL with escaped parentheses</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p style="background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==)">Data URI (should not be migrated)</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p style="background: url('https://playground.internal/wp-content/uploads/bg8.jpg'), url('https://playground.internal/wp-content/uploads/bg9.jpg')">Multiple URLs</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p style="background-image: URL('https://playground.internal/wp-content/uploads/BG10.JPG')">Uppercase URL keyword</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:image -->
+<figure class="wp-block-image" style="background: url('https://playground.internal/wp-content/uploads/figure-bg.jpg')"><img src="https://playground.internal/wp-content/uploads/image.jpg" alt="Test Image" /></figure>
+<!-- /wp:image -->
+
+<!-- wp:html -->
+<div style="background-image: url('https://playground.internal/wp-content/uploads/html-bg.jpg')">
+	HTML block with inline style
+</div>
+<!-- /wp:html -->]]></content:encoded>
+		<excerpt:encoded><![CDATA[]]></excerpt:encoded>
+		<wp:post_id>123</wp:post_id>
+		<wp:post_date><![CDATA[2024-06-05 10:30:00]]></wp:post_date>
+		<wp:post_date_gmt><![CDATA[2024-06-05 10:30:00]]></wp:post_date_gmt>
+		<wp:comment_status><![CDATA[open]]></wp:comment_status>
+		<wp:ping_status><![CDATA[open]]></wp:ping_status>
+		<wp:post_name><![CDATA[css-urls]]></wp:post_name>
+		<wp:status><![CDATA[publish]]></wp:status>
+		<wp:post_parent>0</wp:post_parent>
+		<wp:menu_order>0</wp:menu_order>
+		<wp:post_type><![CDATA[post]]></wp:post_type>
+		<wp:post_password><![CDATA[]]></wp:post_password>
+		<wp:is_sticky>0</wp:is_sticky>
+		<category domain="category" nicename="uncategorized"><![CDATA[Uncategorized]]></category>
+	</item>
+
+</channel>
+</rss>
