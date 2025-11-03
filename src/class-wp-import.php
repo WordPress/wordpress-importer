@@ -1498,7 +1498,7 @@ class WP_Import extends WP_Importer {
 				)
 			);
 			if ( false !== $url_candidate ) {
-				$url_candidate = (string) $url_candidate;
+				$url = (string) $url_candidate;
 			}
 			$guid_candidate = WPURL::replace_base_url(
 				$post['guid'],
@@ -1508,7 +1508,7 @@ class WP_Import extends WP_Importer {
 				)
 			);
 			if ( false !== $guid_candidate ) {
-				$guid_candidate = (string) $guid_candidate;
+				$post['guid'] = (string) $guid_candidate;
 			}
 			if ( isset( $headers['x-final-location'] ) ) {
 				$final_location_candidate = WPURL::replace_base_url(
