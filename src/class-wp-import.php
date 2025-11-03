@@ -1491,26 +1491,26 @@ class WP_Import extends WP_Importer {
 		 */
 		if ( $this->options['rewrite_urls'] ) {
 			$url          = WPURL::replace_base_url(
+				$url,
 				array(
-					'url'          => $url,
 					'old_base_url' => $this->base_url_parsed,
 					'new_base_url' => $this->site_url_parsed,
 				)
 			);
 			$post['guid'] = WPURL::replace_base_url(
+				$post['guid'],
 				array(
-					'url'          => $post['guid'],
 					'old_base_url' => $this->base_url_parsed,
 					'new_base_url' => $this->site_url_parsed,
-				)
+				)	
 			);
 			if ( isset( $headers['x-final-location'] ) ) {
 				$headers['x-final-location'] = WPURL::replace_base_url(
+					$headers['x-final-location'],
 					array(
-						'url'          => $headers['x-final-location'],
 						'old_base_url' => $this->base_url_parsed,
 						'new_base_url' => $this->site_url_parsed,
-					)
+					)	
 				);
 			}
 		}

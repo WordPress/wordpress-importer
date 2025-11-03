@@ -311,7 +311,7 @@ class BlockMarkupUrlProcessor extends BlockMarkupProcessor {
 				'url_processor_is_relative_url_block_attribute',
 				$is_relative_url_block_attribute,
 				array(
-					'block_name' => $this->get_block_name(),
+					'block_name'     => $this->get_block_name(),
 					'attribute_name' => $this->get_block_attribute_key(),
 				)
 			);
