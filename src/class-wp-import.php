@@ -1490,28 +1490,37 @@ class WP_Import extends WP_Importer {
 		 *                                            ^ there may be no 2008/06 on the target site.
 		 */
 		if ( $this->options['rewrite_urls'] ) {
-			$url          = WPURL::replace_base_url(
+			$url_candidate = WPURL::replace_base_url(
 				$url,
 				array(
 					'old_base_url' => $this->base_url_parsed,
 					'new_base_url' => $this->site_url_parsed,
 				)
 			);
-			$post['guid'] = WPURL::replace_base_url(
+			if ( false !== $url_candidate ) {
+				$url_candidate = (string) $url_candidate;
+			}
+			$guid_candidate = WPURL::replace_base_url(
 				$post['guid'],
 				array(
 					'old_base_url' => $this->base_url_parsed,
 					'new_base_url' => $this->site_url_parsed,
-				)	
+				)
 			);
+			if ( false !== $guid_candidate ) {
+				$guid_candidate = (string) $guid_candidate;
+			}
 			if ( isset( $headers['x-final-location'] ) ) {
-				$headers['x-final-location'] = WPURL::replace_base_url(
+				$final_location_candidate = WPURL::replace_base_url(
 					$headers['x-final-location'],
 					array(
 						'old_base_url' => $this->base_url_parsed,
 						'new_base_url' => $this->site_url_parsed,
-					)	
+					)
 				);
+				if ( false !== $final_location_candidate ) {
+					$headers['x-final-location'] = (string) $final_location_candidate;
+				}
 			}
 		}
 
