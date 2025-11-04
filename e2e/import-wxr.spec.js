@@ -248,6 +248,12 @@ https://playground.internal/path-not-taken was the second best choice.
 <div style="background-image: url(&quot;${PLAYGROUND_URL}/wp-content/uploads/html-bg.jpg&quot;)">
 	HTML block with inline style
 </div>
+<!-- /wp:html -->
+
+<!-- wp:html -->
+<div style="background-image: none">
+	HTML block with background-image: none
+</div>
 <!-- /wp:html -->`);
 
 					// Verify frontend rendering

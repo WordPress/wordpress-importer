@@ -95,6 +95,12 @@
 <div style="background-image: url('https://playground.internal/wp-content/uploads/html-bg.jpg')">
 	HTML block with inline style
 </div>
+<!-- /wp:html -->
+
+<!-- wp:html -->
+<div style="background-image: none">
+	HTML block with background-image: none
+</div>
 <!-- /wp:html -->]]></content:encoded>
 		<excerpt:encoded><![CDATA[]]></excerpt:encoded>
 		<wp:post_id>123</wp:post_id>
