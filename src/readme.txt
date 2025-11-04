@@ -42,6 +42,9 @@ If you would prefer to do things manually then follow these instructions:
 
 = 0.9.5 =
 * Rewrite CSS URLs in block markup (e.g., cover blocks with background images).
+* Code refactoring: Extract import processing logic into separate methods to prepare for future streaming support.
+* Update Playwright and @playwright/test dependencies from 1.55.0 to 1.56.1.
+* Clean up vendor-patched dependencies by removing dotfiles and GitHub workflow files.
 
 = 0.9.4 =
 * Fix a bug that caused self-closing blocks to be incorrectly serialized during URL rewriting.
