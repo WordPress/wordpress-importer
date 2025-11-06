@@ -2,362 +2,226 @@
 
 namespace WordPress\Encoding;
 
-/*
- * UTF-8 decoding pipeline by Dennis Snell (@dmsnell), originally
- * proposed in https://github.com/WordPress/wordpress-develop/pull/6883.
- *
- * It enables parsing XML documents with incomplete UTF-8 byte sequences
- * without crashing or depending on the mbstring extension.
- */
+use function WordPress\Encoding\compat\_wp_is_valid_utf8_fallback;
+use function WordPress\Encoding\compat\_wp_scrub_utf8_fallback;
+use function WordPress\Encoding\compat\_wp_has_noncharacters_fallback;
 
-if ( ! defined( 'UTF8_DECODER_ACCEPT' ) ) {
-	define( 'UTF8_DECODER_ACCEPT', 0 );
-}
-
-if ( ! defined( 'UTF8_DECODER_REJECT' ) ) {
-	define( 'UTF8_DECODER_REJECT', 1 );
-}
-
-/**
- * Indicates if a given byte stream represents valid UTF-8.
- *
- * Note that unpaired surrogate halves are not valid UTF-8 and will be rejected.
- *
- * Example:
- *
- *     true  === utf8_is_valid_byte_stream( 'Hello, World! 🌎' );
- *
- *     false === utf8_is_valid_byte_stream( "Latin1 is n\xF6t valid UTF-8.", 0, $error_at );
- *     12    === $error_at;
- *
- *     false === utf8_is_valid_byte_stream( "Surrogate halves like '\xDE\xFF\x80' are not permitted.", 0, $error_at );
- *     23    === $error_at;
- *
- *     false === utf8_is_valid_byte_stream( "Broken stream: \xC2\xC2", 0, $error_at );
- *     15    === $error_at;
- *
- * @param  string  $bytes  Text to validate as UTF-8 bytes.
- * @param  int  $starting_byte  Byte offset in string where decoding should begin.
- * @param  int|null  $first_error_byte_at  Optional. If provided and byte stream fails to validate,
- *                                      will be set to the byte offset where the first invalid
- *                                      byte appeared. Otherwise, will not be set.
- *
- * @return bool Whether the given byte stream represents valid UTF-8.
- * @since {WP_VERSION}
- *
- */
-function utf8_is_valid_byte_stream( $bytes, $starting_byte = 0, &$first_error_byte_at = null ) {
-	$state         = UTF8_DECODER_ACCEPT;
-	$last_start_at = $starting_byte;
-
-	for ( $at = $starting_byte, $end = strlen( $bytes ); $at < $end && UTF8_DECODER_REJECT !== $state; $at++ ) {
-		if ( UTF8_DECODER_ACCEPT === $state ) {
-			$last_start_at = $at;
-		}
-
-		$state = utf8_decoder_apply_byte( $bytes[ $at ], $state );
-	}
-
-	if ( UTF8_DECODER_ACCEPT === $state ) {
-		return true;
-	} else {
-		$first_error_byte_at = $last_start_at;
-
-		return false;
-	}
-}
-
-/**
- * Returns number of code points found within a UTF-8 string, similar to `strlen()`.
- *
- * If the byte stream fails to properly decode as UTF-8 this function will set the
- * byte index of the first error byte and report the number of decoded code points.
- *
- * @param  string  $bytes  Text for which to count code points.
- * @param  int|null  $first_error_byte_at  Optional. If provided, will be set upon finding
- *                                      the first invalid byte.
- *
- * @return int How many code points were decoded in the given byte stream before an error
- *             or before reaching the end of the string.
- * @since {WP_VERSION}
- *
- */
-function utf8_codepoint_count( $bytes, &$first_error_byte_at = null ) {
-	$state         = UTF8_DECODER_ACCEPT;
-	$last_start_at = 0;
-	$count         = 0;
-	$codepoint     = 0;
-
-	for ( $at = 0, $end = strlen( $bytes ); $at < $end && UTF8_DECODER_REJECT !== $state; $at++ ) {
-		if ( UTF8_DECODER_ACCEPT === $state ) {
-			$last_start_at = $at;
-		}
-
-		$state = utf8_decoder_apply_byte( $bytes[ $at ], $state, $codepoint );
-
-		if ( UTF8_DECODER_ACCEPT === $state ) {
-			++$count;
-		}
-	}
-
-	if ( UTF8_DECODER_ACCEPT !== $state ) {
-		$first_error_byte_at = $last_start_at;
-	}
-
-	return $count;
-}
-
-/**
- * Inner loop for a number of UTF-8 decoding-related functions.
- *
- * You probably don't need this! This is highly-specific and optimized
- * code for UTF-8 operations used in other functions.
- *
- * @see http://bjoern.hoehrmann.de/utf-8/decoder/dfa/
- *
- * @since {WP_VERSION}
- *
- * @access private
- *
- * @param  string  $byte  Next byte to be applied in UTF-8 decoding or validation.
- * @param  int  $state  UTF-8 decoding state, one of the following values:<br><ul>
- *                             <li>`UTF8_DECODER_ACCEPT`: Decoder is ready for a new code point.<br>
- *                             <li>`UTF8_DECODER_REJECT`: An error has occurred.<br>
- *                             Any other positive value: Decoder is waiting for additional bytes.
- * @param  int|null  $codepoint  Optional. If provided, will accumulate the decoded code point as
- *                             each byte is processed. If not provided or unable to decode, will
- *                             not be set, or will be set to invalid and unusable data.
- *
- * @return int Next decoder state after processing the current byte.
- */
-function utf8_decoder_apply_byte( $byte, $state, &$codepoint = 0 ) {
+if ( extension_loaded( 'mbstring' ) ) :
 	/**
-	 * State classification and transition table for UTF-8 validation.
+	 * Determines if a given byte string represents a valid UTF-8 encoding.
 	 *
-	 * > The first part of the table maps bytes to character classes that
-	 * > to reduce the size of the transition table and create bitmasks.
-	 * >
-	 * > The second part is a transition table that maps a combination
-	 * > of a state of the automaton and a character class to a state.
+	 * Note that it’s unlikely for non-UTF-8 data to validate as UTF-8, but
+	 * it is still possible. Many texts are simultaneously valid UTF-8,
+	 * valid US-ASCII, and valid ISO-8859-1 (`latin1`).
 	 *
-	 * @see http://bjoern.hoehrmann.de/utf-8/decoder/dfa/
+	 * Example:
+	 *
+	 *     true === wp_is_valid_utf8( '' );
+	 *     true === wp_is_valid_utf8( 'just a test' );
+	 *     true === wp_is_valid_utf8( "\xE2\x9C\x8F" );    // Pencil, U+270F.
+	 *     true === wp_is_valid_utf8( "\u{270F}" );        // Pencil, U+270F.
+	 *     true === wp_is_valid_utf8( '✏' );              // Pencil, U+270F.
+	 *
+	 *     false === wp_is_valid_utf8( "just \xC0 test" ); // Invalid bytes.
+	 *     false === wp_is_valid_utf8( "\xE2\x9C" );       // Invalid/incomplete sequences.
+	 *     false === wp_is_valid_utf8( "\xC1\xBF" );       // Overlong sequences.
+	 *     false === wp_is_valid_utf8( "\xED\xB0\x80" );   // Surrogate halves.
+	 *     false === wp_is_valid_utf8( "B\xFCch" );        // ISO-8859-1 high-bytes.
+	 *                                                     // E.g. The “ü” in ISO-8859-1 is a single byte 0xFC,
+	 *                                                     // but in UTF-8 is the two-byte sequence 0xC3 0xBC.
+	 *
+	 *  A “valid” string consists of “well-formed UTF-8 code unit sequence[s],” meaning
+	 *  that the bytes conform to the UTF-8 encoding scheme, all characters use the minimal
+	 *  byte sequence required by UTF-8, and that no sequence encodes a UTF-16 surrogate
+	 *  code point or any character above the representable range.
+	 *
+	 * @see https://www.unicode.org/versions/Unicode16.0.0/core-spec/chapter-3/#G32860
+	 *
+	 * @since 6.9.0
+	 *
+	 * @param string $bytes String which might contain text encoded as UTF-8.
+	 * @return bool Whether the provided bytes can decode as valid UTF-8.
 	 */
-	static $state_table = (
-		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" .
-		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" .
-		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" .
-		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" .
-		"\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x09\x09\x09\x09\x09\x09\x09\x09\x09\x09\x09\x09\x09\x09\x09\x09" .
-		"\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07" .
-		"\x08\x08\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02" .
-		"\x10\x03\x03\x03\x03\x03\x03\x03\x03\x03\x03\x03\x03\x04\x03\x03" .
-		"\x11\x06\x06\x06\x05\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08" .
-		"\x00\x01\x02\x03\x05\x08\x07\x01\x01\x01\x04\x06\x01\x01\x01\x01" .
-		"\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x00\x01\x01\x01\x01\x01\x00\x01\x00\x01\x01\x01\x01\x01\x01" .
-		"\x01\x02\x01\x01\x01\x01\x01\x02\x01\x02\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x02\x01\x01\x01\x01\x01\x01\x01\x01" .
-		"\x01\x02\x01\x01\x01\x01\x01\x01\x01\x02\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x03\x01\x03\x01\x01\x01\x01\x01\x01" .
-		"\x01\x03\x01\x01\x01\x01\x01\x03\x01\x03\x01\x01\x01\x01\x01\x01\x01\x03\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01"
-	);
+	function wp_is_valid_utf8( string $bytes ): bool {
+		return mb_check_encoding( $bytes, 'UTF-8' );
+	}
+else :
+	/**
+	 * Fallback function for validating UTF-8.
+	 *
+	 * @ignore
+	 * @private
+	 *
+	 * @since 6.9.0
+	 */
+	// phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.stringFound
+	function wp_is_valid_utf8( string $string ): bool {
+		return _wp_is_valid_utf8_fallback( $string );
+	}
+endif;
 
-	$byte      = ord( $byte );
-	$type      = ord( $state_table[ $byte ] );
-	$codepoint = ( UTF8_DECODER_ACCEPT === $state )
-		? ( ( 0xFF >> $type ) & $byte )
-		: ( ( $byte & 0x3F ) | ( $codepoint << 6 ) );
+if (
+	extension_loaded( 'mbstring' ) &&
+	// Maximal subpart substitution introduced by php/php-src@04e59c916f12b322ac55f22314e31bd0176d01cb.
+	version_compare( PHP_VERSION, '8.1.6', '>=' )
+) :
+	/**
+	 * Replaces ill-formed UTF-8 byte sequences with the Unicode Replacement Character.
+	 *
+	 * Knowing what to do in the presence of text encoding issues can be complicated.
+	 * This function replaces invalid spans of bytes to neutralize any corruption that
+	 * may be there and prevent it from causing further problems downstream.
+	 *
+	 * However, it’s not always ideal to replace those bytes. In some settings it may
+	 * be best to leave the invalid bytes in the string so that downstream code can handle
+	 * them in a specific way. Replacing the bytes too early, like escaping for HTML too
+	 * early, can introduce other forms of corruption and data loss.
+	 *
+	 * When in doubt, use this function to replace spans of invalid bytes.
+	 *
+	 * Replacement follows the “maximal subpart” algorithm for secure and interoperable
+	 * strings. This can lead to sequences of multiple replacement characters in a row.
+	 *
+	 * Example:
+	 *
+	 *     // Valid strings come through unchanged.
+	 *     'test' === wp_scrub_utf8( 'test' );
+	 *
+	 *     // Invalid sequences of bytes are replaced.
+	 *     $invalid = "the byte \xC0 is never allowed in a UTF-8 string.";
+	 *     "the byte \u{FFFD} is never allowed in a UTF-8 string." === wp_scrub_utf8( $invalid, true );
+	 *     'the byte � is never allowed in a UTF-8 string.' === wp_scrub_utf8( $invalid, true );
+	 *
+	 *     // Maximal subparts are replaced individually.
+	 *     '.�.' === wp_scrub_utf8( ".\xC0." );              // C0 is never valid.
+	 *     '.�.' === wp_scrub_utf8( ".\xE2\x8C." );          // Missing A3 at end.
+	 *     '.��.' === wp_scrub_utf8( ".\xE2\x8C\xE2\x8C." ); // Maximal subparts replaced separately.
+	 *     '.��.' === wp_scrub_utf8( ".\xC1\xBF." );         // Overlong sequence.
+	 *     '.���.' === wp_scrub_utf8( ".\xED\xA0\x80." );    // Surrogate half.
+	 *
+	 * Note! The Unicode Replacement Character is itself a Unicode character (U+FFFD).
+	 * Once a span of invalid bytes has been replaced by one, it will not be possible
+	 * to know whether the replacement character was originally intended to be there
+	 * or if it is the result of scrubbing bytes. It is ideal to leave replacement for
+	 * display only, but some contexts (e.g. generating XML or passing data into a
+	 * large language model) require valid input strings.
+	 *
+	 * @since 6.9.0
+	 *
+	 * @see https://www.unicode.org/versions/Unicode16.0.0/core-spec/chapter-5/#G40630
+	 *
+	 * @param string $text String which is assumed to be UTF-8 but may contain invalid sequences of bytes.
+	 * @return string Input text with invalid sequences of bytes replaced with the Unicode replacement character.
+	 */
+	function wp_scrub_utf8( $text ) {
+		/*
+		 * While it looks like setting the substitute character could fail,
+		 * the internal PHP code will never fail when provided a valid
+		 * code point as a number. In this case, there’s no need to check
+		 * its return value to see if it succeeded.
+		 */
+		$prev_replacement_character = mb_substitute_character();
+		mb_substitute_character( 0xFFFD );
+		$scrubbed = mb_scrub( $text, 'UTF-8' );
+		mb_substitute_character( $prev_replacement_character );
 
-	return ord( $state_table[ 256 + ( $state * 16 ) + $type ] );
+		return $scrubbed;
+	}
+else :
+	/**
+	 * Fallback function for scrubbing UTF-8.
+	 *
+	 * @ignore
+	 * @private
+	 *
+	 * @since 6.9.0
+	 */
+	function wp_scrub_utf8( $text ) {
+		return _wp_scrub_utf8_fallback( $text );
+	}
+endif;
+
+function _wp_can_use_pcre_u( $set = null ) {
+	static $utf8_pcre = 'reset';
+
+	if ( null !== $set ) {
+		$utf8_pcre = $set;
+	}
+
+	if ( 'reset' === $utf8_pcre ) {
+		// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- intentional error generated to detect PCRE/u support.
+		$utf8_pcre = @preg_match( '/^./u', 'a' );
+	}
+
+	return $utf8_pcre;
 }
 
-/**
- * Extract a slice of a text by code point, where invalid byte sequences count
- * as a single code point, U+FFFD (the Unicode replacement character `�`).
- *
- * This function does not permit passing negative indices and will return
- * the original string if such are provide.
- *
- * @param  string  $text  Input text from which to extract.
- * @param  int  $from  Start extracting after this many code-points.
- * @param  int  $length  Extract this many code points.
- *
- * @return string Extracted slice of input string.
- */
-function utf8_substr( $text, $from = 0, $length = null ) {
-	if ( $from < 0 || ( isset( $length ) && $length < 0 ) ) {
-		return $text;
+if ( _wp_can_use_pcre_u() ) :
+	/**
+	 * Returns whether the given string contains Unicode noncharacters.
+	 *
+	 * XML recommends against using noncharacters and HTML forbids their
+	 * use in attribute names. Unicode recommends that they not be used
+	 * in open exchange of data.
+	 *
+	 * Noncharacters are code points within the following ranges:
+	 *  - U+FDD0–U+FDEF
+	 *  - U+FFFE–U+FFFF
+	 *  - U+1FFFE, U+1FFFF, U+2FFFE, U+2FFFF, …, U+10FFFE, U+10FFFF
+	 *
+	 * @see https://www.unicode.org/versions/Unicode17.0.0/core-spec/chapter-23/#G12612
+	 * @see https://www.w3.org/TR/xml/#charsets
+	 * @see https://html.spec.whatwg.org/#attributes-2
+	 *
+	 * @since 6.9.0
+	 *
+	 * @param string $text Are there noncharacters in this string?
+	 * @return bool Whether noncharacters were found in the string.
+	 */
+	function wp_has_noncharacters( string $text ): bool {
+		return 1 === preg_match(
+			'/[\x{FDD0}-\x{FDEF}\x{FFFE}\x{FFFF}\x{1FFFE}\x{1FFFF}\x{2FFFE}\x{2FFFF}\x{3FFFE}\x{3FFFF}\x{4FFFE}\x{4FFFF}\x{5FFFE}\x{5FFFF}\x{6FFFE}\x{6FFFF}\x{7FFFE}\x{7FFFF}\x{8FFFE}\x{8FFFF}\x{9FFFE}\x{9FFFF}\x{AFFFE}\x{AFFFF}\x{BFFFE}\x{BFFFF}\x{CFFFE}\x{CFFFF}\x{DFFFE}\x{DFFFF}\x{EFFFE}\x{EFFFF}\x{FFFFE}\x{FFFFF}\x{10FFFE}\x{10FFFF}]/u',
+			$text
+		);
 	}
-
-	$position_in_input = 0;
-	$codepoint_at      = 0;
-	$end_byte          = strlen( $text );
-	$buffer            = '';
-	$seen_codepoints   = 0;
-	$sliced_codepoints = 0;
-	$decoder_state     = UTF8_DECODER_ACCEPT;
-
-	// Get to the start of the string.
-	while ( $position_in_input < $end_byte && $seen_codepoints < $length ) {
-		$decoder_state = utf8_decoder_apply_byte( $text[ $position_in_input ], $decoder_state );
-
-		if ( UTF8_DECODER_ACCEPT === $decoder_state ) {
-			++$position_in_input;
-
-			if ( $seen_codepoints >= $from ) {
-				++$sliced_codepoints;
-				$buffer .= substr( $text, $codepoint_at, $position_in_input - $codepoint_at );
-			}
-
-			++$seen_codepoints;
-			$codepoint_at = $position_in_input;
-		} elseif ( UTF8_DECODER_REJECT === $decoder_state ) {
-			// "\u{FFFD}" is not supported in PHP 5.6.
-			$buffer .= "\xEF\xBF\xBD";
-
-			// Skip to the start of the next code point.
-			while ( UTF8_DECODER_REJECT === $decoder_state && $position_in_input < $end_byte ) {
-				$decoder_state = utf8_decoder_apply_byte( $text[ ++$position_in_input ], UTF8_DECODER_ACCEPT );
-			}
-
-			++$seen_codepoints;
-			$codepoint_at  = $position_in_input;
-			$decoder_state = UTF8_DECODER_ACCEPT;
-		} else {
-			++$position_in_input;
-		}
+else :
+	/**
+	 * Fallback function for detecting noncharacters in a text.
+	 *
+	 * @ignore
+	 * @private
+	 *
+	 * @since 6.9.0
+	 */
+	function wp_has_noncharacters( string $text ): bool {
+		return _wp_has_noncharacters_fallback( $text );
 	}
-
-	return $buffer;
-}
-
-/**
- * Extract a unicode codepoint from a specific offset in text.
- * Invalid byte sequences count as a single code point, U+FFFD
- * (the Unicode replacement character ``).
- *
- * This function does not permit passing negative indices and will return
- * null if such are provided.
- *
- * @param  string  $text  Input text from which to extract.
- * @param  int  $byte_offset  Start at this byte offset in the input text.
- * @param  int  $matched_bytes  How many bytes were matched to produce the codepoint.
- *
- * @return int Unicode codepoint.
- */
-function utf8_codepoint_at( $text, $byte_offset = 0, &$matched_bytes = 0 ) {
-	if ( $byte_offset < 0 ) {
-		return null;
-	}
-
-	$position_in_input = $byte_offset;
-	$codepoint_at      = $byte_offset;
-	$end_byte          = strlen( $text );
-	$codepoint         = null;
-	$decoder_state     = UTF8_DECODER_ACCEPT;
-
-	// Get to the start of the string.
-	while ( $position_in_input < $end_byte ) {
-		$decoder_state = utf8_decoder_apply_byte( $text[ $position_in_input ], $decoder_state );
-
-		if ( UTF8_DECODER_ACCEPT === $decoder_state ) {
-			++$position_in_input;
-			$codepoint = utf8_ord( substr( $text, $codepoint_at, $position_in_input - $codepoint_at ) );
-			break;
-		} elseif ( UTF8_DECODER_REJECT === $decoder_state ) {
-			// "\u{FFFD}" is not supported in PHP 5.6.
-			$codepoint = utf8_ord( "\xEF\xBF\xBD" );
-			break;
-		} else {
-			++$position_in_input;
-		}
-	}
-
-	$matched_bytes = $position_in_input - $byte_offset;
-
-	return $codepoint;
-}
+endif;
 
 /**
  * Convert a UTF-8 byte sequence to its Unicode codepoint.
  *
- * @param  string  $character  UTF-8 encoded byte sequence representing a single Unicode character.
+ * @param  string $character  UTF-8 encoded byte sequence representing a single Unicode character.
  *
  * @return int Unicode codepoint.
  */
-function utf8_ord( $character ) {
-	// Convert the byte sequence to its binary representation
+function utf8_ord( string $character ): int {
+	// Convert the byte sequence to its binary representation.
 	$bytes = unpack( 'C*', $character );
 
-	// Initialize the codepoint
+	// Initialize the codepoint.
 	$codepoint = 0;
 
-	// Calculate the codepoint based on the number of bytes
-	if ( count( $bytes ) === 1 ) {
+	// Calculate the codepoint based on the number of bytes.
+	if ( 1 === count( $bytes ) ) {
 		$codepoint = $bytes[1];
-	} elseif ( count( $bytes ) === 2 ) {
+	} elseif ( 2 === count( $bytes ) ) {
 		$codepoint = ( ( $bytes[1] & 0x1F ) << 6 ) | ( $bytes[2] & 0x3F );
-	} elseif ( count( $bytes ) === 3 ) {
+	} elseif ( 3 === count( $bytes ) ) {
 		$codepoint = ( ( $bytes[1] & 0x0F ) << 12 ) | ( ( $bytes[2] & 0x3F ) << 6 ) | ( $bytes[3] & 0x3F );
-	} elseif ( count( $bytes ) === 4 ) {
+	} elseif ( 4 === count( $bytes ) ) {
 		$codepoint = ( ( $bytes[1] & 0x07 ) << 18 ) | ( ( $bytes[2] & 0x3F ) << 12 ) | ( ( $bytes[3] & 0x3F ) << 6 ) | ( $bytes[4] & 0x3F );
 	}
 
 	return $codepoint;
-}
-
-/**
- * Encode a code point number into the UTF-8 encoding.
- *
- * This encoder implements the UTF-8 encoding algorithm for converting
- * a code point into a byte sequence. If it receives an invalid code
- * point it will return the Unicode Replacement Character U+FFFD `�`.
- *
- * Example:
- *
- *     '🅰' === WP_HTML_Decoder::codepoint_to_utf8_bytes( 0x1f170 );
- *
- *     // Half of a surrogate pair is an invalid code point.
- *     '�' === WP_HTML_Decoder::codepoint_to_utf8_bytes( 0xd83c );
- *
- * @since 6.6.0
- *
- * @see https://www.rfc-editor.org/rfc/rfc3629 For the UTF-8 standard.
- *
- * @param int $codepoint Which code point to convert.
- * @return string Converted code point, or `�` if invalid.
- */
-function codepoint_to_utf8_bytes( $codepoint ) {
-	// Pre-check to ensure a valid code point.
-	if (
-		$codepoint <= 0 ||
-		( $codepoint >= 0xD800 && $codepoint <= 0xDFFF ) ||
-		$codepoint > 0x10FFFF
-	) {
-		return '�';
-	}
-
-	if ( $codepoint <= 0x7F ) {
-		return chr( $codepoint );
-	}
-
-	if ( $codepoint <= 0x7FF ) {
-		$byte1 = chr( ( 0xC0 | ( ( $codepoint >> 6 ) & 0x1F ) ) );
-		$byte2 = chr( $codepoint & 0x3F | 0x80 );
-
-		return "{$byte1}{$byte2}";
-	}
-
-	if ( $codepoint <= 0xFFFF ) {
-		$byte1 = chr( ( $codepoint >> 12 ) | 0xE0 );
-		$byte2 = chr( ( $codepoint >> 6 ) & 0x3F | 0x80 );
-		$byte3 = chr( $codepoint & 0x3F | 0x80 );
-
-		return "{$byte1}{$byte2}{$byte3}";
-	}
-
-	// Any values above U+10FFFF are eliminated above in the pre-check.
-	$byte1 = chr( ( $codepoint >> 18 ) | 0xF0 );
-	$byte2 = chr( ( $codepoint >> 12 ) & 0x3F | 0x80 );
-	$byte3 = chr( ( $codepoint >> 6 ) & 0x3F | 0x80 );
-	$byte4 = chr( $codepoint & 0x3F | 0x80 );
-
-	return "{$byte1}{$byte2}{$byte3}{$byte4}";
 }

@@ -4,9 +4,8 @@ namespace WordPress\DataLiberation\BlockMarkup;
 
 use Rowbot\URL\URL;
 use WordPress\DataLiberation\URL\URLInTextProcessor;
+use WordPress\DataLiberation\URL\CSSURLProcessor;
 use WordPress\DataLiberation\URL\WPURL;
-
-use function WordPress\DataLiberation\URL\urldecode_n;
 
 /**
  * Reports all the URLs in the imported post and enables rewriting them.
@@ -22,6 +21,8 @@ class BlockMarkupUrlProcessor extends BlockMarkupProcessor {
 	private $base_url_object;
 	private $url_in_text_processor;
 	private $url_in_text_node_updated;
+	private $css_url_processor;
+	private $css_url_processor_updated;
 
 	/**
 	 * The list of names of URL-related HTML attributes that may be available on
@@ -51,6 +52,14 @@ class BlockMarkupUrlProcessor extends BlockMarkupProcessor {
 			$this->url_in_text_node_updated = false;
 		}
 
+		if ( $this->css_url_processor_updated ) {
+			if ( null !== $this->css_url_processor ) {
+				$updated_css = $this->css_url_processor->get_updated_css();
+				$this->set_attribute( 'style', $updated_css );
+			}
+			$this->css_url_processor_updated = false;
+		}
+
 		return parent::get_updated_html();
 	}
 
@@ -69,8 +78,11 @@ class BlockMarkupUrlProcessor extends BlockMarkupProcessor {
 		$this->parsed_url                 = null;
 		$this->inspecting_html_attributes = null;
 		$this->url_in_text_processor      = null;
-		// Do not reset url_in_text_node_updated – it's reset in get_updated_html() which
-		// is called in parent::next_token().
+		$this->css_url_processor          = null;
+		/*
+		 * Do not reset url_in_text_node_updated or css_url_processor_updated – they're reset
+		 * in get_updated_html() which is called in parent::next_token().
+		 */
 
 		return parent::next_token();
 	}
@@ -110,7 +122,7 @@ class BlockMarkupUrlProcessor extends BlockMarkupProcessor {
 			 * way to recognize a substring "WordPress.org" as a URL. We might
 			 * get some false positives this way, e.g. in this string:
 			 *
-			 * > And that's how you build a theme.Now let's take a look at..."
+			 * > And that's how you build a theme. Now let's take a look at..."
 			 *
 			 * `theme.Now` would be recognized as a URL. It's up to the API consumer
 			 * to filter out such false positives e.g. by checking the domain against
@@ -129,20 +141,75 @@ class BlockMarkupUrlProcessor extends BlockMarkupProcessor {
 		return false;
 	}
 
-	private function next_url_attribute() {
-		$tag = $this->get_tag();
-
-		if ( ! array_key_exists( $tag, self::HTML_ATTRIBUTES_TO_ACCEPT_RELATIVE_URLS_FROM ) ) {
+	/**
+	 * Advances to the next CSS URL in the `style` attribute of the current tag token.
+	 *
+	 * @return bool Whether a CSS URL was found.
+	 */
+	private function next_url_in_css() {
+		if ( '#tag' !== $this->get_token_type() ) {
 			return false;
 		}
 
-		if ( null === $this->inspecting_html_attributes ) {
+		if ( null === $this->css_url_processor ) {
+			$css_value = $this->get_attribute( 'style' );
+			if ( ! is_string( $css_value ) ) {
+				return false;
+			}
+
+			$this->css_url_processor = new CSSURLProcessor( $css_value );
+		}
+
+		while ( $this->css_url_processor->next_url() ) {
 			/**
-			 * Initialize the list on the first call to next_url_attribute()
-			 * for the current token. The last element is the attribute we'll
-			 * inspect in the while() loop below.
+			 * Skip data URIs. They may be really large and they don't
+			 * have a hostname to migrate.
 			 */
-			$this->inspecting_html_attributes = self::HTML_ATTRIBUTES_TO_ACCEPT_RELATIVE_URLS_FROM[ $tag ];
+			if ( $this->css_url_processor->is_data_uri() ) {
+				continue;
+			}
+			$this->raw_url    = $this->css_url_processor->get_raw_url();
+			$this->parsed_url = WPURL::parse( $this->raw_url, $this->base_url_string );
+			if ( false === $this->parsed_url ) {
+				continue;
+			}
+
+			return true;
+		}
+
+		return false;
+	}
+
+	private function next_url_attribute() {
+		$tag = $this->get_tag();
+
+		// Check if we have a style attribute with CSS URLs to process.
+		if ( null !== $this->css_url_processor ) {
+			if ( $this->next_url_in_css() ) {
+				return true;
+			}
+			// Done with CSS URLs in this attribute, apply any pending updates and move on.
+			$this->get_updated_html();
+			$this->css_url_processor = null;
+		}
+
+		if ( null === $this->inspecting_html_attributes ) {
+			if ( array_key_exists( $tag, self::HTML_ATTRIBUTES_TO_ACCEPT_RELATIVE_URLS_FROM ) ) {
+				/**
+				 * Initialize the list on the first call to next_url_attribute()
+				 * for the current token. The last element is the attribute we'll
+				 * inspect in the while() loop below.
+				 */
+				$this->inspecting_html_attributes = self::HTML_ATTRIBUTES_TO_ACCEPT_RELATIVE_URLS_FROM[ $tag ];
+				// Add style attribute to the list if it exists.
+				if ( null !== $this->get_attribute( 'style' ) ) {
+					$this->inspecting_html_attributes[] = 'style';
+				}
+			} elseif ( null !== $this->get_attribute( 'style' ) ) {
+				$this->inspecting_html_attributes = array( 'style' );
+			} else {
+				return false;
+			}
 		} else {
 			/**
 			 * Forget the attribute we've inspected on the previous call to
@@ -155,6 +222,18 @@ class BlockMarkupUrlProcessor extends BlockMarkupProcessor {
 			$attr      = $this->inspecting_html_attributes[ count( $this->inspecting_html_attributes ) - 1 ];
 			$url_maybe = $this->get_attribute( $attr );
 			if ( ! is_string( $url_maybe ) ) {
+				array_pop( $this->inspecting_html_attributes );
+				continue;
+			}
+
+			// Rewrite any CSS `url()` declarations in the `style` attribute.
+			if ( 'style' === $attr ) {
+				$this->css_url_processor = new CSSURLProcessor( $url_maybe );
+				if ( $this->next_url_in_css() ) {
+					return true;
+				}
+				// No CSS URLs found, move to next attribute.
+				$this->css_url_processor = null;
 				array_pop( $this->inspecting_html_attributes );
 				continue;
 			}
@@ -276,6 +355,12 @@ class BlockMarkupUrlProcessor extends BlockMarkupProcessor {
 		$this->parsed_url = $parsed_url;
 		switch ( parent::get_token_type() ) {
 			case '#tag':
+				// Check if we're processing a CSS URL.
+				if ( null !== $this->css_url_processor ) {
+					$this->css_url_processor_updated = true;
+					return $this->css_url_processor->set_raw_url( $raw_url );
+				}
+
 				$attr = $this->get_inspected_attribute_name();
 				if ( false === $attr ) {
 					return false;
@@ -315,13 +400,21 @@ class BlockMarkupUrlProcessor extends BlockMarkupProcessor {
 		}
 
 		$result = WPURL::replace_base_url(
+			$this->get_parsed_url(),
 			array(
-				'url'          => $this->get_parsed_url(),
 				'old_base_url' => $base_url,
 				'new_base_url' => $to_url,
 				'raw_url'      => $this->get_raw_url(),
-				'is_relative'  => $this->is_url_relative(),
-				'return_array' => true,
+				'is_relative'  => (
+					/**
+					 * In text nodes, the only detected URLs are absolute. The tricky part
+					 * is they may start without a protocol, e.g. `wordpress.org`. Therefore,
+					 * we need to tell WPURL::replace_base_url what's our intention regarding
+					 * the URL's relativity. It cannot just infer it from the URL itself.
+					 */
+					'#text' !== $this->get_token_type() &&
+					! WPURL::can_parse( $this->get_raw_url() )
+				),
 			)
 		);
 
@@ -329,37 +422,9 @@ class BlockMarkupUrlProcessor extends BlockMarkupProcessor {
 			return false;
 		}
 
-		if ( $result['was_relative'] ) {
-			$new_relative_url = $result['relative_url'];
-			if ( null === $new_relative_url ) {
-				$new_relative_url = $result['url']->pathname;
-				if ( '' !== $result['url']->search ) {
-					$new_relative_url .= $result['url']->search;
-				}
-				if ( '' !== $result['url']->hash ) {
-					$new_relative_url .= $result['url']->hash;
-				}
-			}
-
-			$this->set_url( $new_relative_url, $result['url'] );
-		} else {
-			$this->set_url( $result['string'], $result['url'] );
-		}
+		$this->set_url( $result . '', $result->new_url );
 
 		return true;
-	}
-
-	/**
-	 * Returns true if the currently matched URL is relative.
-	 *
-	 * @return bool Whether the currently matched URL is relative.
-	 */
-	public function is_url_relative() {
-		return (
-			! WPURL::can_parse( $this->get_raw_url() ) &&
-			// only absolute URLs are detected in text nodes.
-			'#text' !== $this->get_token_type()
-		);
 	}
 
 	/**

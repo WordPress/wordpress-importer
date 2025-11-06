@@ -26,30 +26,77 @@ class WPURL {
 	}
 
 	/**
-	 * Replaces the base in a URL with a different base.
+	 * Replaces the "base" of a URL — scheme, host (and port), and the portion of the path that
+	 * belongs to the old base — with a new base while keeping the remainder of the URL intact.
 	 *
-	 * A base is a protocol, host, and a path segment.
+	 * This is intended for content migrations, where URLs embedded in block markup, HTML attributes,
+	 * or inline text must be moved from one site root to another without losing the rest of the path,
+	 * query, or fragment. It handles simple domain swaps, ports, and deep path bases. When the old
+	 * base includes path segments, only that matched prefix is substituted and the unmatched tail is
+	 * carried over to the target base.
 	 *
-	 * Expected options:
-	 * - url (string|URL): The URL whose base should be replaced. Required.
-	 * - old_base_url (string|URL): The base URL currently associated with the URL. Required.
-	 * - new_base_url (string|URL): The base URL that should replace the existing one. Required.
-	 * - raw_url (string, optional): The original raw URL string. Used to detect relativity.
-	 * - is_relative (bool, optional): Whether the original URL was relative. Overrides raw_url detection.
-	 * - return_array (bool, optional): Whether to return the detailed array structure. Default false.
+	 * For example:
+	 * * URL:      https://example.com/a/b/c/d/e/f/g/h/i/j/page/
+	 * * Old base: https://example.com/a/b/c/d/e/f/
+	 * * New base: https://example.org/docs/
+	 * * Result:   https://example.org/docs/g/h/i/j/page/
 	 *
-	 * @param array $options The options that control how the base URL is replaced.
+	 * ## Trailing slash handling
 	 *
-	 * @return string|array|false Returns a string by default, or an array with keys 'url', 'string',
-	 *                           'relative_url', and 'was_relative' when 'return_array' is truthy.
-	 *                           Returns false on failure.
+	 * Trailing slash style is preserved from the original URL. If it has no trailing slash, the
+	 * result will also omit the trailing slash and vice versa.
+	 *
+	 * For example, here the final result has no trailing slash:
+	 * * URL:      https://example.com/uploads/file.txt
+	 * * Old base: https://example.com/uploads/
+	 * * New base: https://example.org/docs/
+	 * * Result:   https://example.org/docs/file.txt
+	 *
+	 * And here it does:
+	 * * URL:      https://example.com/uploads/2018/
+	 * * Old base: https://example.com/uploads/
+	 * * New base: https://example.org/docs/
+	 * * Result:   https://example.org/docs/2018/
+	 *
+	 * ## URL-encoded path segments
+	 *
+	 * URL-encoded path segments are respected and not inadvertently decoded or re-encoded. Only the
+	 * matched base prefix is considered for alignment, so inputs that contain percent-encoded content
+	 * keep that content exactly as-is in the output. This prevents data corruption in tricky cases such
+	 * as "/~jappleseed/1997.10.1/%2561-reasons-to-migrate-data/" where the "%2561" must remain
+	 * double-escaped after the move.
+	 *
+	 * ## Relative URLs
+	 *
+	 * This method can preserve the relative nature of the original URL. Say you are processing a markup
+	 * that contains `<a href="/uploads/file.txt">`. The original URL string is "/uploads/file.txt",
+	 * and the URL actually resolves to "https://example.com/uploads/file.txt". If you want to replace
+	 * the base URL from "https://example.com/uploads/" to "https://newsite.com/files/" but keep the
+	 * URL relative, you can pass the raw URL string via the "raw_url" option.
+	 *
+	 * For example:
+	 * * URL:      https://example.com/uploads/file.txt
+	 * * Raw URL:  /uploads/file.txt
+	 * * Old base: https://example.com/uploads/
+	 * * New base: https://example.org/files/
+	 * * Result:   /files/file.txt
+	 *
+	 * The method also supports relative inputs commonly found in markup. If you pass the raw URL
+	 * string via the "raw_url" option, the method can infer whether the author originally wrote a
+	 * relative URL like "docs/page.html" or an absolute one. You may also explicitly
+	 * assert relativity with "is_relative" to avoid inference.
+	 *
+	 * @param string|URL $url The URL to replace the base of.
+	 * @param array      $options Associative options: old_base_url, new_base_url; optional raw_url.
+	 * @return ConvertedUrl|false Returns a ConvertedUrl value object on success, or false when parsing
+	 *                           or replacement cannot be performed.
 	 */
-	public static function replace_base_url( $options ) {
+	public static function replace_base_url( $url, $options ) {
 		if ( ! is_array( $options ) ) {
 			return false;
 		}
 
-		foreach ( array( 'url', 'old_base_url', 'new_base_url' ) as $required ) {
+		foreach ( array( 'old_base_url', 'new_base_url' ) as $required ) {
 			if ( ! array_key_exists( $required, $options ) || null === $options[ $required ] ) {
 				return false;
 			}
@@ -57,7 +104,7 @@ class WPURL {
 
 		$old_base_url = self::parse( $options['old_base_url'] );
 		$new_base_url = self::parse( $options['new_base_url'] );
-		$url          = self::parse( $options['url'], $old_base_url ? $old_base_url->toString() : null );
+		$url          = self::parse( $url, $old_base_url ? $old_base_url->toString() : null );
 
 		if ( false === $old_base_url || false === $new_base_url || false === $url ) {
 			return false;
@@ -106,43 +153,38 @@ class WPURL {
 			$new_raw_url = rtrim( $new_raw_url, '/' );
 		}
 		if ( ! $new_raw_url ) {
+			// This may technically happen, but does it happen in practice?
 			return false;
 		}
 
-		$was_relative = null;
-		if ( array_key_exists( 'is_relative', $options ) ) {
-			$was_relative = $options['is_relative'];
-		}
-		if ( null === $was_relative && array_key_exists( 'raw_url', $options ) && is_string( $options['raw_url'] ) ) {
-			$was_relative = ! self::can_parse( $options['raw_url'] );
-		}
-		if ( null === $was_relative ) {
-			$was_relative = false;
-		}
+		$converted_url              = new ConvertedUrl();
+		$converted_url->new_url     = $updated_url;
+		$converted_url->new_raw_url = $new_raw_url;
 
-		$relative_url = null;
-		if ( $was_relative ) {
-			$relative_url = $updated_url->pathname;
-			if ( '' !== $updated_url->search ) {
-				$relative_url .= $updated_url->search;
+		// Preserve the relative nature of the original URL.
+		if ( array_key_exists( 'raw_url', $options ) && is_string( $options['raw_url'] ) ) {
+			if ( ! array_key_exists( 'is_relative', $options ) ) {
+				$options['is_relative'] = self::can_parse( $options['raw_url'] );
 			}
-			if ( '' !== $updated_url->hash ) {
-				$relative_url .= $updated_url->hash;
+			if ( $options['is_relative'] ) {
+				$relative_url = $updated_url->pathname;
+				// Remove the trailing slash if it's not the root path.
+				if ( strlen( $relative_url ) > 1 && $should_trim_trailing_slash ) {
+					$relative_url = rtrim( $relative_url, '/' );
+				}
+				if ( '' !== $updated_url->search ) {
+					$relative_url .= $updated_url->search;
+				}
+				if ( '' !== $updated_url->hash ) {
+					$relative_url .= $updated_url->hash;
+				}
+
+				$converted_url->was_relative         = true;
+				$converted_url->new_raw_relative_url = $relative_url;
 			}
 		}
 
-		$result = array(
-			'url'          => $updated_url,
-			'string'       => $new_raw_url,
-			'relative_url' => $relative_url,
-			'was_relative' => (bool) $was_relative,
-		);
-
-		if ( empty( $options['return_array'] ) ) {
-			return $result['string'];
-		}
-
-		return $result;
+		return $converted_url;
 	}
 
 	/**

@@ -481,46 +481,60 @@ class WP_Import extends WP_Importer {
 		}
 
 		foreach ( $this->categories as $cat ) {
-			// if the category already exists leave it alone
-			$term_id = term_exists( $cat['category_nicename'], 'category' );
-			if ( $term_id ) {
-				if ( is_array( $term_id ) ) {
-					$term_id = $term_id['term_id'];
-				}
-				if ( isset( $cat['term_id'] ) ) {
-					$this->processed_terms[ intval( $cat['term_id'] ) ] = (int) $term_id;
-				}
+			$processed_category = $this->process_category( $cat );
+			if ( false === $processed_category ) {
 				continue;
 			}
 
-			$parent      = empty( $cat['category_parent'] ) ? 0 : category_exists( $cat['category_parent'] );
-			$description = isset( $cat['category_description'] ) ? $cat['category_description'] : '';
-
-			$data = array(
-				'category_nicename'    => $cat['category_nicename'],
-				'category_parent'      => $parent,
-				'cat_name'             => wp_slash( $cat['cat_name'] ),
-				'category_description' => wp_slash( $description ),
-			);
-
-			$id = wp_insert_category( $data, true );
-			if ( ! is_wp_error( $id ) && $id > 0 ) {
-				if ( isset( $cat['term_id'] ) ) {
-					$this->processed_terms[ intval( $cat['term_id'] ) ] = $id;
-				}
-			} else {
-				printf( __( 'Failed to import category %s', 'wordpress-importer' ), esc_html( $cat['category_nicename'] ) );
-				if ( defined( 'IMPORT_DEBUG' ) && IMPORT_DEBUG ) {
-					echo ': ' . $id->get_error_message();
-				}
-				echo '<br />';
-				continue;
+			$this->processed_terms[ intval( $cat['term_id'] ) ] = $processed_category['term_id'];
+			if ( $processed_category['created'] ) {
+				$this->process_termmeta( $cat, $processed_category['term_id'] );
 			}
-
-			$this->process_termmeta( $cat, $id );
 		}
 
 		unset( $this->categories );
+	}
+
+	protected function process_category( $category ) {
+		$term_id = term_exists( $category['category_nicename'], 'category' );
+		if ( $term_id ) {
+			if ( is_array( $term_id ) ) {
+				$term_id = $term_id['term_id'];
+			}
+			return array(
+				'created' => false,
+				'term_id' => $term_id,
+			);
+		}
+
+		$parent      = empty( $category['category_parent'] ) ? 0 : category_exists( $category['category_parent'] );
+		$description = isset( $category['category_description'] ) ? $category['category_description'] : '';
+
+		$data = array(
+			'category_nicename'    => $category['category_nicename'],
+			'category_parent'      => $parent,
+			'cat_name'             => wp_slash( $category['cat_name'] ),
+			'category_description' => wp_slash( $description ),
+		);
+
+		$id = wp_insert_category( $data, true );
+		if ( is_wp_error( $id ) || $id <= 0 ) {
+			printf( __( 'Failed to import category %s', 'wordpress-importer' ), esc_html( $category['category_nicename'] ) );
+			if ( defined( 'IMPORT_DEBUG' ) && IMPORT_DEBUG ) {
+				echo ': ' . $id->get_error_message();
+			}
+			echo '<br />';
+			return false;
+		}
+
+		if ( isset( $category['term_id'] ) ) {
+			$this->processed_terms[ intval( $category['term_id'] ) ] = $id;
+		}
+
+		return array(
+			'created' => true,
+			'term_id' => $id,
+		);
 	}
 
 	/**
@@ -536,42 +550,64 @@ class WP_Import extends WP_Importer {
 		}
 
 		foreach ( $this->tags as $tag ) {
-			// if the tag already exists leave it alone
-			$term_id = term_exists( $tag['tag_slug'], 'post_tag' );
-			if ( $term_id ) {
-				if ( is_array( $term_id ) ) {
-					$term_id = $term_id['term_id'];
-				}
-				if ( isset( $tag['term_id'] ) ) {
-					$this->processed_terms[ intval( $tag['term_id'] ) ] = (int) $term_id;
-				}
+			$processed_tag = $this->process_tag( $tag );
+			if ( false === $processed_tag ) {
 				continue;
 			}
 
-			$description = isset( $tag['tag_description'] ) ? $tag['tag_description'] : '';
-			$args        = array(
-				'slug'        => $tag['tag_slug'],
-				'description' => wp_slash( $description ),
-			);
-
-			$id = wp_insert_term( wp_slash( $tag['tag_name'] ), 'post_tag', $args );
-			if ( ! is_wp_error( $id ) ) {
-				if ( isset( $tag['term_id'] ) ) {
-					$this->processed_terms[ intval( $tag['term_id'] ) ] = $id['term_id'];
-				}
-			} else {
-				printf( __( 'Failed to import post tag %s', 'wordpress-importer' ), esc_html( $tag['tag_name'] ) );
-				if ( defined( 'IMPORT_DEBUG' ) && IMPORT_DEBUG ) {
-					echo ': ' . $id->get_error_message();
-				}
-				echo '<br />';
-				continue;
+			if ( isset( $tag['term_id'] ) ) {
+				$this->processed_terms[ intval( $tag['term_id'] ) ] = $processed_tag['term_id'];
 			}
 
-			$this->process_termmeta( $tag, $id['term_id'] );
+			if ( $processed_tag['created'] ) {
+				$this->process_termmeta( $tag, $processed_tag['term_id'] );
+			}
 		}
 
 		unset( $this->tags );
+	}
+
+	protected function process_tag( $tag ) {
+		$term_id = term_exists( $tag['tag_slug'], 'post_tag' );
+		if ( $term_id ) {
+			if ( is_array( $term_id ) ) {
+				$term_id = $term_id['term_id'];
+			}
+
+			if ( isset( $tag['term_id'] ) ) {
+				$this->processed_terms[ intval( $tag['term_id'] ) ] = (int) $term_id;
+			}
+
+			return array(
+				'created' => false,
+				'term_id' => (int) $term_id,
+			);
+		}
+
+		$description = isset( $tag['tag_description'] ) ? $tag['tag_description'] : '';
+		$args        = array(
+			'slug'        => $tag['tag_slug'],
+			'description' => wp_slash( $description ),
+		);
+
+		$id = wp_insert_term( wp_slash( $tag['tag_name'] ), 'post_tag', $args );
+		if ( is_wp_error( $id ) ) {
+			printf( __( 'Failed to import post tag %s', 'wordpress-importer' ), esc_html( $tag['tag_name'] ) );
+			if ( defined( 'IMPORT_DEBUG' ) && IMPORT_DEBUG ) {
+				echo ': ' . $id->get_error_message();
+			}
+			echo '<br />';
+			return false;
+		}
+
+		if ( isset( $tag['term_id'] ) ) {
+			$this->processed_terms[ intval( $tag['term_id'] ) ] = (int) $id['term_id'];
+		}
+
+		return array(
+			'created' => true,
+			'term_id' => (int) $id['term_id'],
+		);
 	}
 
 	/**
@@ -587,52 +623,66 @@ class WP_Import extends WP_Importer {
 		}
 
 		foreach ( $this->terms as $term ) {
-			// if the term already exists in the correct taxonomy leave it alone
-			$term_id = term_exists( $term['slug'], $term['term_taxonomy'] );
-			if ( $term_id ) {
-				if ( is_array( $term_id ) ) {
-					$term_id = $term_id['term_id'];
-				}
-				if ( isset( $term['term_id'] ) ) {
-					$this->processed_terms[ intval( $term['term_id'] ) ] = (int) $term_id;
-				}
+			$processed_term = $this->process_term( $term );
+			if ( false === $processed_term ) {
 				continue;
 			}
 
-			if ( empty( $term['term_parent'] ) ) {
-				$parent = 0;
-			} else {
-				$parent = term_exists( $term['term_parent'], $term['term_taxonomy'] );
-				if ( is_array( $parent ) ) {
-					$parent = $parent['term_id'];
-				}
+			if ( isset( $term['term_id'] ) ) {
+				$this->processed_terms[ intval( $term['term_id'] ) ] = $processed_term['term_id'];
 			}
 
-			$description = isset( $term['term_description'] ) ? $term['term_description'] : '';
-			$args        = array(
-				'slug'        => $term['slug'],
-				'description' => wp_slash( $description ),
-				'parent'      => (int) $parent,
-			);
-
-			$id = wp_insert_term( wp_slash( $term['term_name'] ), $term['term_taxonomy'], $args );
-			if ( ! is_wp_error( $id ) ) {
-				if ( isset( $term['term_id'] ) ) {
-					$this->processed_terms[ intval( $term['term_id'] ) ] = $id['term_id'];
-				}
-			} else {
-				printf( __( 'Failed to import %1$s %2$s', 'wordpress-importer' ), esc_html( $term['term_taxonomy'] ), esc_html( $term['term_name'] ) );
-				if ( defined( 'IMPORT_DEBUG' ) && IMPORT_DEBUG ) {
-					echo ': ' . $id->get_error_message();
-				}
-				echo '<br />';
-				continue;
+			if ( $processed_term['created'] ) {
+				$this->process_termmeta( $term, $processed_term['term_id'] );
 			}
-
-			$this->process_termmeta( $term, $id['term_id'] );
 		}
 
 		unset( $this->terms );
+	}
+
+	protected function process_term( $term ) {
+		$term_id = term_exists( $term['slug'], $term['term_taxonomy'] );
+		if ( $term_id ) {
+			if ( is_array( $term_id ) ) {
+				$term_id = $term_id['term_id'];
+			}
+
+			return array(
+				'created' => false,
+				'term_id' => (int) $term_id,
+			);
+		}
+
+		if ( empty( $term['term_parent'] ) ) {
+			$parent = 0;
+		} else {
+			$parent = term_exists( $term['term_parent'], $term['term_taxonomy'] );
+			if ( is_array( $parent ) ) {
+				$parent = $parent['term_id'];
+			}
+		}
+
+		$description = isset( $term['term_description'] ) ? $term['term_description'] : '';
+		$args        = array(
+			'slug'        => $term['slug'],
+			'description' => wp_slash( $description ),
+			'parent'      => (int) $parent,
+		);
+
+		$id = wp_insert_term( wp_slash( $term['term_name'] ), $term['term_taxonomy'], $args );
+		if ( is_wp_error( $id ) ) {
+			printf( __( 'Failed to import %1$s %2$s', 'wordpress-importer' ), esc_html( $term['term_taxonomy'] ), esc_html( $term['term_name'] ) );
+			if ( defined( 'IMPORT_DEBUG' ) && IMPORT_DEBUG ) {
+				echo ': ' . $id->get_error_message();
+			}
+			echo '<br />';
+			return false;
+		}
+
+		return array(
+			'created' => true,
+			'term_id' => (int) $id['term_id'],
+		);
 	}
 
 	/**
@@ -938,44 +988,57 @@ class WP_Import extends WP_Importer {
 	}
 
 	/**
-	 * Process meta data for a post imported from WXR data.
+	 * Add or update post meta for an imported post.
 	 *
-	 * @param int   $post_id     The local post ID.
-	 * @param array $post        Post data from the import file.
-	 * @param array $postmeta    Meta data associated with the post.
+	 * @param array $post_metas Array of post meta entries.
+	 * @param int   $post_id    ID of the just imported post.
+	 * @param array $post       Raw post data from the WXR file.
 	 */
-	protected function process_post_metas( $post_id, $post, $postmeta ) {
-		if ( empty( $postmeta ) ) {
+	protected function process_post_metas( $post_metas, $post_id, $post ) {
+		if ( empty( $post_metas ) ) {
 			return;
 		}
 
-		foreach ( $postmeta as $meta ) {
-			$key   = apply_filters( 'import_post_meta_key', $meta['key'], $post_id, $post );
-			$value = false;
+		foreach ( $post_metas as $meta ) {
+			$this->process_post_meta( $meta, $post_id, $post );
+		}
+	}
 
-			if ( '_edit_last' == $key ) {
-				if ( isset( $this->processed_authors[ intval( $meta['value'] ) ] ) ) {
-					$value = $this->processed_authors[ intval( $meta['value'] ) ];
-				} else {
-					$key = false;
-				}
+	/**
+	 * Process a single post meta entry.
+	 *
+	 * @param array $meta    Post meta data.
+	 * @param int   $post_id ID of the just imported post.
+	 * @param array $post    Raw post data from the WXR file.
+	 */
+	protected function process_post_meta( $meta, $post_id, $post ) {
+		$key   = apply_filters( 'import_post_meta_key', $meta['key'], $post_id, $post );
+		$value = false;
+
+		if ( '_edit_last' == $key ) {
+			if ( isset( $this->processed_authors[ intval( $meta['value'] ) ] ) ) {
+				$value = $this->processed_authors[ intval( $meta['value'] ) ];
+			} else {
+				$key = false;
 			}
+		}
 
-			if ( $key ) {
-				// export gets meta straight from the DB so could have a serialized string
-				if ( ! $value ) {
-					$value = $this->maybe_unserialize( $meta['value'] );
-				}
+		if ( ! $key ) {
+			return;
+		}
 
-				add_post_meta( $post_id, wp_slash( $key ), wp_slash_strings_only( $value ) );
+		// export gets meta straight from the DB so could have a serialized string
+		if ( ! $value ) {
+			$value = $this->maybe_unserialize( $meta['value'] );
+		}
 
-				do_action( 'import_post_meta', $post_id, $key, $value );
+		add_post_meta( $post_id, wp_slash( $key ), wp_slash_strings_only( $value ) );
 
-				// if the post has a featured image, take note of this in case of remap
-				if ( '_thumbnail_id' == $key ) {
-					$this->featured_images[ $post_id ] = (int) $value;
-				}
-			}
+		do_action( 'import_post_meta', $post_id, $key, $value );
+
+		// if the post has a featured image, take note of this in case of remap
+		if ( '_thumbnail_id' == $key ) {
+			$this->featured_images[ $post_id ] = (int) $value;
 		}
 	}
 
@@ -1162,7 +1225,7 @@ class WP_Import extends WP_Importer {
 			'term_id'  => intval( $term_id ),
 		);
 	}
-	
+
 	/**
 	 * Attempt to create a new menu item from import data
 	 *
@@ -1483,28 +1546,37 @@ class WP_Import extends WP_Importer {
 		 *                                            ^ there may be no 2008/06 on the target site.
 		 */
 		if ( $this->options['rewrite_urls'] ) {
-			$url          = WPURL::replace_base_url(
+			$url_candidate = WPURL::replace_base_url(
+				$url,
 				array(
-					'url'          => $url,
 					'old_base_url' => $this->base_url_parsed,
 					'new_base_url' => $this->site_url_parsed,
 				)
 			);
-			$post['guid'] = WPURL::replace_base_url(
+			if ( false !== $url_candidate ) {
+				$url = (string) $url_candidate;
+			}
+			$guid_candidate = WPURL::replace_base_url(
+				$post['guid'],
 				array(
-					'url'          => $post['guid'],
 					'old_base_url' => $this->base_url_parsed,
 					'new_base_url' => $this->site_url_parsed,
 				)
 			);
+			if ( false !== $guid_candidate ) {
+				$post['guid'] = (string) $guid_candidate;
+			}
 			if ( isset( $headers['x-final-location'] ) ) {
-				$headers['x-final-location'] = WPURL::replace_base_url(
+				$final_location_candidate = WPURL::replace_base_url(
+					$headers['x-final-location'],
 					array(
-						'url'          => $headers['x-final-location'],
 						'old_base_url' => $this->base_url_parsed,
 						'new_base_url' => $this->site_url_parsed,
 					)
 				);
+				if ( false !== $final_location_candidate ) {
+					$headers['x-final-location'] = (string) $final_location_candidate;
+				}
 			}
 		}
 
