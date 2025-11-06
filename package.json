@@ -3,7 +3,7 @@
   "private": true,
   "devDependencies": {
     "@playwright/test": "^1.56.1",
-    "@wp-playground/cli": "^2.0.19",
+    "@wp-playground/cli": "^3.0.14",
     "playwright": "^1.56.1"
   }
 }
