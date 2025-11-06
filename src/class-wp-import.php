@@ -754,35 +754,8 @@ class WP_Import extends WP_Importer {
 
 			// add categories, tags and other terms
 			if ( ! empty( $post['terms'] ) ) {
-				$terms_to_set = array();
-				foreach ( $post['terms'] as $term ) {
-					// back compat with WXR 1.0 map 'tag' to 'post_tag'
-					$taxonomy    = ( 'tag' == $term['domain'] ) ? 'post_tag' : $term['domain'];
-					$term_exists = term_exists( $term['slug'], $taxonomy );
-					$term_id     = is_array( $term_exists ) ? $term_exists['term_id'] : $term_exists;
-					if ( ! $term_id ) {
-						$t = wp_insert_term( $term['name'], $taxonomy, array( 'slug' => $term['slug'] ) );
-						if ( ! is_wp_error( $t ) ) {
-							$term_id = $t['term_id'];
-							do_action( 'wp_import_insert_term', $t, $term, $post_id, $post );
-						} else {
-							printf( __( 'Failed to import %1$s %2$s', 'wordpress-importer' ), esc_html( $taxonomy ), esc_html( $term['name'] ) );
-							if ( defined( 'IMPORT_DEBUG' ) && IMPORT_DEBUG ) {
-								echo ': ' . $t->get_error_message();
-							}
-							echo '<br />';
-							do_action( 'wp_import_insert_term_failed', $t, $term, $post_id, $post );
-							continue;
-						}
-					}
-					$terms_to_set[ $taxonomy ][] = intval( $term_id );
-				}
-
-				foreach ( $terms_to_set as $tax => $ids ) {
-					$tt_ids = wp_set_post_terms( $post_id, $ids, $tax );
-					do_action( 'wp_import_set_post_terms', $tt_ids, $ids, $tax, $post_id, $post );
-				}
-				unset( $post['terms'], $terms_to_set );
+				$this->process_post_terms( $post['terms'], $post_id, $post );
+				unset( $post['terms'] );
 			}
 
 			if ( ! isset( $post['comments'] ) ) {
@@ -793,53 +766,8 @@ class WP_Import extends WP_Importer {
 
 			// add/update comments
 			if ( ! empty( $post['comments'] ) ) {
-				$num_comments      = 0;
-				$inserted_comments = array();
-				foreach ( $post['comments'] as $comment ) {
-					$comment_id                                    = $comment['comment_id'];
-					$newcomments[ $comment_id ]['comment_post_ID'] = $comment_post_id;
-					$newcomments[ $comment_id ]['comment_author']  = $comment['comment_author'];
-					$newcomments[ $comment_id ]['comment_author_email'] = $comment['comment_author_email'];
-					$newcomments[ $comment_id ]['comment_author_IP']    = $comment['comment_author_IP'];
-					$newcomments[ $comment_id ]['comment_author_url']   = $comment['comment_author_url'];
-					$newcomments[ $comment_id ]['comment_date']         = $comment['comment_date'];
-					$newcomments[ $comment_id ]['comment_date_gmt']     = $comment['comment_date_gmt'];
-					$newcomments[ $comment_id ]['comment_content']      = $comment['comment_content'];
-					$newcomments[ $comment_id ]['comment_approved']     = $comment['comment_approved'];
-					$newcomments[ $comment_id ]['comment_type']         = $comment['comment_type'];
-					$newcomments[ $comment_id ]['comment_parent']       = $comment['comment_parent'];
-					$newcomments[ $comment_id ]['commentmeta']          = isset( $comment['commentmeta'] ) ? $comment['commentmeta'] : array();
-					if ( isset( $this->processed_authors[ $comment['comment_user_id'] ] ) ) {
-						$newcomments[ $comment_id ]['user_id'] = $this->processed_authors[ $comment['comment_user_id'] ];
-					}
-				}
-				ksort( $newcomments );
-
-				foreach ( $newcomments as $key => $comment ) {
-					// if this is a new post we can skip the comment_exists() check
-					if ( ! $post_exists || ! comment_exists( $comment['comment_author'], $comment['comment_date'] ) ) {
-						if ( isset( $inserted_comments[ $comment['comment_parent'] ] ) ) {
-							$comment['comment_parent'] = $inserted_comments[ $comment['comment_parent'] ];
-						}
-
-						$comment_data = wp_slash( $comment );
-						unset( $comment_data['commentmeta'] ); // Handled separately, wp_insert_comment() also expects `comment_meta`.
-						$comment_data = wp_filter_comment( $comment_data );
-
-						$inserted_comments[ $key ] = wp_insert_comment( $comment_data );
-
-						do_action( 'wp_import_insert_comment', $inserted_comments[ $key ], $comment, $comment_post_id, $post );
-
-						foreach ( $comment['commentmeta'] as $meta ) {
-							$value = $this->maybe_unserialize( $meta['value'] );
-
-							add_comment_meta( $inserted_comments[ $key ], wp_slash( $meta['key'] ), wp_slash_strings_only( $value ) );
-						}
-
-						++$num_comments;
-					}
-				}
-				unset( $newcomments, $inserted_comments, $post['comments'] );
+				$this->process_post_comments( $post['comments'], (bool) $post_exists, $comment_post_id, $post );
+				unset( $post['comments'] );
 			}
 
 			if ( ! isset( $post['postmeta'] ) ) {
@@ -849,7 +777,7 @@ class WP_Import extends WP_Importer {
 			$post['postmeta'] = apply_filters( 'wp_import_post_meta', $post['postmeta'], $post_id, $post );
 
 			// add/update post meta
-			$this->process_postmeta( $post_id, $post, $post['postmeta'] );
+			$this->process_post_metas( $post['postmeta'], $post_id, $post );
 		}
 
 		unset( $this->posts );
@@ -1016,7 +944,7 @@ class WP_Import extends WP_Importer {
 	 * @param array $post        Post data from the import file.
 	 * @param array $postmeta    Meta data associated with the post.
 	 */
-	protected function process_postmeta( $post_id, $post, $postmeta ) {
+	protected function process_post_metas( $post_id, $post, $postmeta ) {
 		if ( empty( $postmeta ) ) {
 			return;
 		}
@@ -1051,6 +979,190 @@ class WP_Import extends WP_Importer {
 		}
 	}
 
+	/**
+	 * Process comments for a post being imported.
+	 *
+	 * @param array $comments        Comment data from the WXR file.
+	 * @param bool  $post_exists     Whether the post already exists.
+	 * @param int   $comment_post_id Local post ID for the imported comments.
+	 * @param array $post            Original post array from the WXR file.
+	 */
+	protected function process_post_comments( $comments, $post_exists, $comment_post_id, $post ) {
+		$num_comments      = 0;
+		$newcomments       = array();
+		$inserted_comments = array();
+
+		foreach ( $comments as $comment ) {
+			$comment_id = $comment['comment_id'];
+
+			$newcomments[ $comment_id ] = array(
+				'comment_post_ID'      => $comment_post_id,
+				'comment_author'       => $comment['comment_author'],
+				'comment_author_email' => $comment['comment_author_email'],
+				'comment_author_IP'    => $comment['comment_author_IP'],
+				'comment_author_url'   => $comment['comment_author_url'],
+				'comment_date'         => $comment['comment_date'],
+				'comment_date_gmt'     => $comment['comment_date_gmt'],
+				'comment_content'      => $comment['comment_content'],
+				'comment_approved'     => $comment['comment_approved'],
+				'comment_type'         => $comment['comment_type'],
+				'comment_parent'       => $comment['comment_parent'],
+				'commentmeta'          => isset( $comment['commentmeta'] ) ? $comment['commentmeta'] : array(),
+			);
+
+			if ( isset( $this->processed_authors[ $comment['comment_user_id'] ] ) ) {
+				$newcomments[ $comment_id ]['user_id'] = $this->processed_authors[ $comment['comment_user_id'] ];
+			}
+		}
+
+		if ( empty( $newcomments ) ) {
+			return;
+		}
+
+		ksort( $newcomments );
+
+		foreach ( $newcomments as $key => $comment ) {
+			if ( isset( $inserted_comments[ $comment['comment_parent'] ] ) ) {
+				$comment['comment_parent'] = $inserted_comments[ $comment['comment_parent'] ];
+			}
+
+			$inserted_comment_id = $this->process_post_comment( $comment, $post_exists, $comment_post_id );
+
+			if ( $inserted_comment_id ) {
+				do_action( 'wp_import_insert_comment', $inserted_comment_id, $comment, $comment_post_id, $post );
+				$this->process_post_comment_metas( $inserted_comment_id, $comment['commentmeta'] );
+				$inserted_comments[ $key ] = $inserted_comment_id;
+				++$num_comments;
+			}
+		}
+	}
+
+	/**
+	 * Insert an individual comment for the post during import.
+	 *
+	 * @param array $comment         Comment data to insert.
+	 * @param bool  $post_exists     Whether the post already exists.
+	 * @param int   $comment_post_id Local post ID for the imported comment.
+	 * @param array $post            Original post array from the WXR file.
+	 * @return int|false Inserted comment ID on success, false otherwise.
+	 */
+	protected function process_post_comment( $comment, $post_exists, $comment_post_id ) {
+		if ( $post_exists && comment_exists( $comment['comment_author'], $comment['comment_date'] ) ) {
+			return false;
+		}
+
+		$comment['comment_post_ID'] = $comment_post_id;
+
+		$comment_data = wp_slash( $comment );
+		unset( $comment_data['commentmeta'] ); // Handled separately, wp_insert_comment() also expects `comment_meta`.
+		$comment_data = wp_filter_comment( $comment_data );
+
+		return wp_insert_comment( $comment_data );
+	}
+
+	/**
+	 * Process comment meta for an imported comment.
+	 *
+	 * @param int   $comment_id   ID of the comment being imported.
+	 * @param array $commentmeta  Comment meta data for the inserted comment.
+	 */
+	protected function process_post_comment_metas( $comment_id, $commentmeta ) {
+		if ( empty( $commentmeta ) ) {
+			return;
+		}
+
+		foreach ( $commentmeta as $meta ) {
+			$this->process_post_comment_meta( $comment_id, $meta );
+		}
+	}
+
+	/**
+	 * Process a single comment meta entry for an imported comment.
+	 *
+	 * @param int   $comment_id ID of the comment being imported.
+	 * @param array $meta       Single meta entry (key/value) for the comment.
+	 */
+	protected function process_post_comment_meta( $comment_id, $meta ) {
+		if ( ! isset( $meta['key'], $meta['value'] ) ) {
+			return;
+		}
+
+		$value = $this->maybe_unserialize( $meta['value'] );
+
+		add_comment_meta( $comment_id, wp_slash( $meta['key'] ), wp_slash_strings_only( $value ) );
+	}
+
+	/**
+	 * Add categories, tags, and other taxonomies to a post.
+	 *
+	 * @param array $terms   Terms to be added to the post.
+	 * @param int   $post_id The ID of the post being processed.
+	 * @param array $post    The raw post data from the import file.
+	 */
+	protected function process_post_terms( $terms, $post_id, $post ) {
+		if ( empty( $terms ) ) {
+			return;
+		}
+
+		$terms_to_set = array();
+
+		foreach ( $terms as $term ) {
+			$processed_term = $this->process_post_term( $term, $post_id, $post );
+
+			if ( $processed_term ) {
+				$taxonomy                    = $processed_term['taxonomy'];
+				$terms_to_set[ $taxonomy ][] = $processed_term['term_id'];
+			}
+		}
+
+		foreach ( $terms_to_set as $tax => $ids ) {
+			$tt_ids = wp_set_post_terms( $post_id, $ids, $tax );
+			do_action( 'wp_import_set_post_terms', $tt_ids, $ids, $tax, $post_id, $post );
+		}
+	}
+
+	/**
+	 * Ensure a single term exists and return its taxonomy mapping for a post.
+	 *
+	 * @param array $term    Term data from the import file.
+	 * @param int   $post_id The ID of the post being processed.
+	 * @param array $post    The raw post data from the import file.
+	 * @return array|false {
+	 *     Mapping of taxonomy to term ID or false on failure.
+	 *
+	 *     @type string $taxonomy Taxonomy slug.
+	 *     @type int    $term_id  Term ID.
+	 * }
+	 */
+	protected function process_post_term( $term, $post_id, $post ) {
+		// Back compat with WXR 1.0 map 'tag' to 'post_tag'.
+		$taxonomy    = ( 'tag' == $term['domain'] ) ? 'post_tag' : $term['domain'];
+		$term_exists = term_exists( $term['slug'], $taxonomy );
+		$term_id     = is_array( $term_exists ) ? $term_exists['term_id'] : $term_exists;
+
+		if ( ! $term_id ) {
+			$t = wp_insert_term( $term['name'], $taxonomy, array( 'slug' => $term['slug'] ) );
+
+			if ( is_wp_error( $t ) ) {
+				printf( __( 'Failed to import %1$s %2$s', 'wordpress-importer' ), esc_html( $taxonomy ), esc_html( $term['name'] ) );
+				if ( defined( 'IMPORT_DEBUG' ) && IMPORT_DEBUG ) {
+					echo ': ' . $t->get_error_message();
+				}
+				echo '<br />';
+				do_action( 'wp_import_insert_term_failed', $t, $term, $post_id, $post );
+				return false;
+			}
+
+			$term_id = $t['term_id'];
+			do_action( 'wp_import_insert_term', $t, $term, $post_id, $post );
+		}
+
+		return array(
+			'taxonomy' => $taxonomy,
+			'term_id'  => intval( $term_id ),
+		);
+	}
+	
 	/**
 	 * Attempt to create a new menu item from import data
 	 *
