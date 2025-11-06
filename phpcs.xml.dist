@@ -39,6 +39,10 @@
 	<rule ref="WordPress.Files.FileName">
 		<exclude-pattern>*/phpunit/tests/*\.php$</exclude-pattern>
 	</rule>
+	<rule ref="Generic.PHP.DiscourageGoto.Found">
+		<!-- UTF-8 decoder uses goto in a safe way. It's a part of WordPress core since 6.9.0. -->
+		<exclude-pattern>*/src/php-toolkit/Encoding/*\.php$</exclude-pattern>
+	</rule>
 <!-- next up:
 	<rule ref="WordPress-Extra">
 		<exclude name="WordPress.Security.EscapeOutput"/>

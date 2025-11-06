@@ -5,7 +5,8 @@ namespace WordPress\XML;
 use WP_HTML_Span;
 use WP_HTML_Text_Replacement;
 
-use function WordPress\Encoding\utf8_codepoint_at;
+use function WordPress\Encoding\compat\_wp_scan_utf8;
+use function WordPress\Encoding\utf8_ord;
 
 /**
  * XML API: XMLProcessor class
@@ -17,11 +18,14 @@ use function WordPress\Encoding\utf8_codepoint_at;
  * It implements a subset of the XML 1.0 specification (https://www.w3.org/TR/xml/)
  * and supports XML documents with the following characteristics:
  *
- * * XML 1.0
- * * Well-formed
- * * UTF-8 encoded
- * * Not standalone (so can use external entities)
- * * No DTD, DOCTYPE, ATTLIST, ENTITY, or conditional sections (will fail on them)
+ * – XML 1.0
+ * – Well-formed
+ * – UTF-8 encoded
+ * – Not standalone (so can use external entities)
+ * – No DTD, DOCTYPE, ATTLIST, ENTITY, or conditional sections (will fail on them)
+ *
+ * XML 1.1 is explicitly not a design goal here. Version 1.1 is
+ * more complex specification and not so widely supported.
  *
  * ### Possible future direction for this module
  *
@@ -40,12 +44,6 @@ use function WordPress\Encoding\utf8_codepoint_at;
  *        * <!ENTITY, see https://www.w3.org/TR/xml/#sec-entity-decl
  *        * <!NOTATION, see https://www.w3.org/TR/xml/#sec-entity-decl
  *        * Conditional sections, see https://www.w3.org/TR/xml/#sec-condition-sect
- *
- * @TODO: Support XML 1.1.
- *
- * @TODO: Evaluate the performance of utf8_codepoint_at() against using the mbstring
- *        extension. If mbstring is faster, then use it whenever it's available with
- *        utf8_codepoint_at() as a fallback.
  *
  * @package WordPress
  * @subpackage HTML-API
@@ -1198,8 +1196,8 @@ class XMLProcessor {
 			/**
 			 * Compute fully qualified attributes and assert:
 			 *
-			 * * All attributes have valid namespaces.
-			 * * No two attributes have the same (local name, namespace) pair.
+			 * – All attributes have valid namespaces.
+			 * – No two attributes have the same (local name, namespace) pair.
 			 *
 			 * @see https://www.w3.org/TR/2006/REC-xml-names11-20060816/#uniqAttrs
 			 */
@@ -1690,8 +1688,8 @@ class XMLProcessor {
 			 * names.
 			 *
 			 * Reference:
-			 * * https://www.w3.org/TR/xml/#NT-STag
-			 * * https://www.w3.org/TR/xml/#NT-Name
+			 * – https://www.w3.org/TR/xml/#NT-STag
+			 * – https://www.w3.org/TR/xml/#NT-Name
 			 */
 			$tag_name_length = $this->parse_name( $at + 1 );
 			if ( false === $tag_name_length ) {
@@ -2328,19 +2326,27 @@ class XMLProcessor {
 	 * @return int
 	 */
 	private function parse_name( $offset ) {
-		static $i         = 0;
 		$name_byte_length = 0;
+		$at               = $offset;
+
+		// Fast path: consume any ASCII NameStartChar bytes.
+		$name_byte_length += strspn(
+			$this->xml,
+			':ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz',
+			$offset + $name_byte_length,
+			1
+		);
+
 		while ( true ) {
 			/**
 			 * Parse the next unicode codepoint.
 			 *
-			 * We use a custom UTF-8 decoder here. No other method
-			 * is reliable and available enough to depend on it in
-			 * WordPress core:
+			 * We use a the `_wp_scan_utf8` UTF-8 decoder introduced in WordPress 6.9. No other method
+			 * is reliable and available enough to depend on it in WordPress core:
 			 *
-			 * * mb_ord() – is not available on all hosts.
-			 * * iconv_substr() – is not available on all hosts.
-			 * * preg_match() – can fail with PREG_BAD_UTF8_ERROR when the input
+			 * – mb_ord() – is available on 99.5%+ or more of hosts, but not on all hosts.
+			 * – iconv_substr() – is not available on all hosts.
+			 * – preg_match() – can fail with PREG_BAD_UTF8_ERROR when the input
 			 *                  contains an incomplete UTF-8 byte sequence – even
 			 *                  when that sequence comes after a valid match. This
 			 *                  failure mode cannot be reproduced with just any string.
@@ -2348,28 +2354,72 @@ class XMLProcessor {
 			 *                  how to reliably reproduce this failure mode in a
 			 *                  unit test.
 			 *
-			 * Performance-wise, character-by-character processing via utf8_codepoint_at
-			 * is still much faster than relying on preg_match(). The mbstring extension
-			 * is likely faster. It would be interesting to evaluate the performance
-			 * and prefer mbstring whenever it's available.
+			 * Performance-wise, character-by-character processing via _wp_scan_utf8
+			 * is pretty slow. The ASCII fast path below enables skipping most of the
+			 * UTF-8 decoder calls.
+			 *
+			 * If the UTF-8 decoder performance ever becomes a bottleneck, there are a
+			 * few ways to significantly improve it:
+			 *
+			 * – Call a native grapheme_ function when available.
+			 * – Introduce a custom UTF-8 decoder optimized for codepoint-by-codepoint processing.
+			 *   It could be the streaming version of the UTF-8 decoder, such as `_wp_iterate_utf8`,
+			 *   that avoids the repeated strspn() calls. Alternatively, the older `utf8_codepoint_at`
+			 *   function could be restored if its codepoint-by-codepoint decoding performance is
+			 *   better than the _wp_scan_utf8.
 			 */
-			$codepoint = utf8_codepoint_at(
+
+			/**
+			 * The ASCII speedup includes all ASCII NameStartChar, which are also valid
+			 * NameChar, making it possible to quickly scan past these bytes without
+			 * further processing.
+			 */
+			$name_byte_length += strspn( $this->xml, ":ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz-.0123456789\u{B7}", $offset + $name_byte_length );
+
+			/*
+			 * Quickly check if the next byte is an ASCII byte that is not allowed in XML
+			 * NameStartChar. If so, we can break out of the loop without calling the UTF-8 decoder.
+			 *
+			 * Even though this does not seem to be different from the ASCII fast path in the
+			 * _wp_scan_utf8 function, skipping that function call still provides a ~50% speed
+			 * improvement.
+			 */
+			$is_non_name_ascii_byte = strspn(
 				$this->xml,
+				"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f" .
+				"\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f" .
+				" !\"#$%&'()*+,./;<=>?@[\\]^`{|}~\x7f",
 				$offset + $name_byte_length,
-				$bytes_parsed
-			);
-			if (
-				// Byte sequence is not a valid UTF-8 codepoint.
-				( 0xFFFD === $codepoint && 0 === $bytes_parsed ) ||
-				// No codepoint at the given offset.
-				null === $codepoint ||
-				// The codepoint is not a valid part of an XML NameChar or NameStartChar.
-				! $this->is_valid_name_codepoint( $codepoint, 0 === $name_byte_length )
-			) {
+				1
+			) > 0;
+			if ( $is_non_name_ascii_byte ) {
 				break;
 			}
-			$codepoint         = null;
-			$name_byte_length += $bytes_parsed;
+
+			// EOF.
+			if ( $offset + $name_byte_length >= strlen( $this->xml ) ) {
+				break;
+			}
+
+			// The next byte sequence is, very likely, a UTF-8 codepoint. Let's
+			// try to decode it.
+			$at             = $offset + $name_byte_length;
+			$new_at         = $at;
+			$invalid_length = 0;
+			if ( 1 !== _wp_scan_utf8( $this->xml, $new_at, $invalid_length, null, 1 ) ) {
+				// EOF or invalid utf-8 byte sequence.
+				break;
+			}
+
+			$codepoint_byte_length = $new_at - $at;
+			$codepoint             = utf8_ord( substr( $this->xml, $at, $codepoint_byte_length ) );
+
+			// The codepoint is not a valid part of an XML NameChar or NameStartChar.
+			if ( ! $this->is_valid_name_codepoint( $codepoint, 0 === $name_byte_length ) ) {
+				break;
+			}
+			$name_byte_length += $codepoint_byte_length;
+			$at                = $new_at;
 		}
 
 		return $name_byte_length;
