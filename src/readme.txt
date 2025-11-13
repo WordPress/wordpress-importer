@@ -5,7 +5,7 @@ Tags: importer, wordpress
 Requires at least: 5.2
 Tested up to: 6.8
 Requires PHP: 7.2
-Stable tag: 0.9.4
+Stable tag: 0.9.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -39,6 +39,12 @@ If you would prefer to do things manually then follow these instructions:
 1. Go to the Tools -> Import screen, click on WordPress
 
 == Changelog ==
+
+= 0.9.5 =
+* Rewrite CSS URLs in block markup (e.g., cover blocks with background images).
+* Code refactoring: Extract import processing logic into separate methods to prepare for future streaming support.
+* Update Playwright and @playwright/test dependencies from 1.55.0 to 1.56.1.
+* Clean up vendor-patched dependencies by removing dotfiles and GitHub workflow files.
 
 = 0.9.4 =
 * Fix a bug that caused self-closing blocks to be incorrectly serialized during URL rewriting.
