@@ -1269,8 +1269,30 @@ class WP_Import extends WP_Importer {
 			$menu_id = is_array( $menu_id ) ? $menu_id['term_id'] : $menu_id;
 		}
 
+		$core_meta = array(
+			'_menu_item_object_id'        => '',
+			'_menu_item_object'           => '',
+			'_menu_item_menu_item_parent' => '',
+			'_menu_item_type'             => '',
+			'_menu_item_url'              => '',
+			'_menu_item_target'           => '',
+			'_menu_item_classes'          => '',
+			'_menu_item_xfn'              => '',
+		);
+
+		$custom_meta = array();
+
+		// Parse meta items into core fields and any custom fields.
 		foreach ( $item['postmeta'] as $meta ) {
-			${$meta['key']} = $meta['value'];
+			if ( array_key_exists( $meta['key'], $core_meta ) ) {
+				$core_meta[ $meta['key'] ] = $meta['value'];
+			} else {
+				$custom_meta[ $meta['key'] ] = $meta['value'];
+			}
+		}
+
+		foreach ( $core_meta as $key => $value ) {
+			${$key} = $value;
 		}
 
 		if ( 'taxonomy' == $_menu_item_type && isset( $this->processed_terms[ intval( $_menu_item_object_id ) ] ) ) {
@@ -1315,6 +1337,26 @@ class WP_Import extends WP_Importer {
 		$id = wp_update_nav_menu_item( $menu_id, 0, $args );
 		if ( $id && ! is_wp_error( $id ) ) {
 			$this->processed_menu_items[ intval( $item['post_id'] ) ] = (int) $id;
+
+			$custom_meta = apply_filters( 'wp_import_nav_menu_meta', $custom_meta, $id, $args );
+
+			foreach ( $custom_meta as $key => $value ) {
+				$key = apply_filters( 'import_nav_menu_meta_key', $key, $id, $args );
+
+				// Skip old date meta.
+				if ( '_wp_old_date' === $key ) {
+					$key = false;
+				}
+
+				if ( $key ) {
+					// Export gets meta straight from the DB so could have a serialized string.
+					$value = maybe_unserialize( $value );
+
+					add_post_meta( $id, wp_slash( $key ), wp_slash( $value ) );
+
+					do_action( 'import_nav_menu_meta', $id, $key, $value );
+				}
+			}
 		}
 	}
 
