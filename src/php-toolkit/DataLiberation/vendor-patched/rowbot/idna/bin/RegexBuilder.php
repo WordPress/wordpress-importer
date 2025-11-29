@@ -2,7 +2,7 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\Idna\Bin;
+namespace WordPressImporter\Rowbot\Idna\Bin;
 
 use function array_filter;
 use function assert;
@@ -116,7 +116,7 @@ class RegexBuilder extends Builder {
 
 declare(strict_types=1);
 
-namespace Rowbot\Idna\Resource;
+namespace WordPressImporter\Rowbot\Idna\Resource;
 
 final class Regex
 {

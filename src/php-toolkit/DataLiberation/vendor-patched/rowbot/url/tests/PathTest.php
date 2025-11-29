@@ -2,14 +2,14 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\Tests;
+namespace WordPressImporter\Rowbot\URL\Tests;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Rowbot\URL\Component\OpaquePath;
-use Rowbot\URL\Component\PathSegment;
-use Rowbot\URL\Component\Scheme;
-use Rowbot\URL\Exception\URLException;
+use WordPressImporter\Rowbot\URL\Component\OpaquePath;
+use WordPressImporter\Rowbot\URL\Component\PathSegment;
+use WordPressImporter\Rowbot\URL\Component\Scheme;
+use WordPressImporter\Rowbot\URL\Exception\URLException;
 
 class PathTest extends TestCase {
 	public static function isNormalizedWindowsDriveLetterProvider(): array {

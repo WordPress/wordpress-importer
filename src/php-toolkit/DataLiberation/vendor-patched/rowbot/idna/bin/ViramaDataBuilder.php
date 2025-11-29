@@ -2,7 +2,7 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\Idna\Bin;
+namespace WordPressImporter\Rowbot\Idna\Bin;
 
 use function array_map;
 use function explode;

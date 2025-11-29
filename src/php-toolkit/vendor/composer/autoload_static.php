@@ -7,68 +7,59 @@ namespace Composer\Autoload;
 class ComposerStaticInit9801abce1960fa4b71d115bb31b779c7
 {
     public static $prefixLengthsPsr4 = array (
-        'S' => 
+        'W' => 
         array (
-            'Symfony\\Polyfill\\Php80\\' => 23,
-            'Symfony\\Polyfill\\Intl\\Normalizer\\' => 33,
-            'Symfony\\Polyfill\\Ctype\\' => 23,
-        ),
-        'R' => 
-        array (
-            'Rowbot\\URL\\' => 11,
-            'Rowbot\\Punycode\\' => 16,
-            'Rowbot\\Idna\\Resource\\' => 21,
-            'Rowbot\\Idna\\' => 12,
-        ),
-        'P' => 
-        array (
-            'Psr\\Log\\' => 8,
-            'Psr\\EventDispatcher\\' => 20,
-        ),
-        'B' => 
-        array (
-            'Brick\\Math\\' => 11,
+            'WordPressImporter\\Symfony\\Polyfill\\Php80\\' => 41,
+            'WordPressImporter\\Symfony\\Polyfill\\Intl\\Normalizer\\' => 51,
+            'WordPressImporter\\Symfony\\Polyfill\\Ctype\\' => 41,
+            'WordPressImporter\\Rowbot\\URL\\' => 29,
+            'WordPressImporter\\Rowbot\\Punycode\\' => 34,
+            'WordPressImporter\\Rowbot\\Idna\\Resource\\' => 39,
+            'WordPressImporter\\Rowbot\\Idna\\' => 30,
+            'WordPressImporter\\Psr\\Log\\' => 26,
+            'WordPressImporter\\Psr\\EventDispatcher\\' => 38,
+            'WordPressImporter\\Brick\\Math\\' => 29,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'Symfony\\Polyfill\\Php80\\' => 
+        'WordPressImporter\\Symfony\\Polyfill\\Php80\\' => 
         array (
             0 => __DIR__ . '/../..' . '/DataLiberation/vendor-patched/symfony/polyfill-php80/src',
         ),
-        'Symfony\\Polyfill\\Intl\\Normalizer\\' => 
+        'WordPressImporter\\Symfony\\Polyfill\\Intl\\Normalizer\\' => 
         array (
             0 => __DIR__ . '/../..' . '/DataLiberation/vendor-patched/symfony/polyfill-intl-normalizer/src',
         ),
-        'Symfony\\Polyfill\\Ctype\\' => 
+        'WordPressImporter\\Symfony\\Polyfill\\Ctype\\' => 
         array (
             0 => __DIR__ . '/../..' . '/DataLiberation/vendor-patched/symfony/polyfill-ctype/src',
         ),
-        'Rowbot\\URL\\' => 
+        'WordPressImporter\\Rowbot\\URL\\' => 
         array (
             0 => __DIR__ . '/../..' . '/DataLiberation/vendor-patched/rowbot/url/src',
         ),
-        'Rowbot\\Punycode\\' => 
+        'WordPressImporter\\Rowbot\\Punycode\\' => 
         array (
             0 => __DIR__ . '/../..' . '/DataLiberation/vendor-patched/rowbot/punycode/src',
         ),
-        'Rowbot\\Idna\\Resource\\' => 
+        'WordPressImporter\\Rowbot\\Idna\\Resource\\' => 
         array (
             0 => __DIR__ . '/../..' . '/DataLiberation/vendor-patched/rowbot/idna/resources',
         ),
-        'Rowbot\\Idna\\' => 
+        'WordPressImporter\\Rowbot\\Idna\\' => 
         array (
             0 => __DIR__ . '/../..' . '/DataLiberation/vendor-patched/rowbot/idna/src',
         ),
-        'Psr\\Log\\' => 
+        'WordPressImporter\\Psr\\Log\\' => 
         array (
             0 => __DIR__ . '/../..' . '/DataLiberation/vendor-patched/psr/log/src',
         ),
-        'Psr\\EventDispatcher\\' => 
+        'WordPressImporter\\Psr\\EventDispatcher\\' => 
         array (
             0 => __DIR__ . '/../..' . '/DataLiberation/vendor-patched/psr/event-dispatcher/src',
         ),
-        'Brick\\Math\\' => 
+        'WordPressImporter\\Brick\\Math\\' => 
         array (
             0 => __DIR__ . '/../..' . '/DataLiberation/vendor-patched/brick/math/src',
         ),

@@ -2,9 +2,9 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\String;
+namespace WordPressImporter\Rowbot\URL\String;
 
-use Rowbot\URL\String\Exception\RegexException;
+use WordPressImporter\Rowbot\URL\String\Exception\RegexException;
 
 use function explode;
 use function intval;

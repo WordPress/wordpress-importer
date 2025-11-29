@@ -2,11 +2,11 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\Idna;
+namespace WordPressImporter\Rowbot\Idna;
 
 use Normalizer;
-use Rowbot\Punycode\Exception\PunycodeException;
-use Rowbot\Punycode\Punycode;
+use WordPressImporter\Rowbot\Punycode\Exception\PunycodeException;
+use WordPressImporter\Rowbot\Punycode\Punycode;
 
 use function array_merge;
 use function count;

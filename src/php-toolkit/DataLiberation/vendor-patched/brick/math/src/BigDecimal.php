@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Brick\Math;
+namespace WordPressImporter\Brick\Math;
 
-use Brick\Math\Exception\DivisionByZeroException;
-use Brick\Math\Exception\MathException;
-use Brick\Math\Exception\NegativeNumberException;
-use Brick\Math\Internal\Calculator;
+use WordPressImporter\Brick\Math\Exception\DivisionByZeroException;
+use WordPressImporter\Brick\Math\Exception\MathException;
+use WordPressImporter\Brick\Math\Exception\NegativeNumberException;
+use WordPressImporter\Brick\Math\Internal\Calculator;
 
 /**
  * Immutable, arbitrary-precision signed decimal numbers.
@@ -228,7 +228,7 @@ final class BigDecimal extends BigNumber
      *
      * @throws \InvalidArgumentException If the scale or rounding mode is invalid.
      * @throws MathException             If the number is invalid, is zero, or rounding was necessary.
-     * @param \Brick\Math\RoundingMode::* $roundingMode
+     * @param \WordPressImporter\Brick\Math\RoundingMode::* $roundingMode
      */
     public function dividedBy($that, ?int $scale = null, $roundingMode = RoundingMode::UNNECESSARY) : BigDecimal
     {
@@ -542,7 +542,7 @@ final class BigDecimal extends BigNumber
     }
 
     /**
-     * @param \Brick\Math\BigNumber|int|float|string $that
+     * @param \WordPressImporter\Brick\Math\BigNumber|int|float|string $that
      */
     public function compareTo($that) : int
     {

@@ -1,12 +1,12 @@
 <?php
 
-namespace Rowbot\URL\Tests\WhatWg;
+namespace WordPressImporter\Rowbot\URL\Tests\WhatWg;
 
 use Exception;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Rowbot\URL\Exception\TypeError;
-use Rowbot\URL\URLSearchParams;
+use WordPressImporter\Rowbot\URL\Exception\TypeError;
+use WordPressImporter\Rowbot\URL\URLSearchParams;
 use stdClass;
 
 use function json_decode;

@@ -2,16 +2,16 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\Tests;
+namespace WordPressImporter\Rowbot\URL\Tests;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Rowbot\URL\Component\Host\HostInterface;
-use Rowbot\URL\Component\Host\HostParser;
-use Rowbot\URL\ParserContext;
-use Rowbot\URL\String\StringBuffer;
-use Rowbot\URL\String\Utf8String;
-use Rowbot\URL\URLRecord;
+use WordPressImporter\Rowbot\URL\Component\Host\HostInterface;
+use WordPressImporter\Rowbot\URL\Component\Host\HostParser;
+use WordPressImporter\Rowbot\URL\ParserContext;
+use WordPressImporter\Rowbot\URL\String\StringBuffer;
+use WordPressImporter\Rowbot\URL\String\Utf8String;
+use WordPressImporter\Rowbot\URL\URLRecord;
 
 class HostParserTest extends TestCase {
 	/**

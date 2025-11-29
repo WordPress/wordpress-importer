@@ -2,14 +2,14 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\Tests;
+namespace WordPressImporter\Rowbot\URL\Tests;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Rowbot\URL\String\Exception\RegexException;
-use Rowbot\URL\String\Exception\UndefinedIndexException;
-use Rowbot\URL\String\StringList;
-use Rowbot\URL\String\Utf8String;
+use WordPressImporter\Rowbot\URL\String\Exception\RegexException;
+use WordPressImporter\Rowbot\URL\String\Exception\UndefinedIndexException;
+use WordPressImporter\Rowbot\URL\String\StringList;
+use WordPressImporter\Rowbot\URL\String\Utf8String;
 use ValueError;
 
 class StringsTest extends TestCase {

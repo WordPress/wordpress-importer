@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Symfony\Polyfill\Ctype;
+namespace WordPressImporter\Symfony\Polyfill\Ctype;
 
 use function chr;
 use function is_int;

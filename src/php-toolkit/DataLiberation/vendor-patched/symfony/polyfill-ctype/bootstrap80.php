@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-use Symfony\Polyfill\Ctype as p;
+use WordPressImporter\Symfony\Polyfill\Ctype as p;
 
 if ( ! function_exists( 'ctype_alnum' ) ) {
 	/**

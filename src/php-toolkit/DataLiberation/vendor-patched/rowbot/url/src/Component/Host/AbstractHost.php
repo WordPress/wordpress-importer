@@ -2,7 +2,7 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\Component\Host;
+namespace WordPressImporter\Rowbot\URL\Component\Host;
 
 abstract class AbstractHost {
 	public function isEmpty(): bool {

@@ -2,13 +2,13 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\Tests;
+namespace WordPressImporter\Rowbot\URL\Tests;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
-use Rowbot\URL\Component\Scheme;
+use WordPressImporter\Rowbot\URL\Component\Scheme;
 
 class SchemeTest extends TestCase {
 	public static function specialSchemeNonNullDefaultPortProvider(): iterable {

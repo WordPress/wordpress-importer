@@ -2,9 +2,9 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\Component\Host\Math;
+namespace WordPressImporter\Rowbot\URL\Component\Host\Math;
 
-use Rowbot\URL\Component\Host\Math\Exception\MathException;
+use WordPressImporter\Rowbot\URL\Component\Host\Math\Exception\MathException;
 
 interface NumberInterface {
 	/**

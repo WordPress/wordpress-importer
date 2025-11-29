@@ -2,12 +2,12 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\Punycode\Test;
+namespace WordPressImporter\Rowbot\Punycode\Test;
 
 use PHPUnit\Framework\TestCase;
-use Rowbot\Punycode\Exception\InvalidInputException;
-use Rowbot\Punycode\Exception\OutputSizeExceededException;
-use Rowbot\Punycode\Punycode;
+use WordPressImporter\Rowbot\Punycode\Exception\InvalidInputException;
+use WordPressImporter\Rowbot\Punycode\Exception\OutputSizeExceededException;
+use WordPressImporter\Rowbot\Punycode\Punycode;
 
 use function mb_strlen;
 use function preg_match;

@@ -2,20 +2,20 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\Tests;
+namespace WordPressImporter\Rowbot\URL\Tests;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Rowbot\URL\BasicURLParser;
-use Rowbot\URL\Component\Host\HostParser;
-use Rowbot\URL\Component\OpaqueOrigin;
-use Rowbot\URL\Component\TupleOrigin;
-use Rowbot\URL\Origin;
-use Rowbot\URL\ParserContext;
-use Rowbot\URL\String\StringBuffer;
-use Rowbot\URL\String\Utf8String;
-use Rowbot\URL\String\Utf8StringIterator;
-use Rowbot\URL\URLRecord;
+use WordPressImporter\Rowbot\URL\BasicURLParser;
+use WordPressImporter\Rowbot\URL\Component\Host\HostParser;
+use WordPressImporter\Rowbot\URL\Component\OpaqueOrigin;
+use WordPressImporter\Rowbot\URL\Component\TupleOrigin;
+use WordPressImporter\Rowbot\URL\Origin;
+use WordPressImporter\Rowbot\URL\ParserContext;
+use WordPressImporter\Rowbot\URL\String\StringBuffer;
+use WordPressImporter\Rowbot\URL\String\Utf8String;
+use WordPressImporter\Rowbot\URL\String\Utf8StringIterator;
+use WordPressImporter\Rowbot\URL\URLRecord;
 
 class OriginTest extends TestCase {
 	public static function originProvider(): array {

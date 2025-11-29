@@ -2,9 +2,9 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\String;
+namespace WordPressImporter\Rowbot\URL\String;
 
-use Rowbot\URL\String\Exception\EncodingException;
+use WordPressImporter\Rowbot\URL\String\Exception\EncodingException;
 
 use function mb_convert_encoding;
 use function mb_scrub;

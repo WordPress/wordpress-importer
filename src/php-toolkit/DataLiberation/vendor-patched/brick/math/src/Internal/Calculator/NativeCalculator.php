@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Brick\Math\Internal\Calculator;
+namespace WordPressImporter\Brick\Math\Internal\Calculator;
 
-use Brick\Math\Internal\Calculator;
+use WordPressImporter\Brick\Math\Internal\Calculator;
 
 /**
  * Calculator implementation using only native PHP code.

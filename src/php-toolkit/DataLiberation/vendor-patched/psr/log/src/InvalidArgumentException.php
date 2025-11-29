@@ -1,6 +1,6 @@
 <?php
 
-namespace Psr\Log;
+namespace WordPressImporter\Psr\Log;
 
 class InvalidArgumentException extends \InvalidArgumentException {
 }

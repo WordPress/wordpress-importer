@@ -2,10 +2,10 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\Tests;
+namespace WordPressImporter\Rowbot\URL\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Rowbot\URL\Component\QueryList;
+use WordPressImporter\Rowbot\URL\Component\QueryList;
 
 class QueryListTest extends TestCase {
 	public function testSetDoesNothingWhenNoMatchingNameExists(): void {

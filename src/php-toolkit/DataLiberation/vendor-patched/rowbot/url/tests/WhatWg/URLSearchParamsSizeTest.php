@@ -2,11 +2,11 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\Tests;
+namespace WordPressImporter\Rowbot\URL\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Rowbot\URL\URL;
-use Rowbot\URL\URLSearchParams;
+use WordPressImporter\Rowbot\URL\URL;
+use WordPressImporter\Rowbot\URL\URLSearchParams;
 
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/url/urlsearchparams-size.any.js

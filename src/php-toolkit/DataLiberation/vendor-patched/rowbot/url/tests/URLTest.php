@@ -2,13 +2,13 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\Tests;
+namespace WordPressImporter\Rowbot\URL\Tests;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
-use Rowbot\URL\Exception\TypeError;
-use Rowbot\URL\URL;
+use WordPressImporter\Rowbot\URL\Exception\TypeError;
+use WordPressImporter\Rowbot\URL\URL;
 use TypeError as NativeTypeError;
 
 class URLTest extends TestCase {

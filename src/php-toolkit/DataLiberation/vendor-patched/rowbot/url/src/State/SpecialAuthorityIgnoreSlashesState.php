@@ -2,10 +2,10 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\State;
+namespace WordPressImporter\Rowbot\URL\State;
 
-use Rowbot\URL\ParserContext;
-use Rowbot\URL\ParserState;
+use WordPressImporter\Rowbot\URL\ParserContext;
+use WordPressImporter\Rowbot\URL\ParserState;
 
 /**
  * @see https://url.spec.whatwg.org/#special-authority-ignore-slashes-state

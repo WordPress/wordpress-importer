@@ -2,16 +2,16 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\Component\Host;
+namespace WordPressImporter\Rowbot\URL\Component\Host;
 
 use ReflectionClass;
 use ReflectionClassConstant;
-use Rowbot\Idna\Idna;
-use Rowbot\URL\ParserContext;
-use Rowbot\URL\String\CodePoint;
-use Rowbot\URL\String\EncodeSet;
-use Rowbot\URL\String\PercentEncoder;
-use Rowbot\URL\String\USVStringInterface;
+use WordPressImporter\Rowbot\Idna\Idna;
+use WordPressImporter\Rowbot\URL\ParserContext;
+use WordPressImporter\Rowbot\URL\String\CodePoint;
+use WordPressImporter\Rowbot\URL\String\EncodeSet;
+use WordPressImporter\Rowbot\URL\String\PercentEncoder;
+use WordPressImporter\Rowbot\URL\String\USVStringInterface;
 
 use function array_filter;
 use function assert;

@@ -2,12 +2,12 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\Tests\Math;
+namespace WordPressImporter\Rowbot\URL\Tests\Math;
 
-use Rowbot\URL\Component\Host\Math\BrickMathAdapter;
-use Rowbot\URL\Component\Host\Math\Exception\MathException;
-use Rowbot\URL\Component\Host\Math\NativeIntAdapter;
-use Rowbot\URL\Component\Host\Math\NumberInterface;
+use WordPressImporter\Rowbot\URL\Component\Host\Math\BrickMathAdapter;
+use WordPressImporter\Rowbot\URL\Component\Host\Math\Exception\MathException;
+use WordPressImporter\Rowbot\URL\Component\Host\Math\NativeIntAdapter;
+use WordPressImporter\Rowbot\URL\Component\Host\Math\NumberInterface;
 
 class NativeIntAdapterTest extends MathTestCase {
 	/**

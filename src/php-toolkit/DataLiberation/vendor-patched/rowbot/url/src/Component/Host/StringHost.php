@@ -2,11 +2,11 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\Component\Host;
+namespace WordPressImporter\Rowbot\URL\Component\Host;
 
-use Rowbot\URL\Component\Host\Serializer\HostSerializerInterface;
-use Rowbot\URL\Component\Host\Serializer\StringHostSerializer;
-use Rowbot\URL\String\Utf8String;
+use WordPressImporter\Rowbot\URL\Component\Host\Serializer\HostSerializerInterface;
+use WordPressImporter\Rowbot\URL\Component\Host\Serializer\StringHostSerializer;
+use WordPressImporter\Rowbot\URL\String\Utf8String;
 
 /**
  * @see https://url.spec.whatwg.org/#concept-domain

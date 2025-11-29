@@ -2,30 +2,30 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL;
+namespace WordPressImporter\Rowbot\URL;
 
-use Rowbot\URL\State\AuthorityState;
-use Rowbot\URL\State\FileHostState;
-use Rowbot\URL\State\FileSlashState;
-use Rowbot\URL\State\FileState;
-use Rowbot\URL\State\FragmentState;
-use Rowbot\URL\State\HostnameState;
-use Rowbot\URL\State\HostState;
-use Rowbot\URL\State\NoSchemeState;
-use Rowbot\URL\State\OpaquePathState;
-use Rowbot\URL\State\PathOrAuthorityState;
-use Rowbot\URL\State\PathStartState;
-use Rowbot\URL\State\PathState;
-use Rowbot\URL\State\PortState;
-use Rowbot\URL\State\QueryState;
-use Rowbot\URL\State\RelativeSlashState;
-use Rowbot\URL\State\RelativeState;
-use Rowbot\URL\State\SchemeStartState;
-use Rowbot\URL\State\SchemeState;
-use Rowbot\URL\State\SpecialAuthorityIgnoreSlashesState;
-use Rowbot\URL\State\SpecialAuthoritySlashesState;
-use Rowbot\URL\State\SpecialRelativeOrAuthorityState;
-use Rowbot\URL\State\State;
+use WordPressImporter\Rowbot\URL\State\AuthorityState;
+use WordPressImporter\Rowbot\URL\State\FileHostState;
+use WordPressImporter\Rowbot\URL\State\FileSlashState;
+use WordPressImporter\Rowbot\URL\State\FileState;
+use WordPressImporter\Rowbot\URL\State\FragmentState;
+use WordPressImporter\Rowbot\URL\State\HostnameState;
+use WordPressImporter\Rowbot\URL\State\HostState;
+use WordPressImporter\Rowbot\URL\State\NoSchemeState;
+use WordPressImporter\Rowbot\URL\State\OpaquePathState;
+use WordPressImporter\Rowbot\URL\State\PathOrAuthorityState;
+use WordPressImporter\Rowbot\URL\State\PathStartState;
+use WordPressImporter\Rowbot\URL\State\PathState;
+use WordPressImporter\Rowbot\URL\State\PortState;
+use WordPressImporter\Rowbot\URL\State\QueryState;
+use WordPressImporter\Rowbot\URL\State\RelativeSlashState;
+use WordPressImporter\Rowbot\URL\State\RelativeState;
+use WordPressImporter\Rowbot\URL\State\SchemeStartState;
+use WordPressImporter\Rowbot\URL\State\SchemeState;
+use WordPressImporter\Rowbot\URL\State\SpecialAuthorityIgnoreSlashesState;
+use WordPressImporter\Rowbot\URL\State\SpecialAuthoritySlashesState;
+use WordPressImporter\Rowbot\URL\State\SpecialRelativeOrAuthorityState;
+use WordPressImporter\Rowbot\URL\State\State;
 
 class ParserState {
 	public const SCHEME_START = 'scheme_start';

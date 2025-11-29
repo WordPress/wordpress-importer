@@ -2,13 +2,13 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\Tests\WhatWg;
+namespace WordPressImporter\Rowbot\URL\Tests\WhatWg;
 
 use PHPUnit\Framework\Attributes\DataProvider;
-use Rowbot\URL\BasicURLParser;
-use Rowbot\URL\String\EncodeSet;
-use Rowbot\URL\String\PercentEncoder;
-use Rowbot\URL\String\Utf8String;
+use WordPressImporter\Rowbot\URL\BasicURLParser;
+use WordPressImporter\Rowbot\URL\String\EncodeSet;
+use WordPressImporter\Rowbot\URL\String\PercentEncoder;
+use WordPressImporter\Rowbot\URL\String\Utf8String;
 
 class PercentEncodingTest extends WhatwgTestCase {
 	public function testPercentEncoding( string $input, array $output ): void {

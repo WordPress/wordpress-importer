@@ -2,7 +2,7 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\Idna\Resource;
+namespace WordPressImporter\Rowbot\Idna\Resource;
 
 final class DisallowedRanges {
 	public static function inRange( int $codePoint ): bool {

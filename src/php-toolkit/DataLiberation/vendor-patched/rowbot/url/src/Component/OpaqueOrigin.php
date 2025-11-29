@@ -2,9 +2,9 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\Component;
+namespace WordPressImporter\Rowbot\URL\Component;
 
-use Rowbot\URL\Origin;
+use WordPressImporter\Rowbot\URL\Origin;
 
 /**
  * @see https://html.spec.whatwg.org/multipage/browsers.html#concept-origin-opaque

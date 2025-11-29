@@ -2,11 +2,11 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\Tests;
+namespace WordPressImporter\Rowbot\URL\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Rowbot\URL\Component\Host\NullHost;
-use Rowbot\URL\Component\Host\StringHost;
+use WordPressImporter\Rowbot\URL\Component\Host\NullHost;
+use WordPressImporter\Rowbot\URL\Component\Host\StringHost;
 
 class NullHostTest extends TestCase {
 	public function testNullHostSerializesToEmptyString(): void {

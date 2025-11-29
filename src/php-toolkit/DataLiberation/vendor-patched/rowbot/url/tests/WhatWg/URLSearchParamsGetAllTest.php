@@ -1,9 +1,9 @@
 <?php
 
-namespace Rowbot\URL\Tests\WhatWg;
+namespace WordPressImporter\Rowbot\URL\Tests\WhatWg;
 
 use PHPUnit\Framework\TestCase;
-use Rowbot\URL\URLSearchParams;
+use WordPressImporter\Rowbot\URL\URLSearchParams;
 
 use function count;
 

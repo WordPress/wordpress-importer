@@ -2,9 +2,9 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\Idna\Bin;
+namespace WordPressImporter\Rowbot\Idna\Bin;
 
-use Rowbot\Idna\CodePoint;
+use WordPressImporter\Rowbot\Idna\CodePoint;
 use RuntimeException;
 
 use function array_map;
@@ -110,7 +110,7 @@ RANGE_FALLBACK;
 
 declare(strict_types=1);
 
-namespace Rowbot\Idna\Resource;
+namespace WordPressImporter\Rowbot\Idna\Resource;
 
 final class DisallowedRanges
 {

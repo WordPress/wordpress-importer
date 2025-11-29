@@ -2,14 +2,14 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\Idna\Test;
+namespace WordPressImporter\Rowbot\Idna\Test;
 
 use GuzzleHttp\Client;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ResponseInterface;
-use Rowbot\Idna\Idna;
+use WordPressImporter\Psr\Http\Message\ResponseInterface;
+use WordPressImporter\Rowbot\Idna\Idna;
 use RuntimeException;
-use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use WordPressImporter\Symfony\Component\Cache\Adapter\FilesystemAdapter;
 
 use function array_map;
 use function count;

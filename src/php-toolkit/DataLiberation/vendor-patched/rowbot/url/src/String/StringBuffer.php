@@ -2,10 +2,10 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\String;
+namespace WordPressImporter\Rowbot\URL\String;
 
-use Rowbot\URL\Component\PathSegment;
-use Rowbot\URL\Component\Scheme;
+use WordPressImporter\Rowbot\URL\Component\PathSegment;
+use WordPressImporter\Rowbot\URL\Component\Scheme;
 
 use function intval;
 use function preg_match;

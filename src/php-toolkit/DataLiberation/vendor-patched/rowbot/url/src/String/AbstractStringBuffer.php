@@ -2,7 +2,7 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\String;
+namespace WordPressImporter\Rowbot\URL\String;
 
 use IteratorAggregate;
 

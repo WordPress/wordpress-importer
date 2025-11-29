@@ -2,17 +2,17 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL;
+namespace WordPressImporter\Rowbot\URL;
 
 use InvalidArgumentException;
 use JsonSerializable;
-use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerAwareTrait;
-use Psr\Log\LoggerInterface;
-use Rowbot\URL\Component\PathList;
-use Rowbot\URL\Component\QueryList;
-use Rowbot\URL\Exception\TypeError;
-use Rowbot\URL\String\Utf8String;
+use WordPressImporter\Psr\Log\LoggerAwareInterface;
+use WordPressImporter\Psr\Log\LoggerAwareTrait;
+use WordPressImporter\Psr\Log\LoggerInterface;
+use WordPressImporter\Rowbot\URL\Component\PathList;
+use WordPressImporter\Rowbot\URL\Component\QueryList;
+use WordPressImporter\Rowbot\URL\Exception\TypeError;
+use WordPressImporter\Rowbot\URL\String\Utf8String;
 use Stringable;
 use Throwable;
 

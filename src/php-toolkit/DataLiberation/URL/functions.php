@@ -2,7 +2,7 @@
 
 namespace WordPress\DataLiberation\URL;
 
-use Rowbot\URL\URL;
+use WordPressImporter\Rowbot\URL\URL;
 use WordPress\DataLiberation\BlockMarkup\BlockMarkupUrlProcessor;
 
 

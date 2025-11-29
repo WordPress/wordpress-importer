@@ -2,10 +2,10 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\Component\Host;
+namespace WordPressImporter\Rowbot\URL\Component\Host;
 
-use Rowbot\URL\Component\Host\Serializer\HostSerializerInterface;
-use Rowbot\URL\Component\Host\Serializer\StringHostSerializer;
+use WordPressImporter\Rowbot\URL\Component\Host\Serializer\HostSerializerInterface;
+use WordPressImporter\Rowbot\URL\Component\Host\Serializer\StringHostSerializer;
 
 class NullHost extends AbstractHost implements HostInterface {
 	/**

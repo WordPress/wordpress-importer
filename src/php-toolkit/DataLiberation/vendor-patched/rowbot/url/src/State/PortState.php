@@ -2,11 +2,11 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\State;
+namespace WordPressImporter\Rowbot\URL\State;
 
-use Rowbot\URL\ParserContext;
-use Rowbot\URL\ParserState;
-use Rowbot\URL\String\CodePoint;
+use WordPressImporter\Rowbot\URL\ParserContext;
+use WordPressImporter\Rowbot\URL\ParserState;
+use WordPressImporter\Rowbot\URL\String\CodePoint;
 
 use function strpbrk;
 

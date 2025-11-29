@@ -2,15 +2,15 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\Component;
+namespace WordPressImporter\Rowbot\URL\Component;
 
 use ArrayIterator;
 use Countable;
 use IteratorAggregate;
-use Rowbot\URL\String\EncodeSet;
-use Rowbot\URL\String\PercentEncoder;
-use Rowbot\URL\String\Utf8String;
-use Rowbot\URL\Support\EncodingHelper;
+use WordPressImporter\Rowbot\URL\String\EncodeSet;
+use WordPressImporter\Rowbot\URL\String\PercentEncoder;
+use WordPressImporter\Rowbot\URL\String\Utf8String;
+use WordPressImporter\Rowbot\URL\Support\EncodingHelper;
 
 use function array_column;
 use function array_filter;

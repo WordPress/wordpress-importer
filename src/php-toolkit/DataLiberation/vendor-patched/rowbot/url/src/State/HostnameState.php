@@ -2,7 +2,7 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\State;
+namespace WordPressImporter\Rowbot\URL\State;
 
 class HostnameState extends AbstractHostState {
 }

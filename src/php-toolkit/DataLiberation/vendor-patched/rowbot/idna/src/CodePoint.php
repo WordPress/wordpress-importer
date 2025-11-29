@@ -2,7 +2,7 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\Idna;
+namespace WordPressImporter\Rowbot\Idna;
 
 use function chr;
 use function ord;

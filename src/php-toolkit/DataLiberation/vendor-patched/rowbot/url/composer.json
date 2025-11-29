@@ -37,12 +37,12 @@
 	},
 	"autoload": {
 		"psr-4": {
-			"Rowbot\\URL\\": "src/"
+			"WordPressImporter\\Rowbot\\URL\\": "src/"
 		}
 	},
 	"autoload-dev": {
 		"psr-4": {
-			"Rowbot\\URL\\Tests\\": "tests/"
+			"WordPressImporter\\Rowbot\\URL\\Tests\\": "tests/"
 		}
 	},
 	"scripts": {

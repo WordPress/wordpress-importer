@@ -1,9 +1,9 @@
 <?php
 
-namespace Rowbot\URL\Tests\WhatWg;
+namespace WordPressImporter\Rowbot\URL\Tests\WhatWg;
 
 use PHPUnit\Framework\Attributes\DataProvider;
-use Rowbot\URL\URL;
+use WordPressImporter\Rowbot\URL\URL;
 
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/url/url-setters.html

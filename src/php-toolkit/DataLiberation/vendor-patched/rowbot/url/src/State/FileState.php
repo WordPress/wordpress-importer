@@ -2,14 +2,14 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\State;
+namespace WordPressImporter\Rowbot\URL\State;
 
-use Rowbot\URL\Component\Host\StringHost;
-use Rowbot\URL\Component\PathList;
-use Rowbot\URL\Component\Scheme;
-use Rowbot\URL\ParserContext;
-use Rowbot\URL\ParserState;
-use Rowbot\URL\String\CodePoint;
+use WordPressImporter\Rowbot\URL\Component\Host\StringHost;
+use WordPressImporter\Rowbot\URL\Component\PathList;
+use WordPressImporter\Rowbot\URL\Component\Scheme;
+use WordPressImporter\Rowbot\URL\ParserContext;
+use WordPressImporter\Rowbot\URL\ParserState;
+use WordPressImporter\Rowbot\URL\String\CodePoint;
 
 /**
  * @see https://url.spec.whatwg.org/#file-state

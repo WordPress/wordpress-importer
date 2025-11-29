@@ -2,10 +2,10 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\Component\Host;
+namespace WordPressImporter\Rowbot\URL\Component\Host;
 
-use Rowbot\URL\Component\Host\Serializer\HostSerializerInterface;
-use Rowbot\URL\Component\Host\Serializer\IPv6AddressSerializer;
+use WordPressImporter\Rowbot\URL\Component\Host\Serializer\HostSerializerInterface;
+use WordPressImporter\Rowbot\URL\Component\Host\Serializer\IPv6AddressSerializer;
 
 /**
  * @see https://url.spec.whatwg.org/#concept-ipv6

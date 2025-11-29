@@ -1,10 +1,10 @@
 <?php
 
-namespace Rowbot\URL\Tests\WhatWg;
+namespace WordPressImporter\Rowbot\URL\Tests\WhatWg;
 
 use PHPUnit\Framework\Attributes\DataProvider;
-use Rowbot\URL\Exception\TypeError;
-use Rowbot\URL\URL;
+use WordPressImporter\Rowbot\URL\Exception\TypeError;
+use WordPressImporter\Rowbot\URL\URL;
 
 use function array_key_exists;
 

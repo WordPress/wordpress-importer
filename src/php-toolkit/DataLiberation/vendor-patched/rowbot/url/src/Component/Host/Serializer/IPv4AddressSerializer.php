@@ -2,9 +2,9 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\Component\Host\Serializer;
+namespace WordPressImporter\Rowbot\URL\Component\Host\Serializer;
 
-use Rowbot\URL\Component\Host\Math\NumberFactory;
+use WordPressImporter\Rowbot\URL\Component\Host\Math\NumberFactory;
 
 /**
  * @see https://url.spec.whatwg.org/#concept-ipv4-serializer

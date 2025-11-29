@@ -2,9 +2,9 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\Component;
+namespace WordPressImporter\Rowbot\URL\Component;
 
-use Rowbot\URL\Exception\UnsupportedOperationException;
+use WordPressImporter\Rowbot\URL\Exception\UnsupportedOperationException;
 
 use function implode;
 

@@ -2,12 +2,12 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\Tests\Math;
+namespace WordPressImporter\Rowbot\URL\Tests\Math;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
-use Rowbot\URL\Component\Host\Math\NumberInterface;
+use WordPressImporter\Rowbot\URL\Component\Host\Math\NumberInterface;
 
 use const PHP_INT_MAX;
 

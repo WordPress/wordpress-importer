@@ -2,10 +2,10 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\Idna\Test;
+namespace WordPressImporter\Rowbot\Idna\Test;
 
 use ReflectionClass;
-use Rowbot\Idna\Idna;
+use WordPressImporter\Rowbot\Idna\Idna;
 
 use function array_filter;
 use function array_flip;

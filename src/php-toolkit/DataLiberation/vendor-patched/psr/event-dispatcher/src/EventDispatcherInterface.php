@@ -2,7 +2,7 @@
 
 declare( strict_types=1 );
 
-namespace Psr\EventDispatcher;
+namespace WordPressImporter\Psr\EventDispatcher;
 
 /**
  * Defines a dispatcher for events.
