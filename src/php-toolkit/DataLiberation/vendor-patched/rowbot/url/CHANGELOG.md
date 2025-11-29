@@ -8,63 +8,63 @@
 
 -   Performance improvements
 -   Validation error logging
--   `\WordPressImporter\Rowbot\URL\URL` and `\WordPressImporter\Rowbot\URL\URLSearchParams` now implement `\Stringable`
--   `\WordPressImporter\Rowbot\URL\URLSearchParams` constructor now has a native typehint of `array|object|string`
--   `\WordPressImporter\Rowbot\URL\URLSearchParams` now has a `size` getter per [whatwg/url#734](https://github.com/whatwg/url/pull/734)
-    -   `\WordPressImporter\Rowbot\URL\URLSearchParams` now also implements `\Countable`
--   Added `\WordPressImporter\Rowbot\URL\URL::canParse()`, which returns a boolean if parsing was successful, per [whatwg/url#713](https://github.com/whatwg/url/issues/713) and [whatwg/url#763](https://github.com/whatwg/url/pull/763)
--   Add value parameter to `\WordPressImporter\Rowbot\URL\URLSearchParams::has()` and `\WordPressImporter\Rowbot\URL\URLSearchParams::delete()` per [whatwg/url#335](https://github.com/whatwg/url/issues/335) and [whatwg/url#735](https://github.com/whatwg/url/pull/735)
--   Added `\WordPressImporter\Rowbot\URL\URL::parse()`, which will return the parsed URL or null on failure, avoiding needing a `try` statement per [whatwg/url#372](https://github.com/whatwg/url/issues/372) and [whatwg/url#825](https://github.com/whatwg/url/pull/825)
+-   `\VendorPrefix\Rowbot\URL\URL` and `\VendorPrefix\Rowbot\URL\URLSearchParams` now implement `\Stringable`
+-   `\VendorPrefix\Rowbot\URL\URLSearchParams` constructor now has a native typehint of `array|object|string`
+-   `\VendorPrefix\Rowbot\URL\URLSearchParams` now has a `size` getter per [whatwg/url#734](https://github.com/whatwg/url/pull/734)
+    -   `\VendorPrefix\Rowbot\URL\URLSearchParams` now also implements `\Countable`
+-   Added `\VendorPrefix\Rowbot\URL\URL::canParse()`, which returns a boolean if parsing was successful, per [whatwg/url#713](https://github.com/whatwg/url/issues/713) and [whatwg/url#763](https://github.com/whatwg/url/pull/763)
+-   Add value parameter to `\VendorPrefix\Rowbot\URL\URLSearchParams::has()` and `\VendorPrefix\Rowbot\URL\URLSearchParams::delete()` per [whatwg/url#335](https://github.com/whatwg/url/issues/335) and [whatwg/url#735](https://github.com/whatwg/url/pull/735)
+-   Added `\VendorPrefix\Rowbot\URL\URL::parse()`, which will return the parsed URL or null on failure, avoiding needing a `try` statement per [whatwg/url#372](https://github.com/whatwg/url/issues/372) and [whatwg/url#825](https://github.com/whatwg/url/pull/825)
 
 ### Changed
 
 -   Bump minimum PHP version to 8.1
 -   Lone surrogate code points are no longer treated differently from other invalid code points
--   `\WordPressImporter\Rowbot\URL\String\Exception\UConverterException` has been renamed to `\WordPressImporter\Rowbot\URL\String\Exception\EncodingException`
+-   `\VendorPrefix\Rowbot\URL\String\Exception\UConverterException` has been renamed to `\VendorPrefix\Rowbot\URL\String\Exception\EncodingException`
 -   Moved 32-bit tests to GitHub Actions from Appveyor
--   `\WordPressImporter\Rowbot\URL\URL`'s $url and $base parameters now also accept `\Stringable`
--   `\WordPressImporter\Rowbot\URL\URLSearchParams::current()` now returns `null` when the iterator is invalid instead of `['', '']`, which better matches the expected behavior
+-   `\VendorPrefix\Rowbot\URL\URL`'s $url and $base parameters now also accept `\Stringable`
+-   `\VendorPrefix\Rowbot\URL\URLSearchParams::current()` now returns `null` when the iterator is invalid instead of `['', '']`, which better matches the expected behavior
 -   Ensure opaque paths can round trip from the API [whatwg/url#651](https://github.com/whatwg/url/issues/651) [whatwg/url#728](https://github.com/whatwg/url/pull/728)
 -   Blob URL's with an inner non-http(s) URL now returns an opaque origin per [whatwg/url#770](https://github.com/whatwg/url/issues/770) and [whatwg/url#771](https://github.com/whatwg/url/pull/771)
 
 ### Removed
 
--   Removed `\WordPressImporter\Rowbot\URL\Exception\JsonException` in favor of `\JsonException`
+-   Removed `\VendorPrefix\Rowbot\URL\Exception\JsonException` in favor of `\JsonException`
 
 ### Internals
 
--   Removed class `\WordPressImporter\Rowbot\URL\String\IDLString`
--   Added method `\WordPressImporter\Rowbot\URL\String\Utf8String::scrub()`
--   Added method `\WordPressImporter\Rowbot\URL\String\Utf8String::fromUnsafe()`
--   Moved method `\WordPressImporter\Rowbot\URL\String\AbstractUSVString::transcode()` to `\WordPressImporter\Rowbot\URL\String\Utf8String`
--   Removed method `\WordPressImporter\Rowbot\URL\String\Exception\RegexException::getNameFromLastCode()`
+-   Removed class `\VendorPrefix\Rowbot\URL\String\IDLString`
+-   Added method `\VendorPrefix\Rowbot\URL\String\Utf8String::scrub()`
+-   Added method `\VendorPrefix\Rowbot\URL\String\Utf8String::fromUnsafe()`
+-   Moved method `\VendorPrefix\Rowbot\URL\String\AbstractUSVString::transcode()` to `\VendorPrefix\Rowbot\URL\String\Utf8String`
+-   Removed method `\VendorPrefix\Rowbot\URL\String\Exception\RegexException::getNameFromLastCode()`
 -   All objects with a `__toString()` method now implement `\Stringable`
 -   Added native union typehints where possible
--   `\WordPressImporter\Rowbot\URL\Origin` is now an interface
-    -   Added class `\WordPressImporter\Rowbot\URL\Component\TupleOrigin` which implements `\WordPressImporter\Rowbot\URL\Origin`
-    -   Added class `\WordPressImporter\Rowbot\URL\Component\OpaqueOrigin` which implements `\WordPressImporter\Rowbot\URL\Origin`
--   `\WordPressImporter\Rowbot\URL\Component\PathListInterface` renamed to `\WordPressImporter\Rowbot\URL\PathInterface`
-    -   Added class `\WordPressImporter\Rowbot\URL\Component\OpaquePath` which implements `\WordPressImporter\Rowbot\URL\PathInterface`
--   `\WordPressImporter\Rowbot\URL\Component\Path` was renamed to `\WordPressImporter\Rowbot\URL\Component\PathSegment`
--   `\WordPressImporter\Rowbot\URL\State\CannotBeABaseUrlPathState` was renamed to `\WordPressImporter\Rowbot\URL\State\OpaquePathState`
-    -   Removed property `\WordPressImporter\Rowbot\URL\URLRecord::$cannotBeABaseUrl`
+-   `\VendorPrefix\Rowbot\URL\Origin` is now an interface
+    -   Added class `\VendorPrefix\Rowbot\URL\Component\TupleOrigin` which implements `\VendorPrefix\Rowbot\URL\Origin`
+    -   Added class `\VendorPrefix\Rowbot\URL\Component\OpaqueOrigin` which implements `\VendorPrefix\Rowbot\URL\Origin`
+-   `\VendorPrefix\Rowbot\URL\Component\PathListInterface` renamed to `\VendorPrefix\Rowbot\URL\PathInterface`
+    -   Added class `\VendorPrefix\Rowbot\URL\Component\OpaquePath` which implements `\VendorPrefix\Rowbot\URL\PathInterface`
+-   `\VendorPrefix\Rowbot\URL\Component\Path` was renamed to `\VendorPrefix\Rowbot\URL\Component\PathSegment`
+-   `\VendorPrefix\Rowbot\URL\State\CannotBeABaseUrlPathState` was renamed to `\VendorPrefix\Rowbot\URL\State\OpaquePathState`
+    -   Removed property `\VendorPrefix\Rowbot\URL\URLRecord::$cannotBeABaseUrl`
 -   Adopted the specs new percent encoding model
-    -   Removed const `\WordPressImporter\Rowbot\URL\String\CodePoint::C0_CONTROL_PERCENT_ENCODE_SET`
-    -   Removed const `\WordPressImporter\Rowbot\URL\String\CodePoint::FRAGMENT_PERCENT_ENCODE_SET`
-    -   Removed const `\WordPressImporter\Rowbot\URL\String\CodePoint::PATH_PERCENT_ENCODE_SET`
-    -   Removed const `\WordPressImporter\Rowbot\URL\String\CodePoint::USERINFO_PERCENT_ENCODE_SET`
-    -   Removed method `\WordPressImporter\Rowbot\URL\String\CodePoint::utf8PercentEncode()`
-    -   Added enum `\WordPressImporter\Rowbot\URL\String\EncodeSet`
-    -   Added class `\WordPressImporter\Rowbot\URL\String\PercentEncoder`
-    -   `\WordPressImporter\Rowbot\URL\Component\Host\HostParser` methods are no longer static
--   `\WordPressImporter\Rowbot\URL\String\StringListInterface` extends `\IteratorAggregate` instead of `\Iterator`
--   `\WordPressImporter\Rowbot\URL\Component\QueryList` now implements `\Countable`
--   Added enum `\WordPressImporter\Rowbot\URL\State\StatusCode`
-    -   `\WordPressImporter\Rowbot\URL\State\State` now has a return type of `\WordPressImporter\Rowbot\URL\State\StatusCode` instead of `int`
-    -   Removed const `\WordPressImporter\Rowbot\URL\State\State::RETURN_OK`
-    -   Removed const `\WordPressImporter\Rowbot\URL\State\State::RETURN_CONTINUE`
-    -   Removed const `\WordPressImporter\Rowbot\URL\State\State::RETURN_BREAK`
-    -   Removed const `\WordPressImporter\Rowbot\URL\State\State::RETURN_FAILURE`
+    -   Removed const `\VendorPrefix\Rowbot\URL\String\CodePoint::C0_CONTROL_PERCENT_ENCODE_SET`
+    -   Removed const `\VendorPrefix\Rowbot\URL\String\CodePoint::FRAGMENT_PERCENT_ENCODE_SET`
+    -   Removed const `\VendorPrefix\Rowbot\URL\String\CodePoint::PATH_PERCENT_ENCODE_SET`
+    -   Removed const `\VendorPrefix\Rowbot\URL\String\CodePoint::USERINFO_PERCENT_ENCODE_SET`
+    -   Removed method `\VendorPrefix\Rowbot\URL\String\CodePoint::utf8PercentEncode()`
+    -   Added enum `\VendorPrefix\Rowbot\URL\String\EncodeSet`
+    -   Added class `\VendorPrefix\Rowbot\URL\String\PercentEncoder`
+    -   `\VendorPrefix\Rowbot\URL\Component\Host\HostParser` methods are no longer static
+-   `\VendorPrefix\Rowbot\URL\String\StringListInterface` extends `\IteratorAggregate` instead of `\Iterator`
+-   `\VendorPrefix\Rowbot\URL\Component\QueryList` now implements `\Countable`
+-   Added enum `\VendorPrefix\Rowbot\URL\State\StatusCode`
+    -   `\VendorPrefix\Rowbot\URL\State\State` now has a return type of `\VendorPrefix\Rowbot\URL\State\StatusCode` instead of `int`
+    -   Removed const `\VendorPrefix\Rowbot\URL\State\State::RETURN_OK`
+    -   Removed const `\VendorPrefix\Rowbot\URL\State\State::RETURN_CONTINUE`
+    -   Removed const `\VendorPrefix\Rowbot\URL\State\State::RETURN_BREAK`
+    -   Removed const `\VendorPrefix\Rowbot\URL\State\State::RETURN_FAILURE`
 
 ## [3.1.7] - 2022-08-26
 
@@ -189,8 +189,8 @@ The majority of this library was rewritten in this update, but the public API ha
 -   Removed artificial limitation when passing a sequence of sequences to the `URLSearchParams` constructor that required the non-array sub-sequences to implement the `\ArrayAccess` interface.
     -   Note that sub-sequences must still be countable and only contain exactly 2 items.
     -   This broadens the type of sequences that can be supplied from `iterable<mixed, array{0: string, 1: string}>` to `iterable<mixed, iterable<mixed, stringable>>`, where `stringable` is a scalar value or an object with the `__toString()` method.
--   `URLSearchParams` now throws a `\WordPressImporter\Rowbot\URL\Exception\TypeError` instead of a `\InvalidArgument` exception to match browsers when passed an iterable that does not solely contain other iterables that are countable.
--   JSON encoding the `URL` object will now throw a `\WordPressImporter\Rowbot\URL\Exception\JsonException` when JSON encoding fails.
+-   `URLSearchParams` now throws a `\VendorPrefix\Rowbot\URL\Exception\TypeError` instead of a `\InvalidArgument` exception to match browsers when passed an iterable that does not solely contain other iterables that are countable.
+-   JSON encoding the `URL` object will now throw a `\VendorPrefix\Rowbot\URL\Exception\JsonException` when JSON encoding fails.
 
 ### Fixed
 
@@ -235,7 +235,7 @@ The majority of this library was rewritten in this update, but the public API ha
 -   The minimum required PHP version is now 7.1.
 -   Testing environment updated for PHP 7.1 - thanks [@nyamsprod](https://github.com/nyamsprod)
 -   Native typehints are now used. This which means that an `\TypeError` is now thrown instead of an `\InvalidArgumentException` when a value with an incorrect type is passed.
--   `\WordPressImporter\Rowbot\URL\Exception\TypeError` and `\WordPressImporter\Rowbot\URL\Exception\InvalidParserState` now inherit from `\WordPressImporter\Rowbot\URL\Exception\URLException`
+-   `\VendorPrefix\Rowbot\URL\Exception\TypeError` and `\VendorPrefix\Rowbot\URL\Exception\InvalidParserState` now inherit from `\VendorPrefix\Rowbot\URL\Exception\URLException`
 
 ## [1.1.1] - 2018-08-15
 
@@ -282,7 +282,7 @@ The majority of this library was rewritten in this update, but the public API ha
 
 ### Changed
 
--   Trying to set `URL::searchParams` directly will now throw a `\WordPressImporter\Rowbot\URL\Exception\TypeError`
+-   Trying to set `URL::searchParams` directly will now throw a `\VendorPrefix\Rowbot\URL\Exception\TypeError`
 -   Passing invalid input will throw an `\InvalidArgumentException`
 -   Malformed byte sequences will now get fixed up with `\u{FFFD}` replacement characters.
 -   `URLSearchParams` now implements `\Iterator` instead of `\IteratorAggregate` to match test expectations.

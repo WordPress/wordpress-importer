@@ -2,15 +2,15 @@
 
 declare( strict_types=1 );
 
-namespace WordPressImporter\Rowbot\URL;
+namespace VendorPrefix\Rowbot\URL;
 
 use Countable;
 use Iterator;
 use ReflectionObject;
 use ReflectionProperty;
-use WordPressImporter\Rowbot\URL\Component\QueryList;
-use WordPressImporter\Rowbot\URL\Exception\TypeError;
-use WordPressImporter\Rowbot\URL\String\Utf8String;
+use VendorPrefix\Rowbot\URL\Component\QueryList;
+use VendorPrefix\Rowbot\URL\Exception\TypeError;
+use VendorPrefix\Rowbot\URL\String\Utf8String;
 
 use Stringable;
 
@@ -302,17 +302,17 @@ class URLSearchParams implements Countable, Iterator {
 			//     }
 			// }
 			//
-			// $s = new \WordPressImporter\Rowbot\URL\URLSearchParams([new CountableClass()]);
+			// $s = new \VendorPrefix\Rowbot\URL\URLSearchParams([new CountableClass()]);
 			//
 			// or:
 			//
 			// $a = new \ArrayObject(['x', 'y']);
-			// $s = new \WordPressImporter\Rowbot\URL\URLSearchParams($a);
+			// $s = new \VendorPrefix\Rowbot\URL\URLSearchParams($a);
 			//
 			// while still allowing things like:
 			//
 			// $a = new \ArrayObject(new \ArrayObject(['x', 'y']));
-			// $s = new \WordPressImporter\Rowbot\URL\URLSearchParams($a);'
+			// $s = new \VendorPrefix\Rowbot\URL\URLSearchParams($a);'
 			if ( ! ( is_array( $pair ) || $pair instanceof Countable ) || ! is_iterable( $pair ) ) {
 				throw new TypeError( sprintf(
 					'Expected a valid sequence such as an Array or iterable Object that implements '

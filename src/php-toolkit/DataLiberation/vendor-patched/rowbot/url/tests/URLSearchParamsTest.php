@@ -2,16 +2,16 @@
 
 declare( strict_types=1 );
 
-namespace WordPressImporter\Rowbot\URL\Tests;
+namespace VendorPrefix\Rowbot\URL\Tests;
 
 use ArrayObject;
 use Countable;
 use Generator;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use WordPressImporter\Rowbot\URL\Exception\TypeError;
-use WordPressImporter\Rowbot\URL\URL;
-use WordPressImporter\Rowbot\URL\URLSearchParams;
+use VendorPrefix\Rowbot\URL\Exception\TypeError;
+use VendorPrefix\Rowbot\URL\URL;
+use VendorPrefix\Rowbot\URL\URLSearchParams;
 
 class URLSearchParamsTest extends TestCase {
 	public function testCloningStandaloneURLSearchParams(): void {

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace WordPressImporter\Brick\Math\Internal;
+namespace VendorPrefix\Brick\Math\Internal;
 
-use WordPressImporter\Brick\Math\Exception\RoundingNecessaryException;
-use WordPressImporter\Brick\Math\RoundingMode;
+use VendorPrefix\Brick\Math\Exception\RoundingNecessaryException;
+use VendorPrefix\Brick\Math\RoundingMode;
 
 /**
  * Performs basic operations on arbitrary size integers.
@@ -34,7 +34,7 @@ abstract class Calculator
 
     /**
      * The Calculator instance in use.
-     * @var \WordPressImporter\Brick\Math\Internal\Calculator|null
+     * @var \VendorPrefix\Brick\Math\Internal\Calculator|null
      */
     private static $instance;
 
@@ -439,7 +439,7 @@ abstract class Calculator
      * @throws RoundingNecessaryException If RoundingMode::UNNECESSARY is provided but rounding is necessary.
      *
      * @psalm-suppress ImpureFunctionCall
-     * @param \WordPressImporter\Brick\Math\RoundingMode::* $roundingMode
+     * @param \VendorPrefix\Brick\Math\RoundingMode::* $roundingMode
      */
     final public function divRound(string $a, string $b, $roundingMode) : string
     {

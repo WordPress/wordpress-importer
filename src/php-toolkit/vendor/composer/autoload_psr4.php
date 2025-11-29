@@ -6,14 +6,14 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-    'WordPressImporter\\Symfony\\Polyfill\\Php80\\' => array($baseDir . '/DataLiberation/vendor-patched/symfony/polyfill-php80/src'),
-    'WordPressImporter\\Symfony\\Polyfill\\Intl\\Normalizer\\' => array($baseDir . '/DataLiberation/vendor-patched/symfony/polyfill-intl-normalizer/src'),
-    'WordPressImporter\\Symfony\\Polyfill\\Ctype\\' => array($baseDir . '/DataLiberation/vendor-patched/symfony/polyfill-ctype/src'),
-    'WordPressImporter\\Rowbot\\URL\\' => array($baseDir . '/DataLiberation/vendor-patched/rowbot/url/src'),
-    'WordPressImporter\\Rowbot\\Punycode\\' => array($baseDir . '/DataLiberation/vendor-patched/rowbot/punycode/src'),
-    'WordPressImporter\\Rowbot\\Idna\\Resource\\' => array($baseDir . '/DataLiberation/vendor-patched/rowbot/idna/resources'),
-    'WordPressImporter\\Rowbot\\Idna\\' => array($baseDir . '/DataLiberation/vendor-patched/rowbot/idna/src'),
-    'WordPressImporter\\Psr\\Log\\' => array($baseDir . '/DataLiberation/vendor-patched/psr/log/src'),
-    'WordPressImporter\\Psr\\EventDispatcher\\' => array($baseDir . '/DataLiberation/vendor-patched/psr/event-dispatcher/src'),
-    'WordPressImporter\\Brick\\Math\\' => array($baseDir . '/DataLiberation/vendor-patched/brick/math/src'),
+    'VendorPrefix\\Symfony\\Polyfill\\Php80\\' => array($baseDir . '/DataLiberation/vendor-patched/symfony/polyfill-php80/src'),
+    'VendorPrefix\\Symfony\\Polyfill\\Intl\\Normalizer\\' => array($baseDir . '/DataLiberation/vendor-patched/symfony/polyfill-intl-normalizer/src'),
+    'VendorPrefix\\Symfony\\Polyfill\\Ctype\\' => array($baseDir . '/DataLiberation/vendor-patched/symfony/polyfill-ctype/src'),
+    'VendorPrefix\\Rowbot\\URL\\' => array($baseDir . '/DataLiberation/vendor-patched/rowbot/url/src'),
+    'VendorPrefix\\Rowbot\\Punycode\\' => array($baseDir . '/DataLiberation/vendor-patched/rowbot/punycode/src'),
+    'VendorPrefix\\Rowbot\\Idna\\Resource\\' => array($baseDir . '/DataLiberation/vendor-patched/rowbot/idna/resources'),
+    'VendorPrefix\\Rowbot\\Idna\\' => array($baseDir . '/DataLiberation/vendor-patched/rowbot/idna/src'),
+    'VendorPrefix\\Psr\\Log\\' => array($baseDir . '/DataLiberation/vendor-patched/psr/log/src'),
+    'VendorPrefix\\Psr\\EventDispatcher\\' => array($baseDir . '/DataLiberation/vendor-patched/psr/event-dispatcher/src'),
+    'VendorPrefix\\Brick\\Math\\' => array($baseDir . '/DataLiberation/vendor-patched/brick/math/src'),
 );

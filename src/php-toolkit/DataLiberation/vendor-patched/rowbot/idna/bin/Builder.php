@@ -2,9 +2,9 @@
 
 declare( strict_types=1 );
 
-namespace WordPressImporter\Rowbot\Idna\Bin;
+namespace VendorPrefix\Rowbot\Idna\Bin;
 
-use WordPressImporter\Rowbot\Idna\Idna;
+use VendorPrefix\Rowbot\Idna\Idna;
 use RuntimeException;
 
 use function array_map;

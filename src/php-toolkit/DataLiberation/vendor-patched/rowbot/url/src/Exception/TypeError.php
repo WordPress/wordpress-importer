@@ -2,7 +2,7 @@
 
 declare( strict_types=1 );
 
-namespace WordPressImporter\Rowbot\URL\Exception;
+namespace VendorPrefix\Rowbot\URL\Exception;
 
 class TypeError extends URLException {
 }

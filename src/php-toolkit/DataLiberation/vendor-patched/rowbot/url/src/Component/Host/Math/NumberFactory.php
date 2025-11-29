@@ -2,7 +2,7 @@
 
 declare( strict_types=1 );
 
-namespace WordPressImporter\Rowbot\URL\Component\Host\Math;
+namespace VendorPrefix\Rowbot\URL\Component\Host\Math;
 
 use const PHP_INT_SIZE;
 

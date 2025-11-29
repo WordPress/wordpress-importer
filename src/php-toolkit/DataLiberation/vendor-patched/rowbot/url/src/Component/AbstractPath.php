@@ -2,10 +2,10 @@
 
 declare( strict_types=1 );
 
-namespace WordPressImporter\Rowbot\URL\Component;
+namespace VendorPrefix\Rowbot\URL\Component;
 
-use WordPressImporter\Rowbot\URL\String\Exception\UndefinedIndexException;
-use WordPressImporter\Rowbot\URL\URLRecord;
+use VendorPrefix\Rowbot\URL\String\Exception\UndefinedIndexException;
+use VendorPrefix\Rowbot\URL\URLRecord;
 
 use function count;
 

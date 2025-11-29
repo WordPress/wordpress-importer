@@ -2,18 +2,18 @@
 
 declare( strict_types=1 );
 
-namespace WordPressImporter\Rowbot\URL;
+namespace VendorPrefix\Rowbot\URL;
 
-use WordPressImporter\Rowbot\URL\Component\Host\HostInterface;
-use WordPressImporter\Rowbot\URL\Component\Host\NullHost;
-use WordPressImporter\Rowbot\URL\Component\OpaqueOrigin;
-use WordPressImporter\Rowbot\URL\Component\PathInterface;
-use WordPressImporter\Rowbot\URL\Component\PathList;
-use WordPressImporter\Rowbot\URL\Component\Scheme;
-use WordPressImporter\Rowbot\URL\Component\TupleOrigin;
-use WordPressImporter\Rowbot\URL\String\EncodeSet;
-use WordPressImporter\Rowbot\URL\String\PercentEncoder;
-use WordPressImporter\Rowbot\URL\String\USVStringInterface;
+use VendorPrefix\Rowbot\URL\Component\Host\HostInterface;
+use VendorPrefix\Rowbot\URL\Component\Host\NullHost;
+use VendorPrefix\Rowbot\URL\Component\OpaqueOrigin;
+use VendorPrefix\Rowbot\URL\Component\PathInterface;
+use VendorPrefix\Rowbot\URL\Component\PathList;
+use VendorPrefix\Rowbot\URL\Component\Scheme;
+use VendorPrefix\Rowbot\URL\Component\TupleOrigin;
+use VendorPrefix\Rowbot\URL\String\EncodeSet;
+use VendorPrefix\Rowbot\URL\String\PercentEncoder;
+use VendorPrefix\Rowbot\URL\String\USVStringInterface;
 
 class URLRecord {
 	/**

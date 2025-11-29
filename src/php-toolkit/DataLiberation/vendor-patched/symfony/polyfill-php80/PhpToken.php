@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace WordPressImporter\Symfony\Polyfill\Php80;
+namespace VendorPrefix\Symfony\Polyfill\Php80;
 
 use function in_array;
 use function is_string;

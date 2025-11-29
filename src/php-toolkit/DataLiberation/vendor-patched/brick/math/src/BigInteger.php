@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace WordPressImporter\Brick\Math;
+namespace VendorPrefix\Brick\Math;
 
-use WordPressImporter\Brick\Math\Exception\DivisionByZeroException;
-use WordPressImporter\Brick\Math\Exception\IntegerOverflowException;
-use WordPressImporter\Brick\Math\Exception\MathException;
-use WordPressImporter\Brick\Math\Exception\NegativeNumberException;
-use WordPressImporter\Brick\Math\Exception\NumberFormatException;
-use WordPressImporter\Brick\Math\Internal\Calculator;
+use VendorPrefix\Brick\Math\Exception\DivisionByZeroException;
+use VendorPrefix\Brick\Math\Exception\IntegerOverflowException;
+use VendorPrefix\Brick\Math\Exception\MathException;
+use VendorPrefix\Brick\Math\Exception\NegativeNumberException;
+use VendorPrefix\Brick\Math\Exception\NumberFormatException;
+use VendorPrefix\Brick\Math\Internal\Calculator;
 
 /**
  * An arbitrary-size integer.
@@ -433,7 +433,7 @@ final class BigInteger extends BigNumber
      *
      * @throws MathException If the divisor is not a valid number, is not convertible to a BigInteger, is zero,
      *                       or RoundingMode::UNNECESSARY is used and the remainder is not zero.
-     * @param \WordPressImporter\Brick\Math\RoundingMode::* $roundingMode
+     * @param \VendorPrefix\Brick\Math\RoundingMode::* $roundingMode
      */
     public function dividedBy($that, $roundingMode = RoundingMode::UNNECESSARY) : BigInteger
     {
@@ -861,7 +861,7 @@ final class BigInteger extends BigNumber
     }
 
     /**
-     * @param \WordPressImporter\Brick\Math\BigNumber|int|float|string $that
+     * @param \VendorPrefix\Brick\Math\BigNumber|int|float|string $that
      */
     public function compareTo($that) : int
     {

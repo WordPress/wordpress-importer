@@ -2,10 +2,10 @@
 
 declare( strict_types=1 );
 
-namespace WordPressImporter\Rowbot\URL\Tests;
+namespace VendorPrefix\Rowbot\URL\Tests;
 
-use WordPressImporter\Psr\Log\LoggerInterface;
-use WordPressImporter\Psr\Log\LoggerTrait;
+use VendorPrefix\Psr\Log\LoggerInterface;
+use VendorPrefix\Psr\Log\LoggerTrait;
 use Stringable;
 
 final class ValidationErrorLogger implements LoggerInterface {

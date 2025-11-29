@@ -1,9 +1,9 @@
 <?php
 
-namespace WordPressImporter\Rowbot\URL\Tests\WhatWg;
+namespace VendorPrefix\Rowbot\URL\Tests\WhatWg;
 
 use PHPUnit\Framework\TestCase;
-use WordPressImporter\Rowbot\URL\URL;
+use VendorPrefix\Rowbot\URL\URL;
 
 use function json_encode;
 use function str_replace;

@@ -2,11 +2,11 @@
 
 declare( strict_types=1 );
 
-namespace WordPressImporter\Rowbot\Punycode;
+namespace VendorPrefix\Rowbot\Punycode;
 
-use WordPressImporter\Rowbot\Punycode\Exception\InvalidInputException;
-use WordPressImporter\Rowbot\Punycode\Exception\OutputSizeExceededException;
-use WordPressImporter\Rowbot\Punycode\Exception\OverflowException;
+use VendorPrefix\Rowbot\Punycode\Exception\InvalidInputException;
+use VendorPrefix\Rowbot\Punycode\Exception\OutputSizeExceededException;
+use VendorPrefix\Rowbot\Punycode\Exception\OverflowException;
 
 use function array_map;
 use function array_splice;

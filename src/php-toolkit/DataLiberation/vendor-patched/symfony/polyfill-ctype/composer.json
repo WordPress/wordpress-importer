@@ -28,7 +28,7 @@
 	},
 	"autoload": {
 		"psr-4": {
-			"WordPressImporter\\Symfony\\Polyfill\\Ctype\\": ""
+			"VendorPrefix\\Symfony\\Polyfill\\Ctype\\": ""
 		},
 		"files": [
 			"bootstrap.php"

@@ -2,9 +2,9 @@
 
 declare( strict_types=1 );
 
-use WordPressImporter\Rowbot\Idna\Bin\IdnaDataBuilder;
-use WordPressImporter\Rowbot\Idna\Bin\RegexBuilder;
-use WordPressImporter\Rowbot\Idna\Bin\ViramaDataBuilder;
+use VendorPrefix\Rowbot\Idna\Bin\IdnaDataBuilder;
+use VendorPrefix\Rowbot\Idna\Bin\RegexBuilder;
+use VendorPrefix\Rowbot\Idna\Bin\ViramaDataBuilder;
 
 const DS         = DIRECTORY_SEPARATOR;
 const ROOT_DIR   = __DIR__ . DS . '..';

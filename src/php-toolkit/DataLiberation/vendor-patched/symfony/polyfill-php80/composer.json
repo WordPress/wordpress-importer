@@ -29,7 +29,7 @@
 	},
 	"autoload": {
 		"psr-4": {
-			"WordPressImporter\\Symfony\\Polyfill\\Php80\\": ""
+			"VendorPrefix\\Symfony\\Polyfill\\Php80\\": ""
 		},
 		"files": [
 			"bootstrap.php"

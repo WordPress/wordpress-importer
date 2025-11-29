@@ -2,15 +2,15 @@
 
 declare( strict_types=1 );
 
-namespace WordPressImporter\Rowbot\URL\Component\Host;
+namespace VendorPrefix\Rowbot\URL\Component\Host;
 
-use WordPressImporter\Psr\Log\LogLevel;
-use WordPressImporter\Rowbot\URL\Component\Host\Math\NumberFactory;
-use WordPressImporter\Rowbot\URL\Component\Host\Math\NumberInterface;
-use WordPressImporter\Rowbot\URL\ParserContext;
-use WordPressImporter\Rowbot\URL\String\CodePoint;
-use WordPressImporter\Rowbot\URL\String\StringListInterface;
-use WordPressImporter\Rowbot\URL\String\USVStringInterface;
+use VendorPrefix\Psr\Log\LogLevel;
+use VendorPrefix\Rowbot\URL\Component\Host\Math\NumberFactory;
+use VendorPrefix\Rowbot\URL\Component\Host\Math\NumberInterface;
+use VendorPrefix\Rowbot\URL\ParserContext;
+use VendorPrefix\Rowbot\URL\String\CodePoint;
+use VendorPrefix\Rowbot\URL\String\StringListInterface;
+use VendorPrefix\Rowbot\URL\String\USVStringInterface;
 
 use function array_pop;
 use function array_reduce;

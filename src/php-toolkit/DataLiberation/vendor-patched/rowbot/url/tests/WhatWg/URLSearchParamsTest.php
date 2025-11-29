@@ -1,10 +1,10 @@
 <?php
 
-namespace WordPressImporter\Rowbot\URL\Tests\WhatWg;
+namespace VendorPrefix\Rowbot\URL\Tests\WhatWg;
 
-use WordPressImporter\Rowbot\URL\Exception\TypeError;
-use WordPressImporter\Rowbot\URL\URL;
-use WordPressImporter\Rowbot\URL\URLSearchParams;
+use VendorPrefix\Rowbot\URL\Exception\TypeError;
+use VendorPrefix\Rowbot\URL\URL;
+use VendorPrefix\Rowbot\URL\URLSearchParams;
 
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/url/url-searchparams.any.js

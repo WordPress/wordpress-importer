@@ -1,6 +1,6 @@
 <?php
 
-namespace WordPressImporter\Psr\Log;
+namespace VendorPrefix\Psr\Log;
 
 /**
  * This is a simple Logger implementation that other Loggers can inherit from.

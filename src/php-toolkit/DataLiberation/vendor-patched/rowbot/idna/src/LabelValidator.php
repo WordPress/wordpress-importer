@@ -2,10 +2,10 @@
 
 declare( strict_types=1 );
 
-namespace WordPressImporter\Rowbot\Idna;
+namespace VendorPrefix\Rowbot\Idna;
 
 use Normalizer;
-use WordPressImporter\Rowbot\Idna\Resource\Regex;
+use VendorPrefix\Rowbot\Idna\Resource\Regex;
 
 use function preg_match;
 use function strlen;

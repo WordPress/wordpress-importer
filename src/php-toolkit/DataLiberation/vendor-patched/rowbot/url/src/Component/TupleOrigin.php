@@ -2,10 +2,10 @@
 
 declare( strict_types=1 );
 
-namespace WordPressImporter\Rowbot\URL\Component;
+namespace VendorPrefix\Rowbot\URL\Component;
 
-use WordPressImporter\Rowbot\URL\Component\Host\HostInterface;
-use WordPressImporter\Rowbot\URL\Origin;
+use VendorPrefix\Rowbot\URL\Component\Host\HostInterface;
+use VendorPrefix\Rowbot\URL\Origin;
 
 /**
  * @see https://html.spec.whatwg.org/multipage/origin.html#concept-origin-tuple

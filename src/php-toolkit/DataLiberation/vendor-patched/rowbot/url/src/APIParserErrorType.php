@@ -2,7 +2,7 @@
 
 declare( strict_types=1 );
 
-namespace WordPressImporter\Rowbot\URL;
+namespace VendorPrefix\Rowbot\URL;
 
 class APIParserErrorType {
 	public const NONE = 'none';

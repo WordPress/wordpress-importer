@@ -2,13 +2,13 @@
 
 declare( strict_types=1 );
 
-namespace WordPressImporter\Rowbot\URL;
+namespace VendorPrefix\Rowbot\URL;
 
-use WordPressImporter\Psr\Log\LoggerInterface;
-use WordPressImporter\Rowbot\URL\String\StringBufferInterface;
-use WordPressImporter\Rowbot\URL\String\StringIteratorInterface;
-use WordPressImporter\Rowbot\URL\String\USVStringInterface;
-use WordPressImporter\Rowbot\URL\Support\EncodingHelper;
+use VendorPrefix\Psr\Log\LoggerInterface;
+use VendorPrefix\Rowbot\URL\String\StringBufferInterface;
+use VendorPrefix\Rowbot\URL\String\StringIteratorInterface;
+use VendorPrefix\Rowbot\URL\String\USVStringInterface;
+use VendorPrefix\Rowbot\URL\Support\EncodingHelper;
 
 final class ParserContext {
 	/**

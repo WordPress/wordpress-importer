@@ -36,15 +36,15 @@ The URL object is the primary object for working with a URL.
 `URL(string|\Stringable $url[, null|string|\Stringable $base = null, array $options = []])`
 
 The `$options` argument accepts an array with a key `logger` whose value is an object implementing
-`\WordPressImporter\Psr\Log\LoggerInterface`. See [Logging](#logging) for more information.
+`\VendorPrefix\Psr\Log\LoggerInterface`. See [Logging](#logging) for more information.
 
 #### URL constructor throws
 
--   `\WordPressImporter\Rowbot\URL\Exception\TypeError`
+-   `\VendorPrefix\Rowbot\URL\Exception\TypeError`
     -   When the URL parser determines that the given input is not a valid URL.
 
 ```php
-use WordPressImporter\Rowbot\URL\URL;
+use VendorPrefix\Rowbot\URL\URL;
 
 // Construct a new URL object.
 $url = new URL('https://example.com/');
@@ -61,7 +61,7 @@ echo $url1->href; // Outputs: "https://example.org:123/foo/bar/"
 // Catch the error when URL parsing fails.
 try {
     $url = new URL('http://2001::1]');
-} catch (\WordPressImporter\Rowbot\URL\Exception\TypeError $e) {
+} catch (\VendorPrefix\Rowbot\URL\Exception\TypeError $e) {
     echo 'Invalid URL';
 }
 ```
@@ -74,7 +74,7 @@ Note: As a convience, both the `__get()` and `__set()` methods will throw an `\I
 
 The `href` getter returns the serialization of the URL. The `href` setter will parse the entire string
 updating all the components of the URL with the new values. Providing an invalid URL will cause the
-setter to throw a `\WordPressImporter\Rowbot\URL\TypeError`.
+setter to throw a `\VendorPrefix\Rowbot\URL\TypeError`.
 
 #### `readonly string URL::origin`
 
@@ -152,13 +152,13 @@ The URLSearchParams object allows you to work with query strings when you don't 
 
 #### URLSearchParams constructor throws
 
--   `\WordPressImporter\Rowbot\URL\Exception\TypeError`
+-   `\VendorPrefix\Rowbot\URL\Exception\TypeError`
     -   When an iterable is passed and one if its values is not iterable.
     -   When an iterable is passed and one of its values is not countable, such as an object that implements `\Iterator`, but not `\Countable`.
     -   When an iterable is passed and one of its sequences does not contain exactly 2 items, such as an array that contains only 1 string.
 
 ```php
-use WordPressImporter\Rowbot\URL\URLSearchParams;
+use VendorPrefix\Rowbot\URL\URLSearchParams;
 
 // Construct an empty list of search params.
 $params = new URLSearchParams();

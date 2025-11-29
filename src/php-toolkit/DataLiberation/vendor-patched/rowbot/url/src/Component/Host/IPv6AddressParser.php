@@ -2,12 +2,12 @@
 
 declare( strict_types=1 );
 
-namespace WordPressImporter\Rowbot\URL\Component\Host;
+namespace VendorPrefix\Rowbot\URL\Component\Host;
 
-use WordPressImporter\Rowbot\URL\ParserContext;
-use WordPressImporter\Rowbot\URL\String\CodePoint;
-use WordPressImporter\Rowbot\URL\String\StringIteratorInterface;
-use WordPressImporter\Rowbot\URL\String\USVStringInterface;
+use VendorPrefix\Rowbot\URL\ParserContext;
+use VendorPrefix\Rowbot\URL\String\CodePoint;
+use VendorPrefix\Rowbot\URL\String\StringIteratorInterface;
+use VendorPrefix\Rowbot\URL\String\USVStringInterface;
 
 use function array_is_list;
 use function assert;

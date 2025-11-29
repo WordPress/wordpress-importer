@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace WordPressImporter\Brick\Math\Exception;
+namespace VendorPrefix\Brick\Math\Exception;
 
 /**
  * Exception thrown when a number cannot be represented at the requested scale without rounding.

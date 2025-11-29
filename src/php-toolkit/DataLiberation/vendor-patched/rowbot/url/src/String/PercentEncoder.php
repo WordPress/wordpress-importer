@@ -2,10 +2,10 @@
 
 declare( strict_types=1 );
 
-namespace WordPressImporter\Rowbot\URL\String;
+namespace VendorPrefix\Rowbot\URL\String;
 
-use WordPressImporter\Rowbot\URL\String\Exception\RegexException;
-use WordPressImporter\Rowbot\URL\Support\EncodingHelper;
+use VendorPrefix\Rowbot\URL\String\Exception\RegexException;
+use VendorPrefix\Rowbot\URL\Support\EncodingHelper;
 
 use function bin2hex;
 use function hexdec;

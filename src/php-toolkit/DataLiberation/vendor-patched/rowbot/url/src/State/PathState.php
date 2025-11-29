@@ -2,14 +2,14 @@
 
 declare( strict_types=1 );
 
-namespace WordPressImporter\Rowbot\URL\State;
+namespace VendorPrefix\Rowbot\URL\State;
 
-use WordPressImporter\Rowbot\URL\Component\PathSegment;
-use WordPressImporter\Rowbot\URL\ParserContext;
-use WordPressImporter\Rowbot\URL\ParserState;
-use WordPressImporter\Rowbot\URL\String\CodePoint;
-use WordPressImporter\Rowbot\URL\String\EncodeSet;
-use WordPressImporter\Rowbot\URL\String\PercentEncoder;
+use VendorPrefix\Rowbot\URL\Component\PathSegment;
+use VendorPrefix\Rowbot\URL\ParserContext;
+use VendorPrefix\Rowbot\URL\ParserState;
+use VendorPrefix\Rowbot\URL\String\CodePoint;
+use VendorPrefix\Rowbot\URL\String\EncodeSet;
+use VendorPrefix\Rowbot\URL\String\PercentEncoder;
 
 /**
  * @see https://url.spec.whatwg.org/#path-state

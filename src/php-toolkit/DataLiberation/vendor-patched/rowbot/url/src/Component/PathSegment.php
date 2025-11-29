@@ -2,10 +2,10 @@
 
 declare( strict_types=1 );
 
-namespace WordPressImporter\Rowbot\URL\Component;
+namespace VendorPrefix\Rowbot\URL\Component;
 
-use WordPressImporter\Rowbot\URL\String\AbstractStringBuffer;
-use WordPressImporter\Rowbot\URL\String\CodePoint;
+use VendorPrefix\Rowbot\URL\String\AbstractStringBuffer;
+use VendorPrefix\Rowbot\URL\String\CodePoint;
 
 use function rtrim;
 use function strlen;

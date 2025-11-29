@@ -19,7 +19,7 @@
 	},
 	"autoload": {
 		"psr-4": {
-			"WordPressImporter\\Psr\\EventDispatcher\\": "src"
+			"VendorPrefix\\Psr\\EventDispatcher\\": "src"
 		}
 	},
 	"extra": {

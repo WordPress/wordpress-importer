@@ -2,9 +2,9 @@
 
 declare( strict_types=1 );
 
-namespace WordPressImporter\Rowbot\URL\Component\Host\Math;
+namespace VendorPrefix\Rowbot\URL\Component\Host\Math;
 
-use WordPressImporter\Rowbot\URL\Component\Host\Math\Exception\MathException;
+use VendorPrefix\Rowbot\URL\Component\Host\Math\Exception\MathException;
 
 use function floor;
 use function intval;

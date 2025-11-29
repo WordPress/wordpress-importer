@@ -2,13 +2,13 @@
 
 declare( strict_types=1 );
 
-namespace WordPressImporter\Rowbot\URL\State;
+namespace VendorPrefix\Rowbot\URL\State;
 
-use WordPressImporter\Rowbot\URL\Component\Host\HostParser;
-use WordPressImporter\Rowbot\URL\Component\Host\StringHost;
-use WordPressImporter\Rowbot\URL\ParserContext;
-use WordPressImporter\Rowbot\URL\ParserState;
-use WordPressImporter\Rowbot\URL\String\CodePoint;
+use VendorPrefix\Rowbot\URL\Component\Host\HostParser;
+use VendorPrefix\Rowbot\URL\Component\Host\StringHost;
+use VendorPrefix\Rowbot\URL\ParserContext;
+use VendorPrefix\Rowbot\URL\ParserState;
+use VendorPrefix\Rowbot\URL\String\CodePoint;
 
 /**
  * @see https://url.spec.whatwg.org/#file-host-state

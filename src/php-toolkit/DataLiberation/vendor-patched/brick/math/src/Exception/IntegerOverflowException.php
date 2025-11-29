@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace WordPressImporter\Brick\Math\Exception;
+namespace VendorPrefix\Brick\Math\Exception;
 
-use WordPressImporter\Brick\Math\BigInteger;
+use VendorPrefix\Brick\Math\BigInteger;
 
 /**
  * Exception thrown when an integer overflow occurs.

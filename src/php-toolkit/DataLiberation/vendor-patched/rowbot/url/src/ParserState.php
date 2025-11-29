@@ -2,30 +2,30 @@
 
 declare( strict_types=1 );
 
-namespace WordPressImporter\Rowbot\URL;
+namespace VendorPrefix\Rowbot\URL;
 
-use WordPressImporter\Rowbot\URL\State\AuthorityState;
-use WordPressImporter\Rowbot\URL\State\FileHostState;
-use WordPressImporter\Rowbot\URL\State\FileSlashState;
-use WordPressImporter\Rowbot\URL\State\FileState;
-use WordPressImporter\Rowbot\URL\State\FragmentState;
-use WordPressImporter\Rowbot\URL\State\HostnameState;
-use WordPressImporter\Rowbot\URL\State\HostState;
-use WordPressImporter\Rowbot\URL\State\NoSchemeState;
-use WordPressImporter\Rowbot\URL\State\OpaquePathState;
-use WordPressImporter\Rowbot\URL\State\PathOrAuthorityState;
-use WordPressImporter\Rowbot\URL\State\PathStartState;
-use WordPressImporter\Rowbot\URL\State\PathState;
-use WordPressImporter\Rowbot\URL\State\PortState;
-use WordPressImporter\Rowbot\URL\State\QueryState;
-use WordPressImporter\Rowbot\URL\State\RelativeSlashState;
-use WordPressImporter\Rowbot\URL\State\RelativeState;
-use WordPressImporter\Rowbot\URL\State\SchemeStartState;
-use WordPressImporter\Rowbot\URL\State\SchemeState;
-use WordPressImporter\Rowbot\URL\State\SpecialAuthorityIgnoreSlashesState;
-use WordPressImporter\Rowbot\URL\State\SpecialAuthoritySlashesState;
-use WordPressImporter\Rowbot\URL\State\SpecialRelativeOrAuthorityState;
-use WordPressImporter\Rowbot\URL\State\State;
+use VendorPrefix\Rowbot\URL\State\AuthorityState;
+use VendorPrefix\Rowbot\URL\State\FileHostState;
+use VendorPrefix\Rowbot\URL\State\FileSlashState;
+use VendorPrefix\Rowbot\URL\State\FileState;
+use VendorPrefix\Rowbot\URL\State\FragmentState;
+use VendorPrefix\Rowbot\URL\State\HostnameState;
+use VendorPrefix\Rowbot\URL\State\HostState;
+use VendorPrefix\Rowbot\URL\State\NoSchemeState;
+use VendorPrefix\Rowbot\URL\State\OpaquePathState;
+use VendorPrefix\Rowbot\URL\State\PathOrAuthorityState;
+use VendorPrefix\Rowbot\URL\State\PathStartState;
+use VendorPrefix\Rowbot\URL\State\PathState;
+use VendorPrefix\Rowbot\URL\State\PortState;
+use VendorPrefix\Rowbot\URL\State\QueryState;
+use VendorPrefix\Rowbot\URL\State\RelativeSlashState;
+use VendorPrefix\Rowbot\URL\State\RelativeState;
+use VendorPrefix\Rowbot\URL\State\SchemeStartState;
+use VendorPrefix\Rowbot\URL\State\SchemeState;
+use VendorPrefix\Rowbot\URL\State\SpecialAuthorityIgnoreSlashesState;
+use VendorPrefix\Rowbot\URL\State\SpecialAuthoritySlashesState;
+use VendorPrefix\Rowbot\URL\State\SpecialRelativeOrAuthorityState;
+use VendorPrefix\Rowbot\URL\State\State;
 
 class ParserState {
 	public const SCHEME_START = 'scheme_start';

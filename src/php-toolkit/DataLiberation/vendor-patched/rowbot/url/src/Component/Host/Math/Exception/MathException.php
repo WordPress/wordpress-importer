@@ -2,9 +2,9 @@
 
 declare( strict_types=1 );
 
-namespace WordPressImporter\Rowbot\URL\Component\Host\Math\Exception;
+namespace VendorPrefix\Rowbot\URL\Component\Host\Math\Exception;
 
-use WordPressImporter\Rowbot\URL\Exception\URLException;
+use VendorPrefix\Rowbot\URL\Exception\URLException;
 
 class MathException extends URLException {
 }

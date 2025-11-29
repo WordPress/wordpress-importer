@@ -1,6 +1,6 @@
 <?php
 
-namespace WordPressImporter\Psr\Log;
+namespace VendorPrefix\Psr\Log;
 
 /**
  * Describes a logger-aware instance.

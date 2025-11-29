@@ -2,7 +2,7 @@
 
 declare( strict_types=1 );
 
-namespace WordPressImporter\Rowbot\Idna;
+namespace VendorPrefix\Rowbot\Idna;
 
 class DomainInfo {
 	/**

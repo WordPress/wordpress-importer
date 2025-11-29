@@ -20,12 +20,12 @@
 	},
 	"autoload": {
 		"psr-4": {
-			"WordPressImporter\\Rowbot\\Punycode\\": "src/"
+			"VendorPrefix\\Rowbot\\Punycode\\": "src/"
 		}
 	},
 	"autoload-dev": {
 		"psr-4": {
-			"WordPressImporter\\Rowbot\\Punycode\\Test\\": "tests/"
+			"VendorPrefix\\Rowbot\\Punycode\\Test\\": "tests/"
 		}
 	},
 	"require": {

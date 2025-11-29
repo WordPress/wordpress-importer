@@ -1,10 +1,10 @@
 <?php
 
-namespace WordPressImporter\Rowbot\URL\Tests\WhatWg;
+namespace VendorPrefix\Rowbot\URL\Tests\WhatWg;
 
 use PHPUnit\Framework\TestCase;
-use WordPressImporter\Rowbot\URL\URL;
-use WordPressImporter\Rowbot\URL\URLSearchParams;
+use VendorPrefix\Rowbot\URL\URL;
+use VendorPrefix\Rowbot\URL\URLSearchParams;
 
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/url/urlsearchparams-delete.any.js

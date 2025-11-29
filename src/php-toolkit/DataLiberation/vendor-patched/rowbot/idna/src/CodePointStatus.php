@@ -2,9 +2,9 @@
 
 declare( strict_types=1 );
 
-namespace WordPressImporter\Rowbot\Idna;
+namespace VendorPrefix\Rowbot\Idna;
 
-use WordPressImporter\Rowbot\Idna\Resource\DisallowedRanges;
+use VendorPrefix\Rowbot\Idna\Resource\DisallowedRanges;
 
 use const DIRECTORY_SEPARATOR as DS;
 

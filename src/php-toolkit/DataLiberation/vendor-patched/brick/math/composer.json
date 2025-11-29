@@ -28,12 +28,12 @@
 	},
 	"autoload": {
 		"psr-4": {
-			"WordPressImporter\\Brick\\Math\\": "src/"
+			"VendorPrefix\\Brick\\Math\\": "src/"
 		}
 	},
 	"autoload-dev": {
 		"psr-4": {
-			"WordPressImporter\\Brick\\Math\\Tests\\": "tests/"
+			"VendorPrefix\\Brick\\Math\\Tests\\": "tests/"
 		}
 	}
 }

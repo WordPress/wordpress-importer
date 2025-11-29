@@ -2,7 +2,7 @@
 
 declare( strict_types=1 );
 
-namespace WordPressImporter\Rowbot\URL\String;
+namespace VendorPrefix\Rowbot\URL\String;
 
 use function mb_str_split;
 

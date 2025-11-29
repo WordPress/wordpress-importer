@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace WordPressImporter\Brick\Math;
+namespace VendorPrefix\Brick\Math;
 
-use WordPressImporter\Brick\Math\Exception\DivisionByZeroException;
-use WordPressImporter\Brick\Math\Exception\MathException;
-use WordPressImporter\Brick\Math\Exception\NumberFormatException;
-use WordPressImporter\Brick\Math\Exception\RoundingNecessaryException;
+use VendorPrefix\Brick\Math\Exception\DivisionByZeroException;
+use VendorPrefix\Brick\Math\Exception\MathException;
+use VendorPrefix\Brick\Math\Exception\NumberFormatException;
+use VendorPrefix\Brick\Math\Exception\RoundingNecessaryException;
 
 /**
  * An arbitrarily large rational number.
@@ -21,14 +21,14 @@ final class BigRational extends BigNumber
     /**
      * The numerator.
      * @readonly
-     * @var \WordPressImporter\Brick\Math\BigInteger
+     * @var \VendorPrefix\Brick\Math\BigInteger
      */
     private $numerator;
 
     /**
      * The denominator. Always strictly positive.
      * @readonly
-     * @var \WordPressImporter\Brick\Math\BigInteger
+     * @var \VendorPrefix\Brick\Math\BigInteger
      */
     private $denominator;
 
@@ -323,7 +323,7 @@ final class BigRational extends BigNumber
     }
 
     /**
-     * @param \WordPressImporter\Brick\Math\BigNumber|int|float|string $that
+     * @param \VendorPrefix\Brick\Math\BigNumber|int|float|string $that
      */
     public function compareTo($that) : int
     {

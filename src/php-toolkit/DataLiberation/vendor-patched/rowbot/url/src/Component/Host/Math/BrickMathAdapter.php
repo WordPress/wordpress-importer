@@ -2,11 +2,11 @@
 
 declare( strict_types=1 );
 
-namespace WordPressImporter\Rowbot\URL\Component\Host\Math;
+namespace VendorPrefix\Rowbot\URL\Component\Host\Math;
 
-use WordPressImporter\Brick\Math\BigInteger;
-use WordPressImporter\Brick\Math\RoundingMode;
-use WordPressImporter\Rowbot\URL\Component\Host\Math\Exception\MathException;
+use VendorPrefix\Brick\Math\BigInteger;
+use VendorPrefix\Brick\Math\RoundingMode;
+use VendorPrefix\Rowbot\URL\Component\Host\Math\Exception\MathException;
 
 use function assert;
 use function is_numeric;

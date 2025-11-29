@@ -2,14 +2,14 @@
 
 declare( strict_types=1 );
 
-namespace WordPressImporter\Rowbot\URL;
+namespace VendorPrefix\Rowbot\URL;
 
-use WordPressImporter\Psr\Log\LoggerAwareInterface;
-use WordPressImporter\Psr\Log\LoggerAwareTrait;
-use WordPressImporter\Psr\Log\LoggerInterface;
-use WordPressImporter\Rowbot\URL\State\StatusCode;
-use WordPressImporter\Rowbot\URL\String\StringBuffer;
-use WordPressImporter\Rowbot\URL\String\USVStringInterface;
+use VendorPrefix\Psr\Log\LoggerAwareInterface;
+use VendorPrefix\Psr\Log\LoggerAwareTrait;
+use VendorPrefix\Psr\Log\LoggerInterface;
+use VendorPrefix\Rowbot\URL\State\StatusCode;
+use VendorPrefix\Rowbot\URL\String\StringBuffer;
+use VendorPrefix\Rowbot\URL\String\USVStringInterface;
 
 use function mb_strlen;
 use function strlen;
@@ -45,7 +45,7 @@ class BasicURLParser implements LoggerAwareInterface {
 	 *                                                                object that should be modified based on the input
 	 *                                                                URL and optional base URL. Default is null.
 	 * @param  ParserState|null  $stateOverride  (optional) An object implementing the
-	 *                                                                \WordPressImporter\Rowbot\URL\ParserState interface that overrides
+	 *                                                                \VendorPrefix\Rowbot\URL\ParserState interface that overrides
 	 *                                                                the default start state, which is the Scheme Start
 	 *                                                                State. Default is null.
 	 *

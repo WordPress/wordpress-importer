@@ -1,10 +1,10 @@
 <?php
 
-namespace WordPressImporter\Rowbot\URL\Tests\WhatWg;
+namespace VendorPrefix\Rowbot\URL\Tests\WhatWg;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use WordPressImporter\Rowbot\URL\URLSearchParams;
+use VendorPrefix\Rowbot\URL\URLSearchParams;
 
 use function in_array;
 

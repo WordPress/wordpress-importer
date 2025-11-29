@@ -2,11 +2,11 @@
 
 declare( strict_types=1 );
 
-namespace WordPressImporter\Rowbot\URL\String;
+namespace VendorPrefix\Rowbot\URL\String;
 
 use IteratorAggregate;
-use WordPressImporter\Rowbot\URL\Component\PathSegment;
-use WordPressImporter\Rowbot\URL\Component\Scheme;
+use VendorPrefix\Rowbot\URL\Component\PathSegment;
+use VendorPrefix\Rowbot\URL\Component\Scheme;
 
 /**
  * @extends IteratorAggregate<int, string>

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace WordPressImporter\Brick\Math\Internal\Calculator;
+namespace VendorPrefix\Brick\Math\Internal\Calculator;
 
-use WordPressImporter\Brick\Math\Internal\Calculator;
+use VendorPrefix\Brick\Math\Internal\Calculator;
 
 /**
  * Calculator implementation built around the bcmath library.

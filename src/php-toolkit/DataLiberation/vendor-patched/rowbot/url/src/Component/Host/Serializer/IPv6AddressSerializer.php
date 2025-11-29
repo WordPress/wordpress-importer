@@ -2,7 +2,7 @@
 
 declare( strict_types=1 );
 
-namespace WordPressImporter\Rowbot\URL\Component\Host\Serializer;
+namespace VendorPrefix\Rowbot\URL\Component\Host\Serializer;
 
 use function dechex;
 
