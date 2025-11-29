@@ -2,15 +2,15 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\Component\Host;
+namespace VendorPrefix\Rowbot\URL\Component\Host;
 
-use Psr\Log\LogLevel;
-use Rowbot\URL\Component\Host\Math\NumberFactory;
-use Rowbot\URL\Component\Host\Math\NumberInterface;
-use Rowbot\URL\ParserContext;
-use Rowbot\URL\String\CodePoint;
-use Rowbot\URL\String\StringListInterface;
-use Rowbot\URL\String\USVStringInterface;
+use VendorPrefix\Psr\Log\LogLevel;
+use VendorPrefix\Rowbot\URL\Component\Host\Math\NumberFactory;
+use VendorPrefix\Rowbot\URL\Component\Host\Math\NumberInterface;
+use VendorPrefix\Rowbot\URL\ParserContext;
+use VendorPrefix\Rowbot\URL\String\CodePoint;
+use VendorPrefix\Rowbot\URL\String\StringListInterface;
+use VendorPrefix\Rowbot\URL\String\USVStringInterface;
 
 use function array_pop;
 use function array_reduce;

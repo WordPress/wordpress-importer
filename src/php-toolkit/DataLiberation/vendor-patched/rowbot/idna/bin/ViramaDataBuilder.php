@@ -2,7 +2,7 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\Idna\Bin;
+namespace VendorPrefix\Rowbot\Idna\Bin;
 
 use function array_map;
 use function explode;

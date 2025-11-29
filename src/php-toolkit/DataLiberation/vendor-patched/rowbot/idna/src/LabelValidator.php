@@ -2,10 +2,10 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\Idna;
+namespace VendorPrefix\Rowbot\Idna;
 
 use Normalizer;
-use Rowbot\Idna\Resource\Regex;
+use VendorPrefix\Rowbot\Idna\Resource\Regex;
 
 use function preg_match;
 use function strlen;

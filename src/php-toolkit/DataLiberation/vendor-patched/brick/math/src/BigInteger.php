@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Brick\Math;
+namespace VendorPrefix\Brick\Math;
 
-use Brick\Math\Exception\DivisionByZeroException;
-use Brick\Math\Exception\IntegerOverflowException;
-use Brick\Math\Exception\MathException;
-use Brick\Math\Exception\NegativeNumberException;
-use Brick\Math\Exception\NumberFormatException;
-use Brick\Math\Internal\Calculator;
+use VendorPrefix\Brick\Math\Exception\DivisionByZeroException;
+use VendorPrefix\Brick\Math\Exception\IntegerOverflowException;
+use VendorPrefix\Brick\Math\Exception\MathException;
+use VendorPrefix\Brick\Math\Exception\NegativeNumberException;
+use VendorPrefix\Brick\Math\Exception\NumberFormatException;
+use VendorPrefix\Brick\Math\Internal\Calculator;
 
 /**
  * An arbitrary-size integer.
@@ -433,7 +433,7 @@ final class BigInteger extends BigNumber
      *
      * @throws MathException If the divisor is not a valid number, is not convertible to a BigInteger, is zero,
      *                       or RoundingMode::UNNECESSARY is used and the remainder is not zero.
-     * @param \Brick\Math\RoundingMode::* $roundingMode
+     * @param \VendorPrefix\Brick\Math\RoundingMode::* $roundingMode
      */
     public function dividedBy($that, $roundingMode = RoundingMode::UNNECESSARY) : BigInteger
     {
@@ -861,7 +861,7 @@ final class BigInteger extends BigNumber
     }
 
     /**
-     * @param \Brick\Math\BigNumber|int|float|string $that
+     * @param \VendorPrefix\Brick\Math\BigNumber|int|float|string $that
      */
     public function compareTo($that) : int
     {

@@ -2,7 +2,7 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\String;
+namespace VendorPrefix\Rowbot\URL\String;
 
 use Countable;
 use IteratorAggregate;

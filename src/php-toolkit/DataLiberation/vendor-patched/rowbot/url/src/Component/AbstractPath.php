@@ -2,10 +2,10 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\Component;
+namespace VendorPrefix\Rowbot\URL\Component;
 
-use Rowbot\URL\String\Exception\UndefinedIndexException;
-use Rowbot\URL\URLRecord;
+use VendorPrefix\Rowbot\URL\String\Exception\UndefinedIndexException;
+use VendorPrefix\Rowbot\URL\URLRecord;
 
 use function count;
 

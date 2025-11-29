@@ -2,10 +2,10 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\Component\Host;
+namespace VendorPrefix\Rowbot\URL\Component\Host;
 
-use Rowbot\URL\Component\Host\Serializer\HostSerializerInterface;
-use Rowbot\URL\Component\Host\Serializer\StringHostSerializer;
+use VendorPrefix\Rowbot\URL\Component\Host\Serializer\HostSerializerInterface;
+use VendorPrefix\Rowbot\URL\Component\Host\Serializer\StringHostSerializer;
 
 class NullHost extends AbstractHost implements HostInterface {
 	/**

@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-use Symfony\Polyfill\Ctype as p;
+use VendorPrefix\Symfony\Polyfill\Ctype as p;
 
 if ( ! function_exists( 'ctype_alnum' ) ) {
 	/**

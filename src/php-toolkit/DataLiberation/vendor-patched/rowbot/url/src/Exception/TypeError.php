@@ -2,7 +2,7 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\Exception;
+namespace VendorPrefix\Rowbot\URL\Exception;
 
 class TypeError extends URLException {
 }

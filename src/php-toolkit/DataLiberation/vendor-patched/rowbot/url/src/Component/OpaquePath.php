@@ -2,9 +2,9 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\Component;
+namespace VendorPrefix\Rowbot\URL\Component;
 
-use Rowbot\URL\Exception\UnsupportedOperationException;
+use VendorPrefix\Rowbot\URL\Exception\UnsupportedOperationException;
 
 use function implode;
 

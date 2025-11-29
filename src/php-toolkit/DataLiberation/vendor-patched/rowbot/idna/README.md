@@ -71,7 +71,7 @@ returned is considered "garbage". What you do with that result is entirely up to
     **Note**: All options are case-sensitive.
 
     ```php
-    use Rowbot\Idna\Idna;
+    use VendorPrefix\Rowbot\Idna\Idna;
 
     $result = Idna::toAscii('x-.xn--nxa');
 
@@ -110,7 +110,7 @@ what to do with the returned domain name string when an error is recorded is ent
     **Note**: `"VerifyDnsLength"` is not a valid option here.
 
     ```php
-    use Rowbot\Idna\Idna;
+    use VendorPrefix\Rowbot\Idna\Idna;
 
     $result = Idna::toUnicode('xn---with-SUPER-MONKEYS-pc58ag80a8qai00g7n9n.com');
     echo $result->getDomain(); // 安室奈美恵-with-super-monkeys.com
@@ -270,7 +270,7 @@ So... WTF?
     overwrite the default options.
 
     ```php
-    use Rowbot\Idna\Idna;
+    use VendorPrefix\Rowbot\Idna\Idna;
 
     $result = Idna::toAscii('x-.xn--nxa', ['CheckHyphens' => true]);
     $result->hasErrors(); // true
@@ -306,9 +306,9 @@ So... WTF?
     echo $info['result']; // 憡��.xn--1ug73gl146a�
     echo ($info['errors'] & IDNA_ERROR_DISALLOWED) !== 0; // true
 
-    $result = \Rowbot\Idna\Idna::toUnicode($input);
+    $result = \VendorPrefix\Rowbot\Idna\Idna::toUnicode($input);
     echo $result->getDomain(); // 憡?Ⴔ.xn--1ug73gl146a
-    echo $result->hasError(\Rowbot\Idna\Idna::ERROR_DISALLOWED); // true
+    echo $result->hasError(\VendorPrefix\Rowbot\Idna\Idna::ERROR_DISALLOWED); // true
     ```
 
     From [Section 4. Processing](https://www.unicode.org/reports/tr46/#Processing):
@@ -326,7 +326,7 @@ So... WTF?
 
 Unicode data files are fetched from https://www.unicode.org/Public. Currently, Unicode version
 11.0.0-14.0.0 are supported. To change the version of Unicode that the library is built with, you
-must first change the value of the `\Rowbot\Idna::UNICODE_VERSION` constant, like so:
+must first change the value of the `\VendorPrefix\Rowbot\Idna::UNICODE_VERSION` constant, like so:
 
 ```diff
 class Idna

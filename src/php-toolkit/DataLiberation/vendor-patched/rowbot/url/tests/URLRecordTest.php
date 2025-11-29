@@ -2,12 +2,12 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\Tests;
+namespace VendorPrefix\Rowbot\URL\Tests;
 
 use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
-use Rowbot\URL\BasicURLParser;
-use Rowbot\URL\String\Utf8String;
+use VendorPrefix\Rowbot\URL\BasicURLParser;
+use VendorPrefix\Rowbot\URL\String\Utf8String;
 
 class URLRecordTest extends TestCase {
 	public function testUnknownBlobUrlCreatesOpaqueOrigin(): void {

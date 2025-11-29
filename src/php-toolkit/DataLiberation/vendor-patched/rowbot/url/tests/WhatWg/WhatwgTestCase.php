@@ -1,10 +1,10 @@
 <?php
 
-namespace Rowbot\URL\Tests\WhatWg;
+namespace VendorPrefix\Rowbot\URL\Tests\WhatWg;
 
 use GuzzleHttp\Client;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use VendorPrefix\Symfony\Component\Cache\Adapter\FilesystemAdapter;
 
 use function array_filter;
 use function json_decode;

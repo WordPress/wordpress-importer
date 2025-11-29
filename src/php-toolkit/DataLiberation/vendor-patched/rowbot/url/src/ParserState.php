@@ -2,30 +2,30 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL;
+namespace VendorPrefix\Rowbot\URL;
 
-use Rowbot\URL\State\AuthorityState;
-use Rowbot\URL\State\FileHostState;
-use Rowbot\URL\State\FileSlashState;
-use Rowbot\URL\State\FileState;
-use Rowbot\URL\State\FragmentState;
-use Rowbot\URL\State\HostnameState;
-use Rowbot\URL\State\HostState;
-use Rowbot\URL\State\NoSchemeState;
-use Rowbot\URL\State\OpaquePathState;
-use Rowbot\URL\State\PathOrAuthorityState;
-use Rowbot\URL\State\PathStartState;
-use Rowbot\URL\State\PathState;
-use Rowbot\URL\State\PortState;
-use Rowbot\URL\State\QueryState;
-use Rowbot\URL\State\RelativeSlashState;
-use Rowbot\URL\State\RelativeState;
-use Rowbot\URL\State\SchemeStartState;
-use Rowbot\URL\State\SchemeState;
-use Rowbot\URL\State\SpecialAuthorityIgnoreSlashesState;
-use Rowbot\URL\State\SpecialAuthoritySlashesState;
-use Rowbot\URL\State\SpecialRelativeOrAuthorityState;
-use Rowbot\URL\State\State;
+use VendorPrefix\Rowbot\URL\State\AuthorityState;
+use VendorPrefix\Rowbot\URL\State\FileHostState;
+use VendorPrefix\Rowbot\URL\State\FileSlashState;
+use VendorPrefix\Rowbot\URL\State\FileState;
+use VendorPrefix\Rowbot\URL\State\FragmentState;
+use VendorPrefix\Rowbot\URL\State\HostnameState;
+use VendorPrefix\Rowbot\URL\State\HostState;
+use VendorPrefix\Rowbot\URL\State\NoSchemeState;
+use VendorPrefix\Rowbot\URL\State\OpaquePathState;
+use VendorPrefix\Rowbot\URL\State\PathOrAuthorityState;
+use VendorPrefix\Rowbot\URL\State\PathStartState;
+use VendorPrefix\Rowbot\URL\State\PathState;
+use VendorPrefix\Rowbot\URL\State\PortState;
+use VendorPrefix\Rowbot\URL\State\QueryState;
+use VendorPrefix\Rowbot\URL\State\RelativeSlashState;
+use VendorPrefix\Rowbot\URL\State\RelativeState;
+use VendorPrefix\Rowbot\URL\State\SchemeStartState;
+use VendorPrefix\Rowbot\URL\State\SchemeState;
+use VendorPrefix\Rowbot\URL\State\SpecialAuthorityIgnoreSlashesState;
+use VendorPrefix\Rowbot\URL\State\SpecialAuthoritySlashesState;
+use VendorPrefix\Rowbot\URL\State\SpecialRelativeOrAuthorityState;
+use VendorPrefix\Rowbot\URL\State\State;
 
 class ParserState {
 	public const SCHEME_START = 'scheme_start';

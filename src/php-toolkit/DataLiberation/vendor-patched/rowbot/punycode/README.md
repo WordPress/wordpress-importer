@@ -36,18 +36,18 @@ returned string.
 
 #### Throws
 
--   `\Rowbot\Punycode\Exception\OutputSizeExceededException` - If the size of the output string
+-   `\VendorPrefix\Rowbot\Punycode\Exception\OutputSizeExceededException` - If the size of the output string
     exceeds the maximum size specified.
--   `\Rowbot\Punycode\Exception\OverflowException` - If integer overflow occurs.
--   `\Rowbot\Punycode\Exception\InvalidInputException` - If input contains non-ASCII bytes or mapping
+-   `\VendorPrefix\Rowbot\Punycode\Exception\OverflowException` - If integer overflow occurs.
+-   `\VendorPrefix\Rowbot\Punycode\Exception\InvalidInputException` - If input contains non-ASCII bytes or mapping
     a code point to a digit fails.
 
 ```php
-use Rowbot\Punycode\Punycode;
+use VendorPrefix\Rowbot\Punycode\Punycode;
 
 try {
     echo Punycode::decode('Hello-Another-Way--fc4qua05auwb3674vfr0b'); // Hello-Another-Way-それぞれの場所
-} catch (\Rowbot\Punycode\Exception\PunycodeException $e) {
+} catch (\VendorPrefix\Rowbot\Punycode\Exception\PunycodeException $e) {
     echo 'An error occured!';
 }
 ```
@@ -68,16 +68,16 @@ the returned string.
 
 #### Throws
 
--   `\Rowbot\Punycode\Exception\OutputSizeExceededException` - If the size of the output string
+-   `\VendorPrefix\Rowbot\Punycode\Exception\OutputSizeExceededException` - If the size of the output string
     exceeds the maximum size specified.
--   `\Rowbot\Punycode\Exception\OverflowException` - If integer overflow occurs.
+-   `\VendorPrefix\Rowbot\Punycode\Exception\OverflowException` - If integer overflow occurs.
 
 ```php
-use Rowbot\Punycode\Punycode;
+use VendorPrefix\Rowbot\Punycode\Punycode;
 
 try {
     echo Punycode::encode('Hello-Another-Way-それぞれの場所'); // Hello-Another-Way--fc4qua05auwb3674vfr0b
-} catch (\Rowbot\Punycode\Exception\PunycodeException $e) {
+} catch (\VendorPrefix\Rowbot\Punycode\Exception\PunycodeException $e) {
     echo 'An error occured!';
 }
 ```

@@ -2,7 +2,7 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\Idna;
+namespace VendorPrefix\Rowbot\Idna;
 
 use function chr;
 use function ord;

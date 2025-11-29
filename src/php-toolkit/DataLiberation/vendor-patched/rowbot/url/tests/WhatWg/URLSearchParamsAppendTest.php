@@ -1,9 +1,9 @@
 <?php
 
-namespace Rowbot\URL\Tests\WhatWg;
+namespace VendorPrefix\Rowbot\URL\Tests\WhatWg;
 
 use PHPUnit\Framework\TestCase;
-use Rowbot\URL\URLSearchParams;
+use VendorPrefix\Rowbot\URL\URLSearchParams;
 
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/url/urlsearchparams-append.any.js

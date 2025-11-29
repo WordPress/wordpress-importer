@@ -2,10 +2,10 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\String;
+namespace VendorPrefix\Rowbot\URL\String;
 
-use Rowbot\URL\Component\PathSegment;
-use Rowbot\URL\Component\Scheme;
+use VendorPrefix\Rowbot\URL\Component\PathSegment;
+use VendorPrefix\Rowbot\URL\Component\Scheme;
 
 use function intval;
 use function preg_match;

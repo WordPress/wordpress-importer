@@ -2,18 +2,18 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL;
+namespace VendorPrefix\Rowbot\URL;
 
-use Rowbot\URL\Component\Host\HostInterface;
-use Rowbot\URL\Component\Host\NullHost;
-use Rowbot\URL\Component\OpaqueOrigin;
-use Rowbot\URL\Component\PathInterface;
-use Rowbot\URL\Component\PathList;
-use Rowbot\URL\Component\Scheme;
-use Rowbot\URL\Component\TupleOrigin;
-use Rowbot\URL\String\EncodeSet;
-use Rowbot\URL\String\PercentEncoder;
-use Rowbot\URL\String\USVStringInterface;
+use VendorPrefix\Rowbot\URL\Component\Host\HostInterface;
+use VendorPrefix\Rowbot\URL\Component\Host\NullHost;
+use VendorPrefix\Rowbot\URL\Component\OpaqueOrigin;
+use VendorPrefix\Rowbot\URL\Component\PathInterface;
+use VendorPrefix\Rowbot\URL\Component\PathList;
+use VendorPrefix\Rowbot\URL\Component\Scheme;
+use VendorPrefix\Rowbot\URL\Component\TupleOrigin;
+use VendorPrefix\Rowbot\URL\String\EncodeSet;
+use VendorPrefix\Rowbot\URL\String\PercentEncoder;
+use VendorPrefix\Rowbot\URL\String\USVStringInterface;
 
 class URLRecord {
 	/**

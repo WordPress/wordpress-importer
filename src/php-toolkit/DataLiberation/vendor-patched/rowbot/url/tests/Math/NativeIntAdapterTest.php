@@ -2,12 +2,12 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\Tests\Math;
+namespace VendorPrefix\Rowbot\URL\Tests\Math;
 
-use Rowbot\URL\Component\Host\Math\BrickMathAdapter;
-use Rowbot\URL\Component\Host\Math\Exception\MathException;
-use Rowbot\URL\Component\Host\Math\NativeIntAdapter;
-use Rowbot\URL\Component\Host\Math\NumberInterface;
+use VendorPrefix\Rowbot\URL\Component\Host\Math\BrickMathAdapter;
+use VendorPrefix\Rowbot\URL\Component\Host\Math\Exception\MathException;
+use VendorPrefix\Rowbot\URL\Component\Host\Math\NativeIntAdapter;
+use VendorPrefix\Rowbot\URL\Component\Host\Math\NumberInterface;
 
 class NativeIntAdapterTest extends MathTestCase {
 	/**

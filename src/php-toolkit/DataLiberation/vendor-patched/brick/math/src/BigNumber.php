@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Brick\Math;
+namespace VendorPrefix\Brick\Math;
 
-use Brick\Math\Exception\DivisionByZeroException;
-use Brick\Math\Exception\MathException;
-use Brick\Math\Exception\NumberFormatException;
-use Brick\Math\Exception\RoundingNecessaryException;
+use VendorPrefix\Brick\Math\Exception\DivisionByZeroException;
+use VendorPrefix\Brick\Math\Exception\MathException;
+use VendorPrefix\Brick\Math\Exception\NumberFormatException;
+use VendorPrefix\Brick\Math\Exception\RoundingNecessaryException;
 
 /**
  * Common interface for arbitrary-precision rational numbers.
@@ -56,7 +56,7 @@ abstract class BigNumber implements \JsonSerializable
      * @throws RoundingNecessaryException If the value cannot be converted to an instance of the subclass without rounding.
      *
      * @psalm-pure
-     * @param \Brick\Math\BigNumber|int|float|string $value
+     * @param \VendorPrefix\Brick\Math\BigNumber|int|float|string $value
      * @return static
      */
     final public static function of($value)
@@ -78,7 +78,7 @@ abstract class BigNumber implements \JsonSerializable
      * @throws DivisionByZeroException If the value represents a rational number with a denominator of zero.
      *
      * @psalm-pure
-     * @param \Brick\Math\BigNumber|int|float|string $value
+     * @param \VendorPrefix\Brick\Math\BigNumber|int|float|string $value
      */
     private static function _of($value) : BigNumber
     {
@@ -356,7 +356,7 @@ abstract class BigNumber implements \JsonSerializable
 
     /**
      * Checks if this number is equal to the given one.
-     * @param \Brick\Math\BigNumber|int|float|string $that
+     * @param \VendorPrefix\Brick\Math\BigNumber|int|float|string $that
      */
     final public function isEqualTo($that) : bool
     {
@@ -365,7 +365,7 @@ abstract class BigNumber implements \JsonSerializable
 
     /**
      * Checks if this number is strictly lower than the given one.
-     * @param \Brick\Math\BigNumber|int|float|string $that
+     * @param \VendorPrefix\Brick\Math\BigNumber|int|float|string $that
      */
     final public function isLessThan($that) : bool
     {
@@ -374,7 +374,7 @@ abstract class BigNumber implements \JsonSerializable
 
     /**
      * Checks if this number is lower than or equal to the given one.
-     * @param \Brick\Math\BigNumber|int|float|string $that
+     * @param \VendorPrefix\Brick\Math\BigNumber|int|float|string $that
      */
     final public function isLessThanOrEqualTo($that) : bool
     {
@@ -383,7 +383,7 @@ abstract class BigNumber implements \JsonSerializable
 
     /**
      * Checks if this number is strictly greater than the given one.
-     * @param \Brick\Math\BigNumber|int|float|string $that
+     * @param \VendorPrefix\Brick\Math\BigNumber|int|float|string $that
      */
     final public function isGreaterThan($that) : bool
     {
@@ -392,7 +392,7 @@ abstract class BigNumber implements \JsonSerializable
 
     /**
      * Checks if this number is greater than or equal to the given one.
-     * @param \Brick\Math\BigNumber|int|float|string $that
+     * @param \VendorPrefix\Brick\Math\BigNumber|int|float|string $that
      */
     final public function isGreaterThanOrEqualTo($that) : bool
     {
@@ -456,7 +456,7 @@ abstract class BigNumber implements \JsonSerializable
      * @return int -1 if `$this` is lower than, 0 if equal to, 1 if greater than `$that`.
      *
      * @throws MathException If the number is not valid.
-     * @param \Brick\Math\BigNumber|int|float|string $that
+     * @param \VendorPrefix\Brick\Math\BigNumber|int|float|string $that
      */
     abstract public function compareTo($that) : int;
 
@@ -487,7 +487,7 @@ abstract class BigNumber implements \JsonSerializable
      *
      * @throws RoundingNecessaryException If this number cannot be converted to the given scale without rounding.
      *                                    This only applies when RoundingMode::UNNECESSARY is used.
-     * @param \Brick\Math\RoundingMode::* $roundingMode
+     * @param \VendorPrefix\Brick\Math\RoundingMode::* $roundingMode
      */
     abstract public function toScale(int $scale, $roundingMode = RoundingMode::UNNECESSARY) : BigDecimal;
 

@@ -1,12 +1,12 @@
 <?php
 
-namespace Rowbot\URL\Tests\WhatWg;
+namespace VendorPrefix\Rowbot\URL\Tests\WhatWg;
 
 use Exception;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Rowbot\URL\Exception\TypeError;
-use Rowbot\URL\URLSearchParams;
+use VendorPrefix\Rowbot\URL\Exception\TypeError;
+use VendorPrefix\Rowbot\URL\URLSearchParams;
 use stdClass;
 
 use function json_decode;

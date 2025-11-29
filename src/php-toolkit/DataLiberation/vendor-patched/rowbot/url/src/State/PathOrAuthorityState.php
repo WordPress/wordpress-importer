@@ -2,10 +2,10 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\State;
+namespace VendorPrefix\Rowbot\URL\State;
 
-use Rowbot\URL\ParserContext;
-use Rowbot\URL\ParserState;
+use VendorPrefix\Rowbot\URL\ParserContext;
+use VendorPrefix\Rowbot\URL\ParserState;
 
 /**
  * @see https://url.spec.whatwg.org/#path-or-authority-state

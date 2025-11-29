@@ -2,10 +2,10 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\Tests;
+namespace VendorPrefix\Rowbot\URL\Tests;
 
-use Psr\Log\LoggerInterface;
-use Psr\Log\LoggerTrait;
+use VendorPrefix\Psr\Log\LoggerInterface;
+use VendorPrefix\Psr\Log\LoggerTrait;
 use Stringable;
 
 final class ValidationErrorLogger implements LoggerInterface {

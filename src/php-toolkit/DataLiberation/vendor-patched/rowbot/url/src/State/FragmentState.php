@@ -2,12 +2,12 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\State;
+namespace VendorPrefix\Rowbot\URL\State;
 
-use Rowbot\URL\ParserContext;
-use Rowbot\URL\String\CodePoint;
-use Rowbot\URL\String\EncodeSet;
-use Rowbot\URL\String\PercentEncoder;
+use VendorPrefix\Rowbot\URL\ParserContext;
+use VendorPrefix\Rowbot\URL\String\CodePoint;
+use VendorPrefix\Rowbot\URL\String\EncodeSet;
+use VendorPrefix\Rowbot\URL\String\PercentEncoder;
 
 /**
  * @see https://url.spec.whatwg.org/#fragment-state

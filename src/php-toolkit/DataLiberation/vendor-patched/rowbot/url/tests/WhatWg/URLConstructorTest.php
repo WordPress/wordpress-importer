@@ -1,10 +1,10 @@
 <?php
 
-namespace Rowbot\URL\Tests\WhatWg;
+namespace VendorPrefix\Rowbot\URL\Tests\WhatWg;
 
 use PHPUnit\Framework\Attributes\DataProvider;
-use Rowbot\URL\Exception\TypeError;
-use Rowbot\URL\URL;
+use VendorPrefix\Rowbot\URL\Exception\TypeError;
+use VendorPrefix\Rowbot\URL\URL;
 
 use function array_key_exists;
 

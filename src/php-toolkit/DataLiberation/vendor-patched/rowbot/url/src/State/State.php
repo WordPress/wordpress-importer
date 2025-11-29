@@ -2,7 +2,7 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\State;
+namespace VendorPrefix\Rowbot\URL\State;
 
 interface State {
 }

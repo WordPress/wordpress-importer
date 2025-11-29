@@ -2,17 +2,17 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL;
+namespace VendorPrefix\Rowbot\URL;
 
 use InvalidArgumentException;
 use JsonSerializable;
-use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerAwareTrait;
-use Psr\Log\LoggerInterface;
-use Rowbot\URL\Component\PathList;
-use Rowbot\URL\Component\QueryList;
-use Rowbot\URL\Exception\TypeError;
-use Rowbot\URL\String\Utf8String;
+use VendorPrefix\Psr\Log\LoggerAwareInterface;
+use VendorPrefix\Psr\Log\LoggerAwareTrait;
+use VendorPrefix\Psr\Log\LoggerInterface;
+use VendorPrefix\Rowbot\URL\Component\PathList;
+use VendorPrefix\Rowbot\URL\Component\QueryList;
+use VendorPrefix\Rowbot\URL\Exception\TypeError;
+use VendorPrefix\Rowbot\URL\String\Utf8String;
 use Stringable;
 use Throwable;
 

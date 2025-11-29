@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Brick\Math\Exception;
+namespace VendorPrefix\Brick\Math\Exception;
 
 /**
  * Base class for all math exceptions.

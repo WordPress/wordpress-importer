@@ -2,13 +2,13 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\Tests;
+namespace VendorPrefix\Rowbot\URL\Tests;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
-use Rowbot\URL\Component\Scheme;
+use VendorPrefix\Rowbot\URL\Component\Scheme;
 
 class SchemeTest extends TestCase {
 	public static function specialSchemeNonNullDefaultPortProvider(): iterable {

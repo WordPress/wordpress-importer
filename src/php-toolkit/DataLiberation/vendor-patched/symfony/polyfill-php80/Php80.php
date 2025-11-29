@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Symfony\Polyfill\Php80;
+namespace VendorPrefix\Symfony\Polyfill\Php80;
 
 use __PHP_Incomplete_Class;
 use TypeError;

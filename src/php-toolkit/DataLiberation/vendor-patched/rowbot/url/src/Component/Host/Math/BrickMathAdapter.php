@@ -2,11 +2,11 @@
 
 declare( strict_types=1 );
 
-namespace Rowbot\URL\Component\Host\Math;
+namespace VendorPrefix\Rowbot\URL\Component\Host\Math;
 
-use Brick\Math\BigInteger;
-use Brick\Math\RoundingMode;
-use Rowbot\URL\Component\Host\Math\Exception\MathException;
+use VendorPrefix\Brick\Math\BigInteger;
+use VendorPrefix\Brick\Math\RoundingMode;
+use VendorPrefix\Rowbot\URL\Component\Host\Math\Exception\MathException;
 
 use function assert;
 use function is_numeric;
