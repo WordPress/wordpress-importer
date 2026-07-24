@@ -53,6 +53,19 @@ function wp_rewrite_urls( $options ) {
 
 	$p = new BlockMarkupUrlProcessor( $options['block_markup'], $options['base_url'] );
 	while ( $p->next_url() ) {
+		/*
+		 * Leave fragment-only references alone. A URL like `#section` points
+		 * within the document that contains it, so there is no origin to
+		 * migrate. Resolving it against the base URL makes it look like a
+		 * child of the site being imported from, and rewriting it then turns
+		 * an in-page anchor into a link somewhere else entirely:
+		 * `#section` becomes `/#section`, and a bare `#` becomes `/`.
+		 */
+		$raw_url = $p->get_raw_url();
+		if ( is_string( $raw_url ) && 0 === strpos( $raw_url, '#' ) ) {
+			continue;
+		}
+
 		$parsed_url = $p->get_parsed_url();
 		foreach ( $url_mapping as $mapping ) {
 			if ( is_child_url_of( $parsed_url, $mapping['from_url'] ) ) {
