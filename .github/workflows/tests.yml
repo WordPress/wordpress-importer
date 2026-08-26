@@ -21,8 +21,10 @@ jobs:
       matrix:
         # Notes regarding supported versions in WP:
         # The base matrix only contains the PHP versions which are supported on all supported WP versions.
+        # WP 7.0 raised the minimum to PHP 7.4, so 7.2 and 7.3 cannot run 'latest'. WP 6.8 is
+        # the highest release they can run, so that stands in for 'latest' on these builds.
         php: ['7.2', '7.3']
-        wp: ['latest', '5.2']
+        wp: ['6.8', '5.2']
         experimental: [false]
 
         include:
@@ -123,28 +125,23 @@ jobs:
 
       # Determine the type of Composer install which is needed.
       # 1. WP 5.9 or higher - all PHPUnit versions needed are supported, use the most appropriate one.
-      # 2. WP 5.9 or higher with PHP 8.2 (RC) - not all dependencies of PHPUnit have declared PHP 8.2 compatibility, so needs ignore platform.
-      # 3. WP < 5.9 with PHP < 8.0 - PHPUnit 5 - 7 supported, use the most appropriate one.
-      # 4. WP < 5.9 with PHP 8.0 or higher - PHPUnit 5 - 7 supported, needs ignore platform reqs to install PHPUnit 7 for PHP >= 8.0.
+      # 2. WP < 5.9 with PHP < 8.0 - PHPUnit 5 - 7 supported, use the most appropriate one.
+      # 3. WP < 5.9 with PHP 8.0 or higher - PHPUnit 5 - 7 supported, needs ignore platform reqs to install PHPUnit 7 for PHP >= 8.0.
       - name: Determine the type of Composer install to use
         id: composer_toggle
         run: |
           if [[ "${{ matrix.wp }}" =~ ^(trunk|latest|5\.9|[6789]\.[0-9])$ ]]; then
-            if [[ "${{ matrix.php }}" != "8.2" ]]; then
-              echo 'TYPE=1' >> $GITHUB_OUTPUT
-            else
-              echo 'TYPE=2' >> $GITHUB_OUTPUT
-            fi
+            echo 'TYPE=1' >> $GITHUB_OUTPUT
           elif [[ "${{ matrix.php }}" > "7.4" ]]; then
-            echo 'TYPE=4' >> $GITHUB_OUTPUT
-          else
             echo 'TYPE=3' >> $GITHUB_OUTPUT
+          else
+            echo 'TYPE=2' >> $GITHUB_OUTPUT
           fi
 
       # Remove the PHPUnit requirement for WP 5.9 and higher in favour of letting the Polyfills manage it.
       # The Composer command will exit with error code 2 as the package is not removed, so ignore "failure" of this step.
       - name: Conditionally remove PHPUnit requirement
-        if: ${{ steps.composer_toggle.outputs.TYPE == '1' || steps.composer_toggle.outputs.TYPE == '2' }}
+        if: ${{ steps.composer_toggle.outputs.TYPE == '1' }}
         continue-on-error: true
         run: composer remove --dev phpunit/phpunit --no-update --no-interaction || true
 
@@ -154,13 +151,13 @@ jobs:
       # advisory for these builds only. WP 5.9 and up drop the requirement above and resolve
       # a PHPUnit release the advisory does not cover.
       - name: Allow the end of life PHPUnit which older WP needs
-        if: ${{ steps.composer_toggle.outputs.TYPE == '3' || steps.composer_toggle.outputs.TYPE == '4' }}
+        if: ${{ steps.composer_toggle.outputs.TYPE == '2' || steps.composer_toggle.outputs.TYPE == '3' }}
         run: composer config --json policy.advisories.ignore-id '["PKSA-z3gr-8qht-p93v"]'
 
       # Install dependencies and handle caching in one go.
       # @link https://github.com/marketplace/actions/install-php-dependencies-with-composer
       - name: Install Composer dependencies - normal
-        if: ${{ steps.composer_toggle.outputs.TYPE == '1' || steps.composer_toggle.outputs.TYPE == '3' }}
+        if: ${{ steps.composer_toggle.outputs.TYPE == '1' || steps.composer_toggle.outputs.TYPE == '2' }}
         uses: "ramsey/composer-install@v3"
         with:
           # Bust the cache at least once a month - output format: YYYY-MM-DD.
@@ -168,7 +165,7 @@ jobs:
 
       # For PHP 8.0 and above on WP 5.2 - 5.8, we need to install with ignore platform reqs as not all dependencies allow it.
       - name: Install Composer dependencies with ignore platform reqs
-        if: ${{ steps.composer_toggle.outputs.TYPE == '2' || steps.composer_toggle.outputs.TYPE == '4' }}
+        if: ${{ steps.composer_toggle.outputs.TYPE == '3' }}
         uses: "ramsey/composer-install@v3"
         with:
           composer-options: --ignore-platform-req=php
