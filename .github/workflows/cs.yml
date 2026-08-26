@@ -26,6 +26,15 @@ jobs:
           tools: cs2pr
           coverage: none
 
+      # PHPCS does not need PHPUnit, and the PHPUnit versions pinned in composer.json
+      # are all blocked by a security advisory, which fails the install. Removing the
+      # requirement lets the Polyfills pull a PHPUnit version which is not blocked.
+      # The Composer command will exit with error code 2 as the package is not removed,
+      # so ignore "failure" of this step.
+      - name: Remove the PHPUnit requirement
+        continue-on-error: true
+        run: composer remove --dev phpunit/phpunit --no-update --no-interaction || true
+
       # Install dependencies and handle caching in one go.
       # @link https://github.com/marketplace/actions/install-php-dependencies-with-composer
       - name: Install Composer dependencies
