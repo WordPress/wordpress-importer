@@ -5,7 +5,7 @@ Tags: importer, wordpress
 Requires at least: 5.2
 Tested up to: 6.8
 Requires PHP: 7.2
-Stable tag: 0.9.5
+Stable tag: 0.9.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -39,6 +39,12 @@ If you would prefer to do things manually then follow these instructions:
 1. Go to the Tools -> Import screen, click on WordPress
 
 == Changelog ==
+
+= 0.9.6 =
+* Skip the `_wp_font_face_file` meta key on import. Font attachments regenerate this meta locally, and the imported value pointed at a file path from the source site.
+* Prefix bundled vendor namespaces (`Rowbot\URL`, `Brick\Math`, `Psr\Log`, and others) with `VendorPrefix\` to avoid class redefinition errors when another plugin bundles the same libraries.
+* Add a Live Preview blueprint so the plugin can be tried in WordPress Playground from the plugin directory page.
+* Code refactoring: extract single-post processing into a separate process_post() method, continuing the streaming preparation work.
 
 = 0.9.5 =
 * Rewrite CSS URLs in block markup (e.g., cover blocks with background images).
