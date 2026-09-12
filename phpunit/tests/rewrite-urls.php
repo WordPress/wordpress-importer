@@ -16,10 +16,20 @@ class Tests_Import_Rewrite_Urls extends WP_Import_UnitTestCase {
 	/**
 	 * Run block markup through the URL rewriter with a single mapping.
 	 *
+	 * The importer only offers URL rewriting on WordPress 6.7 and later, where
+	 * `WP_HTML_Tag_Processor::set_modifiable_text()` exists, and turns the
+	 * option off below that. Calling the rewriter directly on an older
+	 * WordPress errors inside the tag processor instead, so these tests skip
+	 * where the importer itself would not rewrite.
+	 *
 	 * @param string $block_markup Markup to rewrite.
 	 * @return string Rewritten markup.
 	 */
 	private function rewrite( $block_markup ) {
+		if ( version_compare( get_bloginfo( 'version' ), '6.7', '<' ) ) {
+			$this->markTestSkipped( 'URL rewriting requires WordPress 6.7 or later.' );
+		}
+
 		return wp_rewrite_urls(
 			array(
 				'block_markup' => $block_markup,
