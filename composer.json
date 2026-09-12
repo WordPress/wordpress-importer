@@ -28,6 +28,13 @@
             "dealerdirect/phpcodesniffer-composer-installer": true
         },
         "process-timeout": 900,
-        "lock": false
+        "lock": false,
+        "policy": {
+            "advisories": {
+                "ignore-id": {
+                    "PKSA-z3gr-8qht-p93v": "Concerns .phpt test files, which this plugin does not use. WordPress below 5.9 needs PHPUnit 5 to 7, and every release in that range carries it."
+                }
+            }
+        }
     }
 }
