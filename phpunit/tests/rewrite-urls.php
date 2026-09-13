@@ -22,12 +22,21 @@ class Tests_Import_Rewrite_Urls extends WP_Import_UnitTestCase {
 	 * WordPress errors inside the tag processor instead, so these tests skip
 	 * where the importer itself would not rewrite.
 	 *
+	 * Below PHP 7.4 the vendored URL parser calls `mb_str_split()`, which does
+	 * not exist yet, and swallows the resulting Error, so `wp_rewrite_urls()`
+	 * hands back its input untouched. The tests would pass or fail without
+	 * exercising anything, so they skip there as well.
+	 *
 	 * @param string $block_markup Markup to rewrite.
 	 * @return string Rewritten markup.
 	 */
 	private function rewrite( $block_markup ) {
 		if ( version_compare( get_bloginfo( 'version' ), '6.7', '<' ) ) {
 			$this->markTestSkipped( 'URL rewriting requires WordPress 6.7 or later.' );
+		}
+
+		if ( version_compare( PHP_VERSION, '7.4', '<' ) ) {
+			$this->markTestSkipped( 'The vendored URL parser needs mb_str_split(), which PHP added in 7.4.' );
 		}
 
 		return wp_rewrite_urls(
