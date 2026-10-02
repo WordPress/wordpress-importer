@@ -1722,9 +1722,10 @@ class WP_Import extends WP_Importer {
 	 */
 	public function is_valid_meta_key( $key ) {
 		// skip attachment metadata since we'll regenerate it from scratch
+		// skip _wp_attachment_edit_root_id since source attachment IDs are not remapped
 		// skip _wp_font_face_file since the font file it names is not imported
 		// skip _edit_lock as not relevant for import
-		if ( in_array( $key, array( '_wp_attached_file', '_wp_attachment_metadata', '_wp_font_face_file', '_edit_lock' ), true ) ) {
+		if ( in_array( $key, array( '_wp_attached_file', '_wp_attachment_metadata', '_wp_attachment_edit_root_id', '_wp_font_face_file', '_edit_lock' ), true ) ) {
 			return false;
 		}
 		return $key;
