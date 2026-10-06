@@ -10,8 +10,8 @@ use function WordPress\DataLiberation\URL\wp_rewrite_urls;
  */
 class Tests_Import_Rewrite_Urls extends WP_Import_UnitTestCase {
 
-	const FROM = 'https://legacy-blog.com';
-	const TO   = 'https://modern-webstore.org';
+	const FROM = 'https://old.example.com';
+	const TO   = 'https://new.example.org';
 
 	/**
 	 * Run block markup through the URL rewriter with a single mapping.
@@ -81,6 +81,7 @@ class Tests_Import_Rewrite_Urls extends WP_Import_UnitTestCase {
 		return array(
 			'named fragment'                => array( '<a href="#section">Jump</a>' ),
 			'bare hash'                     => array( '<a href="#">Placeholder</a>' ),
+			'leading whitespace'            => array( '<a href=" #section">Jump</a>' ),
 			'hyphenated fragment'           => array( '<a href="#add-to-calendar">iCal</a>' ),
 			'fragment in a block attribute' => array( '<!-- wp:button {"url":"#login"} -->' ),
 		);
