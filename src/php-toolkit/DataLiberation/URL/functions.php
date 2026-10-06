@@ -53,6 +53,16 @@ function wp_rewrite_urls( $options ) {
 
 	$p = new BlockMarkupUrlProcessor( $options['block_markup'], $options['base_url'] );
 	while ( $p->next_url() ) {
+		/*
+		 * Leave fragment-only references alone. Resolving one against the base
+		 * URL makes it look like a child of the site being imported from, and
+		 * rewriting it then turns an in-page anchor into a link somewhere else
+		 * entirely: `#section` becomes `/#section`, and a bare `#` becomes `/`.
+		 */
+		if ( $p->is_fragment_only_reference() ) {
+			continue;
+		}
+
 		$parsed_url = $p->get_parsed_url();
 		foreach ( $url_mapping as $mapping ) {
 			if ( is_child_url_of( $parsed_url, $mapping['from_url'] ) ) {

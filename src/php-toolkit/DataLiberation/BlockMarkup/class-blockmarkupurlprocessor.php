@@ -436,6 +436,26 @@ class BlockMarkupUrlProcessor extends BlockMarkupProcessor {
 		return WPURL::can_parse( $this->get_raw_url() );
 	}
 
+	/**
+	 * Returns true if the currently matched URL is a fragment-only reference,
+	 * such as `#section` or a bare `#`.
+	 *
+	 * A fragment-only reference points within the document that contains it,
+	 * so it has no origin of its own to rewrite. URL parsers strip leading C0
+	 * control and space characters before resolving a reference, so a value
+	 * like ` #section` counts as one too.
+	 *
+	 * @return bool Whether the currently matched URL is a fragment-only reference.
+	 */
+	public function is_fragment_only_reference() {
+		$raw_url = $this->get_raw_url();
+		if ( ! is_string( $raw_url ) ) {
+			return false;
+		}
+
+		return 0 === strpos( ltrim( $raw_url, "\x00..\x20" ), '#' );
+	}
+
 	public function get_inspected_attribute_name() {
 		if ( '#tag' !== $this->get_token_type() ) {
 			return false;
