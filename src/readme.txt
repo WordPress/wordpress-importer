@@ -5,7 +5,7 @@ Tags: importer, wordpress
 Requires at least: 5.2
 Tested up to: 6.8
 Requires PHP: 7.2
-Stable tag: 0.9.6
+Stable tag: 0.9.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -39,6 +39,9 @@ If you would prefer to do things manually then follow these instructions:
 1. Go to the Tools -> Import screen, click on WordPress
 
 == Changelog ==
+
+= 0.9.7 =
+* Skip the `_wp_attachment_edit_root_id` meta key on import. It stores an attachment ID from the source site, and attachment IDs change on import, so the imported value could point at an unrelated attachment on the destination site.
 
 = 0.9.6 =
 * Skip the `_wp_font_face_file` meta key on import. Font attachments regenerate this meta locally, and the imported value pointed at a file path from the source site.
