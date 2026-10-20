@@ -377,6 +377,8 @@ class WP_Import extends WP_Importer {
 
 			echo ' <input type="text" id="user_new_' . $n . '" name="user_new[' . $n . ']" value="' . $value . '" /><br />';
 		}
+		
+		echo '<br />';
 
 		echo '<label for="imported_authors_' . $n . '">';
 		if ( ! $create_users && '1.0' == $this->version ) {
