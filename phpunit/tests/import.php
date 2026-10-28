@@ -375,6 +375,43 @@ class Tests_Import_Import extends WP_Import_UnitTestCase {
 	}
 
 	/**
+	 * Test that note comment IDs are correctly remapped in block content.
+	 *
+	 * @covers WP_Import::update_block_note_ids
+	 * @covers WP_Import::process_post_comments
+	 */
+	public function test_note_comment_ids_are_remapped_in_block_content() {
+		$authors = array(
+			'admin'  => 1,
+		);
+		$this->_import_wp( DIR_TESTDATA_WP_IMPORTER . '/wxr-with-note-comments.xml', $authors );
+
+		$posts    = get_posts(
+			array(
+				'post_type'   => 'page',
+				'post_status' => 'publish',
+				'title'       => 'Page with notes and comments',
+			)
+		);
+		$post     = $posts[0];
+		$comments = get_comments(
+			array(
+				'post_id' => $post->ID,
+				'type'    => 'note',
+			)
+		);
+
+		$new_comment_ids = array_map( 'intval', wp_list_pluck( $comments, 'comment_ID' ) );
+
+		$this->assertStringNotContainsString( '{"noteId":2}', $post->post_content, 'Old noteId 2 should have been remapped.' );
+		$this->assertStringNotContainsString( '{"noteId":3}', $post->post_content, 'Old noteId 3 should have been remapped.' );
+
+		foreach ( $new_comment_ids as $new_id ) {
+			$this->assertStringContainsString( '{"noteId":' . $new_id . '}', $post->post_content, "New noteId $new_id should be present in block content." );
+		}
+	}
+
+	/**
 	 * Provides a mocked HTTP response when the importer downloads attachments.
 	 *
 	 * @param false|array|WP_Error $preempt     Preempted response.

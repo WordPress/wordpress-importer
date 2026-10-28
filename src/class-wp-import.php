@@ -33,6 +33,7 @@ class WP_Import extends WP_Importer {
 	public $author_mapping       = array();
 	public $processed_terms      = array();
 	public $processed_posts      = array();
+	public $processed_comments   = array();
 	public $post_orphans         = array();
 	public $processed_menu_items = array();
 	public $menu_item_orphans    = array();
@@ -818,6 +819,7 @@ class WP_Import extends WP_Importer {
 			if ( ! empty( $post['comments'] ) ) {
 				$this->process_post_comments( $post['comments'], (bool) $post_exists, $comment_post_id, $post );
 				unset( $post['comments'] );
+				$this->update_block_note_ids( $post_id );
 			}
 
 			if ( ! isset( $post['postmeta'] ) ) {
@@ -1095,6 +1097,10 @@ class WP_Import extends WP_Importer {
 				do_action( 'wp_import_insert_comment', $inserted_comment_id, $comment, $comment_post_id, $post );
 				$this->process_post_comment_metas( $inserted_comment_id, $comment['commentmeta'] );
 				$inserted_comments[ $key ] = $inserted_comment_id;
+				// Store comment ID mapping for note-type comments to update noteId references in blocks.
+				if ( isset( $comment['comment_type'] ) && 'note' === $comment['comment_type'] ) {
+					$this->processed_comments[ $key ] = $inserted_comment_id;
+				}
 				++$num_comments;
 			}
 		}
@@ -1137,6 +1143,98 @@ class WP_Import extends WP_Importer {
 		foreach ( $commentmeta as $meta ) {
 			$this->process_post_comment_meta( $comment_id, $meta );
 		}
+	}
+
+	/**
+	 * Remaps noteId references in block metadata after note-type comments are imported.
+	 *
+	 * @param int $post_id ID of the post whose block content should be updated.
+	 * @return void
+	 */
+	protected function update_block_note_ids( int $post_id = 0 ): void {
+		if ( empty( $this->processed_comments ) ) {
+			return;
+		}
+
+		$post = get_post( $post_id );
+		if ( ! $post ) {
+			return;
+		}
+
+		if ( ! str_contains( $post->post_content, '"noteId"' ) ) {
+			return;
+		}
+
+		// @todo Replace with WP_HTML_Tag_Processor or WP_Block_Processor once minimum version support is 6.2 or 6.9 respectively.
+		$parser           = new WP_Block_Parser();
+		$parser->document = $post->post_content;
+		$parser->offset   = 0;
+		$end              = strlen( $post->post_content );
+		$replacements     = array();
+
+		while ( $parser->offset < $end ) {
+			$next_token = $parser->next_token();
+			list( $token_type, $block_name, $attrs, $start_offset, $token_length ) = $next_token;
+
+			if ( 'no-more-tokens' === $token_type ) {
+				break;
+			}
+
+			$parser->offset = $start_offset + $token_length;
+
+			if ( 'block-opener' !== $token_type && 'void-block' !== $token_type ) {
+				continue;
+			}
+
+			$old_note_id = $attrs['metadata']['noteId'] ?? null;
+
+			if (
+				! ( is_string( $old_note_id ) || is_int( $old_note_id ) ) ||
+				! isset( $this->processed_comments[ $old_note_id ] )
+			) {
+				continue;
+			}
+
+			$attribute_string     = substr( $post->post_content, $start_offset, $token_length );
+			$attribute_json_start = strcspn( $attribute_string, '{' );
+			$attribute_json_end   = strrpos( $attribute_string, '}' );
+
+			if ( false === $attribute_json_end || $attribute_json_start >= $attribute_json_end ) {
+				continue;
+			}
+
+			$json_start  = $start_offset + $attribute_json_start;
+			$json_length = $attribute_json_end - $attribute_json_start + 1;
+
+			$attrs['metadata']['noteId'] = $this->processed_comments[ $old_note_id ];
+			$replacements[]              = array( $json_start, $json_length, serialize_block_attributes( $attrs ) );
+		}
+
+		if ( empty( $replacements ) ) {
+			return;
+		}
+
+		$post_content    = $post->post_content;
+		$updated_content = '';
+		$was_at          = 0;
+
+		foreach ( $replacements as $replacement ) {
+			list( $offset, $length, $new_json ) = $replacement;
+
+			$pre_length       = $offset - $was_at;
+			$updated_content .= substr( $post_content, $was_at, $pre_length ) . $new_json;
+			$was_at           = $offset + $length;
+		}
+
+		$updated_content .= substr( $post_content, $was_at );
+
+		wp_update_post(
+			// Cast to object to ensure wp_update_post() will add the required slashes.
+			(object) array(
+				'ID'           => $post_id,
+				'post_content' => $updated_content,
+			)
+		);
 	}
 
 	/**
