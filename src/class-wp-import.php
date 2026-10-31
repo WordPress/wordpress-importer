@@ -1580,14 +1580,73 @@ class WP_Import extends WP_Importer {
 			}
 		}
 
-		$this->url_remap[ $url ]          = $upload['url'];
-		$this->url_remap[ $post['guid'] ] = $upload['url']; // r13735, really needed?
+		$this->add_url_remap( $url, $upload['url'] );
+		$this->add_url_remap( $post['guid'], $upload['url'] ); // r13735, really needed?
 		// keep track of the destination if the remote url is redirected somewhere else
 		if ( isset( $headers['x-final-location'] ) && $headers['x-final-location'] != $url ) {
-			$this->url_remap[ $headers['x-final-location'] ] = $upload['url'];
+			$this->add_url_remap( $headers['x-final-location'], $upload['url'] );
 		}
 
 		return $upload;
+	}
+
+	/**
+	 * Register a URL to be replaced by backfill_attachment_urls().
+	 *
+	 * backfill_attachment_urls() runs a plain substring REPLACE over the content
+	 * of every post in the database. A source URL that is empty or points to the
+	 * root of the old or new site would therefore corrupt every link to that site.
+	 * This happens, for example, when an attachment has an empty <guid>: with URL
+	 * rewriting enabled, WPURL::replace_base_url() resolves the empty string to the
+	 * new site URL. Such source URLs are skipped.
+	 *
+	 * @param string $from_url URL as it appears in the imported content.
+	 * @param string $to_url   URL of the imported attachment on this site.
+	 */
+	protected function add_url_remap( $from_url, $to_url ) {
+		/*
+		 * An empty source URL identifies no file, so there is nothing to remap.
+		 * It typically comes from an attachment with an empty <guid>. MySQL's
+		 * REPLACE() ignores an empty search string, but URL rewriting may already
+		 * have turned it into the site root (see below), so reject it early.
+		 */
+		if ( ! is_string( $from_url ) || '' === trim( $from_url ) ) {
+			return;
+		}
+
+		/*
+		 * Never remap the root URL of the old or new site.
+		 *
+		 * backfill_attachment_urls() replaces substrings, not whole URLs, and
+		 * the site root is a prefix of every URL on the site. A mapping such as
+		 *
+		 *     https://example.org/ => https://example.org/wp-content/uploads/a.jpg
+		 *
+		 * would turn https://example.org/contact/ into
+		 * https://example.org/wp-content/uploads/a.jpgcontact/ in every post.
+		 *
+		 * An attachment is always a file with a path, so its URL is never the
+		 * site root. Skipping these URLs therefore never drops a valid mapping.
+		 */
+		$site_roots = array( get_site_url(), get_home_url() );
+		if ( ! empty( $this->base_url ) ) {
+			$site_roots[] = $this->base_url;
+		}
+		if ( $this->base_url_parsed ) {
+			$site_roots[] = $this->base_url_parsed->toString();
+		}
+		if ( $this->site_url_parsed ) {
+			$site_roots[] = $this->site_url_parsed->toString();
+		}
+
+		$normalized_from = untrailingslashit( trim( $from_url ) );
+		foreach ( $site_roots as $site_root ) {
+			if ( 0 === strcasecmp( $normalized_from, untrailingslashit( $site_root ) ) ) {
+				return;
+			}
+		}
+
+		$this->url_remap[ $from_url ] = $to_url;
 	}
 
 	/**
