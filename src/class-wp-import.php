@@ -12,6 +12,7 @@ use function WordPress\DataLiberation\URL\wp_rewrite_urls;
 /**
  * WordPress importer class.
  */
+
 class WP_Import extends WP_Importer {
 	public $max_wxr_version = 1.2; // max. supported WXR version
 
@@ -1358,13 +1359,17 @@ class WP_Import extends WP_Importer {
 
 		// remap resized image URLs, works by stripping the extension and remapping the URL stub.
 		if ( preg_match( '!^image/!', $info['type'] ) ) {
-			$parts = pathinfo( $url );
-			$name  = basename( $parts['basename'], ".{$parts['extension']}" ); // PATHINFO_FILENAME in PHP 5.2
-
+			$parts     = pathinfo( $url );
 			$parts_new = pathinfo( $upload['url'] );
-			$name_new  = basename( $parts_new['basename'], ".{$parts_new['extension']}" );
 
-			$this->url_remap[ $parts['dirname'] . '/' . $name ] = $parts_new['dirname'] . '/' . $name_new;
+			if ( empty( $parts['extension'] ) || empty( $parts_new['extension'] ) ) {
+				return $post_id;
+			}
+
+			$name     = basename( $parts['basename'], ".{$parts['extension']}" );
+			$name_new = basename( $parts_new['basename'], ".{$parts_new['extension']}" );
+			$this->url_remap[ $parts['dirname'] . '/' . $name ] =
+				$parts_new['dirname'] . '/' . $name_new;
 		}
 
 		return $post_id;
