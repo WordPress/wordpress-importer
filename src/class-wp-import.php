@@ -1521,6 +1521,12 @@ class WP_Import extends WP_Importer {
 			'error' => false,
 		);
 
+		/*
+		 * Check the GUID before URL rewriting: WPURL::replace_base_url() resolves an
+		 * empty GUID to the site root, which must never become a url_remap key.
+		 */
+		$has_guid = '' !== trim( (string) $post['guid'] );
+
 		/**
 		 * When URL rewriting is enabled, posts such as this one:
 		 *
@@ -1580,8 +1586,11 @@ class WP_Import extends WP_Importer {
 			}
 		}
 
-		$this->url_remap[ $url ]          = $upload['url'];
-		$this->url_remap[ $post['guid'] ] = $upload['url']; // r13735, really needed?
+		$this->url_remap[ $url ] = $upload['url'];
+		// An empty GUID would map the site root, corrupting every link to the site in backfill_attachment_urls().
+		if ( $has_guid ) {
+			$this->url_remap[ $post['guid'] ] = $upload['url']; // r13735, really needed?
+		}
 		// keep track of the destination if the remote url is redirected somewhere else
 		if ( isset( $headers['x-final-location'] ) && $headers['x-final-location'] != $url ) {
 			$this->url_remap[ $headers['x-final-location'] ] = $upload['url'];
