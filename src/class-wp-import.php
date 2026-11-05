@@ -9,7 +9,7 @@
 use WordPress\DataLiberation\URL\WPURL;
 use function WordPress\DataLiberation\URL\wp_rewrite_urls;
 
-/**
+/** 
  * WordPress importer class.
  */
 class WP_Import extends WP_Importer {
@@ -1359,10 +1359,15 @@ class WP_Import extends WP_Importer {
 		// remap resized image URLs, works by stripping the extension and remapping the URL stub.
 		if ( preg_match( '!^image/!', $info['type'] ) ) {
 			$parts = pathinfo( $url );
-			$name  = basename( $parts['basename'], ".{$parts['extension']}" ); // PATHINFO_FILENAME in PHP 5.2
+			$name = isset( $parts['extension'] )
+   				? basename( $parts['basename'], ".{$parts['extension']}" ) // PATHINFO_FILENAME in PHP 5.
+    			: $parts['basename'];
 
 			$parts_new = pathinfo( $upload['url'] );
-			$name_new  = basename( $parts_new['basename'], ".{$parts_new['extension']}" );
+			
+			$name_new = isset( $parts_new['extension'] )
+   				 ? basename( $parts_new['basename'], ".{$parts_new['extension']}" )
+   				 : $parts_new['basename'];
 
 			$this->url_remap[ $parts['dirname'] . '/' . $name ] = $parts_new['dirname'] . '/' . $name_new;
 		}
