@@ -941,18 +941,20 @@ class WP_Import extends WP_Importer {
 			// try to use _wp_attached file for upload folder placement to ensure the same location as the export site
 			// e.g. location is 2003/05/image.jpg but the attachment post_date is 2010/09, see media_handle_upload()
 			$postdata['upload_date'] = $post['post_date'];
+			$source_metadata         = array();
 			if ( isset( $post['postmeta'] ) ) {
 				foreach ( $post['postmeta'] as $meta ) {
 					if ( '_wp_attached_file' == $meta['key'] ) {
 						if ( preg_match( '%^[0-9]{4}/[0-9]{2}%', $meta['value'], $matches ) ) {
 							$postdata['upload_date'] = $matches[0];
 						}
-						break;
+					} elseif ( '_wp_attachment_metadata' == $meta['key'] ) {
+						$source_metadata = $this->maybe_unserialize( $meta['value'] );
 					}
 				}
 			}
 
-			$comment_post_id = $this->process_attachment( $postdata, $remote_url );
+			$comment_post_id = $this->process_attachment( $postdata, $remote_url, is_array( $source_metadata ) ? $source_metadata : array() );
 			$post_id         = $comment_post_id;
 		} else {
 			$comment_post_id = wp_insert_post( $postdata, true );
@@ -1323,9 +1325,10 @@ class WP_Import extends WP_Importer {
 	 *
 	 * @param array $post Attachment post details from WXR
 	 * @param string $url URL to fetch attachment from
+	 * @param array $source_metadata Optional. The attachment metadata from the source site, used to remap its sub-size URLs.
 	 * @return int|WP_Error Post ID on success, WP_Error otherwise
 	 */
-	public function process_attachment( $post, $url ) {
+	public function process_attachment( $post, $url, $source_metadata = array() ) {
 		if ( ! $this->fetch_attachments ) {
 			return new WP_Error(
 				'attachment_processing_error',
@@ -1353,18 +1356,71 @@ class WP_Import extends WP_Importer {
 		$post['guid'] = $upload['url'];
 
 		// as per wp-admin/includes/upload.php
-		$post_id = wp_insert_attachment( $post, $upload['file'] );
-		wp_update_attachment_metadata( $post_id, wp_generate_attachment_metadata( $post_id, $upload['file'] ) );
+		$post_id  = wp_insert_attachment( $post, $upload['file'] );
+		$metadata = wp_generate_attachment_metadata( $post_id, $upload['file'] );
+		wp_update_attachment_metadata( $post_id, $metadata );
 
-		// remap resized image URLs, works by stripping the extension and remapping the URL stub.
+		// Remap the URLs of the source site's sub-sizes, by their exact file names.
 		if ( preg_match( '!^image/!', $info['type'] ) ) {
-			$parts = pathinfo( $url );
-			$name  = basename( $parts['basename'], ".{$parts['extension']}" ); // PATHINFO_FILENAME in PHP 5.2
+			// Post content may hold the original URL or, when rewriting URLs, its rewritten form.
+			$source_urls = array( $url );
+			if ( $this->options['rewrite_urls'] ) {
+				$url_candidate = WPURL::replace_base_url(
+					$url,
+					array(
+						'old_base_url' => $this->base_url_parsed,
+						'new_base_url' => $this->site_url_parsed,
+					)
+				);
+				if ( false !== $url_candidate ) {
+					$source_urls[] = (string) $url_candidate;
+				}
+			}
 
 			$parts_new = pathinfo( $upload['url'] );
 			$name_new  = basename( $parts_new['basename'], ".{$parts_new['extension']}" );
 
-			$this->url_remap[ $parts['dirname'] . '/' . $name ] = $parts_new['dirname'] . '/' . $name_new;
+			$new_sizes = ! empty( $metadata['sizes'] ) && is_array( $metadata['sizes'] ) ? $metadata['sizes'] : array();
+
+			foreach ( array_unique( $source_urls ) as $source_url ) {
+				$parts = pathinfo( $source_url );
+				$dir   = $parts['dirname'] . '/';
+				$name  = basename( $parts['basename'], ".{$parts['extension']}" ); // PATHINFO_FILENAME in PHP 5.2
+
+				// Enclosures are not rewritten, so they still hold the source URL.
+				$this->url_remap[ $source_url ] = $upload['url'];
+
+				// Sub-sizes of a scaled or rotated image are named after the original file,
+				// e.g. photo-1024x683.jpg next to photo-scaled.jpg.
+				$original = preg_match( '/^(.+)-(?:scaled|rotated)$/', $name, $matches ) ? $matches[1] : $name;
+				if ( $original !== $name ) {
+					// The original file itself is not imported, so links to it get the imported file instead.
+					$this->url_remap[ "{$dir}{$original}.{$parts['extension']}" ] = $upload['url'];
+				}
+
+				// Assume each sub-size kept its name and dimensions: photo-300x200.jpg becomes
+				// photo-scaled-1-300x200.jpg. Only exact file names, so photo-booth.jpg is left alone.
+				foreach ( $new_sizes as $new_size ) {
+					if ( empty( $new_size['file'] ) || 0 !== strpos( $new_size['file'], $name_new ) ) {
+						continue;
+					}
+					$key = $dir . $original . substr( $new_size['file'], strlen( $name_new ) );
+					// Never take over the exact URL of another imported file.
+					if ( ! isset( $this->url_remap[ $key ] ) ) {
+						$this->url_remap[ $key ] = $parts_new['dirname'] . '/' . $new_size['file'];
+					}
+				}
+
+				// The source metadata names its sub-sizes exactly, so map those by size name. The guess above
+				// can miss: a sub-size cut from the original can be 1px off the one cut from photo-scaled.jpg.
+				if ( ! empty( $source_metadata['sizes'] ) && is_array( $source_metadata['sizes'] ) ) {
+					foreach ( $source_metadata['sizes'] as $size => $source_size ) {
+						if ( is_array( $source_size ) && ! empty( $source_size['file'] ) && is_string( $source_size['file'] ) && ! empty( $new_sizes[ $size ]['file'] ) ) {
+							$this->url_remap[ $dir . basename( $source_size['file'] ) ] = $parts_new['dirname'] . '/' . $new_sizes[ $size ]['file'];
+						}
+					}
+				}
+			}
 		}
 
 		return $post_id;
@@ -1645,15 +1701,129 @@ class WP_Import extends WP_Importer {
 	 */
 	public function backfill_attachment_urls() {
 		global $wpdb;
-		// make sure we do the longest urls first, in case one is a substring of another
-		uksort( $this->url_remap, array( &$this, 'cmpr_strlen' ) );
+		// An empty key would match everywhere, and makes strtr() return false on PHP < 8.
+		$url_remap = $this->url_remap;
+		unset( $url_remap[''] );
 
-		foreach ( $this->url_remap as $from_url => $to_url ) {
-			// remap urls in post_content
-			$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->posts} SET post_content = REPLACE(post_content, %s, %s)", $from_url, $to_url ) );
-			// remap enclosure urls
-			$result = $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->postmeta} SET meta_value = REPLACE(meta_value, %s, %s) WHERE meta_key='enclosure'", $from_url, $to_url ) );
+		// URL rewriting re-encodes block attributes with escaped slashes ("http:\/\/..."), so remap that form too.
+		foreach ( $url_remap as $from_url => $to_url ) {
+			$url_remap[ str_replace( '/', '\/', $from_url ) ] = str_replace( '/', '\/', $to_url );
 		}
+
+		// Group the keys by folder. Every key contains its folder, so one query per folder finds
+		// all rows a key can match, and each row only gets the keys of the folders it mentions.
+		$groups = array();
+		foreach ( $url_remap as $from_url => $to_url ) {
+			$slash = strrpos( $from_url, '/' );
+			$group = $slash ? substr( $from_url, 0, $slash ) : $from_url;
+
+			$groups[ $group ][ $from_url ] = $to_url;
+		}
+
+		$post_groups = array();
+		$meta_groups = array();
+		foreach ( array_keys( $groups ) as $group ) {
+			$like = '%' . $wpdb->esc_like( $group ) . '%';
+			foreach ( $wpdb->get_col( $wpdb->prepare( "SELECT ID FROM {$wpdb->posts} WHERE post_content LIKE %s", $like ) ) as $id ) {
+				$post_groups[ $id ][] = $group;
+			}
+			// remap enclosure urls
+			foreach ( $wpdb->get_col( $wpdb->prepare( "SELECT meta_id FROM {$wpdb->postmeta} WHERE meta_key = 'enclosure' AND meta_value LIKE %s", $like ) ) as $id ) {
+				$meta_groups[ $id ][] = $group;
+			}
+		}
+
+		$this->remap_rows( $wpdb->posts, 'ID', 'post_content', $post_groups, $groups );
+		$this->remap_rows( $wpdb->postmeta, 'meta_id', 'meta_value', $meta_groups, $groups );
+	}
+
+	/**
+	 * Applies the URL map to table rows, in batches.
+	 *
+	 * strtr() tries the longest key first and never rescans text it has replaced, so a short key
+	 * cannot rewrite what a longer key produced. A row is only written while it still holds what
+	 * was read, so an edit saved meanwhile is kept: that row is read again and retried.
+	 *
+	 * @param string $table      Table name.
+	 * @param string $id_column  Primary key column.
+	 * @param string $column     Column holding the URLs.
+	 * @param array  $row_groups Row ID => URL map groups the row mentions.
+	 * @param array  $groups     URL map group => array of old URL => new URL.
+	 */
+	protected function remap_rows( $table, $id_column, $column, $row_groups, $groups ) {
+		global $wpdb;
+
+		$ids = array_keys( $row_groups );
+		for ( $attempt = 0; $ids && $attempt < 3; $attempt++ ) {
+			$retry = array();
+
+			foreach ( array_chunk( $ids, 500 ) as $chunk ) {
+				$in   = implode( ',', array_fill( 0, count( $chunk ), '%d' ) );
+				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT {$id_column} AS id, {$column} AS value FROM {$table} WHERE {$id_column} IN ({$in})", $chunk ) ); // phpcs:ignore WordPress.DB.PreparedSQL, WordPress.DB.PreparedSQLPlaceholders -- Table and column names are fixed by the callers, values are prepared.
+
+				$batch = array();
+				$bytes = 0;
+				foreach ( $rows as $row ) {
+					$pairs = array();
+					// An edit can introduce URLs from folders absent during the first lookup.
+					$row_group_keys = $attempt ? array_keys( $groups ) : $row_groups[ $row->id ];
+					foreach ( $row_group_keys as $group ) {
+						$pairs += $groups[ $group ];
+					}
+					$updated = strtr( $row->value, $pairs );
+					if ( $updated === $row->value ) {
+						continue;
+					}
+
+					// Keep each statement well below the 4 MB max_allowed_packet of older MySQL.
+					if ( $batch && $bytes + strlen( $updated ) > 512 * 1024 ) {
+						$retry = array_merge( $retry, $this->write_remapped_rows( $table, $id_column, $column, $batch ) );
+						$batch = array();
+						$bytes = 0;
+					}
+					$batch[ $row->id ] = array( md5( $row->value ), $updated );
+					$bytes            += strlen( $updated );
+				}
+				if ( $batch ) {
+					$retry = array_merge( $retry, $this->write_remapped_rows( $table, $id_column, $column, $batch ) );
+				}
+			}
+
+			$ids = $retry;
+		}
+	}
+
+	/**
+	 * Writes remapped values in one statement, skipping rows that changed since they were read.
+	 *
+	 * @param string $table     Table name.
+	 * @param string $id_column Primary key column.
+	 * @param string $column    Column holding the URLs.
+	 * @param array  $batch     Row ID => array( MD5 of the value read, new value ).
+	 * @return int[] IDs of rows that were not written.
+	 */
+	protected function write_remapped_rows( $table, $id_column, $column, $batch ) {
+		global $wpdb;
+
+		$cases = array();
+		$where = array();
+		foreach ( $batch as $id => $change ) {
+			$cases[] = $wpdb->prepare( 'WHEN %d THEN %s', $id, $change[1] );
+			$where[] = $wpdb->prepare( "({$id_column} = %d AND MD5({$column}) = %s)", $id, $change[0] ); // phpcs:ignore WordPress.DB.PreparedSQL -- Table and column names are fixed by the callers, values are prepared.
+		}
+
+		$written = $wpdb->query( "UPDATE {$table} SET {$column} = CASE {$id_column} " . implode( ' ', $cases ) . ' END WHERE ' . implode( ' OR ', $where ) ); // phpcs:ignore WordPress.DB.PreparedSQL -- Table and column names are fixed by the callers, values are prepared.
+		if ( count( $batch ) === $written ) {
+			return array();
+		}
+
+		// Find the rows that now hold the new value; the others changed meanwhile, or the query failed.
+		$done = array();
+		foreach ( $batch as $id => $change ) {
+			$done[] = $wpdb->prepare( "({$id_column} = %d AND MD5({$column}) = %s)", $id, md5( $change[1] ) ); // phpcs:ignore WordPress.DB.PreparedSQL -- Table and column names are fixed by the callers, values are prepared.
+		}
+
+		return array_diff( array_keys( $batch ), array_map( 'intval', $wpdb->get_col( "SELECT {$id_column} FROM {$table} WHERE " . implode( ' OR ', $done ) ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL -- Table and column names are fixed by the callers, values are prepared.
 	}
 
 	/**
